@@ -61,7 +61,7 @@ esac
 # output from aws
 aws ec2 describe-volumes \
 	--output text \
-	--query 'Volumes[*]. \
+	--query "Volumes[*]. \
 		[VolumeId, \
 		Size, \
 		State, \
@@ -69,7 +69,7 @@ aws ec2 describe-volumes \
 		Attachments[0].InstanceId, \
 		VolumeType, \
 		AvailabilityZone, \
-		Tags[0].Value]' \
+		Tags[0].Value]" \
 >> .ec2-qv-volumes.tmp
 
 # print and format output

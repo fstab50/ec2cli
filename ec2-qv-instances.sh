@@ -65,14 +65,14 @@ then
 	# output from aws
 	aws ec2 describe-instances \
 	        --output text \
-        	--query 'Reservations[*].Instances[*]. \
+        	--query "Reservations[*].Instances[*]. \
 			[InstanceId, \
                 	InstanceType, \
                 	State.Name, \
                 	SecurityGroups[0].GroupName, \
                 	BlockDeviceMappings[0].Ebs.VolumeId, \
                 	Tags[1].Value, \
-                	PublicDnsName]' \
+                	PublicDnsName]" \
 	>> .ec2-qv-instances.tmp
 
 	# print and format output
@@ -90,13 +90,13 @@ else
 	# output from aws
 	aws ec2 describe-instances \
         	--output text \
-        	--query 'Reservations[*].Instances[*]. \
+        	--query "Reservations[*].Instances[*]. \
 			[InstanceId, \
 			InstanceType, \
 			State.Name, \
 			SecurityGroups[0].GroupName, \
 			BlockDeviceMappings[0].Ebs.VolumeId, \
-			Tags[1].Value]' \
+			Tags[1].Value]" \
 		>> .ec2-qv-instances.tmp
 
         # print and format output

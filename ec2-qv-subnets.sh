@@ -56,14 +56,14 @@ esac
 # output from aws
 aws ec2 describe-subnets \
 	--output text \
-	--query 'Subnets[*]. \
+	--query "Subnets[*]. \
 		[Tags[0].Value, \
 		SubnetId, \
 		MapPublicIpOnLaunch, \
 		CidrBlock, \
 		AvailableIpAddressCount, \
 		AvailabilityZone, \
-		DefaultForAz]' | sort -k +4n >> .ec2-qv.tmp
+		DefaultForAz]" | sort -k +4n >> .ec2-qv.tmp
 
 
 # print and format output

@@ -55,14 +55,14 @@ esac
 # output from aws
 aws ec2 describe-security-groups \
 	--output text \
-	--query 'SecurityGroups[*]. \
+	--query "SecurityGroups[*]. \
 		[GroupName, \
 		GroupId, \
 		IpPermissions[0].FromPort, \
 		IpPermissions[0].ToPort, \
 		IpPermissions[0].IpRanges[0].CidrIp, \
 		VpcId, \
-		Tags[0].Value]' \
+		Tags[0].Value]" \
 >> .ec2-qv-securitygroups.tmp
 
 

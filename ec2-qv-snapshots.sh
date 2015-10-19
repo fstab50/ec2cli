@@ -64,13 +64,13 @@ esac
 aws ec2 describe-snapshots \
 	--owner self \
 	--output text \
-	--query 'Snapshots[*]. \
+	--query "Snapshots[*]. \
 		[SnapshotId, \
 		VolumeSize, \
 		State, \
 		Progress,\
 		VolumeId,\
-		Description]' | \
+		Description]" | \
 sort -rk +6n  >> .ec2-qv-snapshots.tmp
 
 # print and format output

@@ -59,14 +59,14 @@ esac
 aws ec2 describe-images \
 	--owner self \
 	--output text \
-	--query 'Images[*]. \
+	--query "Images[*]. \
 		[ImageId, \
 		ImageType, \
 		VirtualizationType, \
 		RootDeviceType, \
 		RootDeviceName, \
 		BlockDeviceMappings[0].Ebs.SnapshotId, \
-		Tags[0].Value]' \
+		Tags[0].Value]" \
 >> .ec2-qv-amis.tmp
 
 # print and format output

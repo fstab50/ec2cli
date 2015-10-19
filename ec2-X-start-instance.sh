@@ -48,7 +48,7 @@ spinner()
 {
     local pid=$!
     local delay=0.1
-    local spinstr='|/-\'
+    local spinstr='|/-\''
     while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local temp=${spinstr#?}
         printf "\r$PROGRESSTXT[%c]  " "$spinstr"
@@ -155,8 +155,7 @@ spinner
 HOSTNAME=$(aws ec2 describe-instances \
         --output text \
         --instance-id $TARGET \
-        --query 'Reservations[*].Instances[*]. \
-                [PublicDnsName]') 
+        --query 'Reservations[*].Instances[*].[PublicDnsName]') 
 
 # login
 ssh -i ~/AWS/awskey_us-west-2.pem ec2-user@$HOSTNAME

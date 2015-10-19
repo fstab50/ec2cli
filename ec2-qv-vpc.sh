@@ -58,12 +58,12 @@ esac
 #
 aws ec2 describe-vpcs \
 	--output text \
-	--query 'Vpcs[*]. \
+	--query "Vpcs[*]. \
 		[VpcId, \
 		State, \
 		InstanceTenancy, \
 		CidrBlock, \
-		IsDefault]' | sort -k +4n \
+		IsDefault]" | sort -k +4n \
 >> .ec2-qv-vpc.tmp
 
 
