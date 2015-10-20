@@ -14,7 +14,7 @@
 
 * Purpose:  	CLI utilities for use with Amazon Web Services (AWS)
 * Version:	08/2015
-* Repo: 	[ec2] https://blakeca00@bitbucket.org/blakeca00/ec2.git
+* Repo: 	[ec2] https://github.com/t-stark/ec2.git
 
 
 ## License 
@@ -137,16 +137,16 @@ export AWS_DEFAULT_REGION=us-west-2    # AWS region where majority of your stuff
 ````
 
    To use environment variables, do the following:
-
+````
 	$ export AWS_ACCESS_KEY_ID=<access_key>
 	$ export AWS_SECRET_ACCESS_KEY=<secret_key>
-
+````
    To use a config file, create a configuration file like this:
-
+````
 	[default]
 	aws_access_key_id=<default access key>
 	aws_secret_access_key=<default secret key>
-
+````
 * Config File 
    
     Optional, define a default region for a specific profile by
