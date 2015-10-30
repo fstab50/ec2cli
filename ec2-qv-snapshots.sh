@@ -80,8 +80,8 @@ sort -rk +6n  >> .ec2-qv-snapshots.tmp
 #       Description field containing up to 7 strings separated by a single 
 #       space will be printed via below awk statement (last 7 columns).
 #
-awk  '{ printf "%-14s %-5s %-10s %-5s %-13s %-2s %-2s %-2s %-2s %-2s \n", \
-	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-snapshots.tmp
+awk  '{ printf "%-14s %-5s %-10s %-5s %-13s %-2s %-2s %-2s %-2s \n", \
+	$1, $2, $3, $4, $5, $6, $7, $8, $9}' .ec2-qv-snapshots.tmp
 
 # print footer
 echo " "
