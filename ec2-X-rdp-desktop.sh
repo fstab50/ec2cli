@@ -24,6 +24,7 @@
 #
 # FUTURE log
 #	- add failure modes & error handling
+#	- detect deps (rdesktop, awscli, jq)
 #	- Detect screen resolution instead of hardocded array values
 #	  when choosing RDP session window size
 #	- Validate current client IP is permitted in RDP sec group
