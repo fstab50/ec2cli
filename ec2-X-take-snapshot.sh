@@ -23,6 +23,7 @@
 
 # FUTURE:
 #	- Display volumes prepended with numerical choice values per ec2-X-attach-volume.sh
+#	- Ability to delete snaps as well as create
 #       - Modify spinner() to include display of snap progress % with each iteration of internal while loop
 #	  This grabs % complete if snapshot-id is known:
 #         $  aws ec2 describe-snapshots \
