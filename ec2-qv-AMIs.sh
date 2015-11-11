@@ -26,8 +26,18 @@
 #
 
 # set vars
-BOLD=`tput bold`
-UNBOLD=`tput sgr0`
+BOLD=`tput bold`	# bold text begin marker
+UNBOLD=`tput sgr0`	# bold text end marker
+E_BADSHELL=7		# exit code if incorrect shell detected
+
+# test default shell, fail if debian default (dash)
+case "$SHELL" in
+  *dash*)
+        # shell is ubuntu default, dash
+        echo "\nDefault shell appears to be dash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+        exit $E_BADSHELL
+  ;;
+esac
 
 # functions
 indent18() { sed 's/^/                  /'; }
@@ -38,22 +48,10 @@ printf "\n${BOLD}AMAZON MACHINE IMAGES :${UNBOLD} $AWS_DEFAULT_REGION\n" | inden
 echo ""
 
 
-# test default shell, format change if debian default (dash)
-case "$SHELL" in
-  *dash*)
-        # shell is ubuntu default, dash
-        echo "\nAMI-id Type Virtual. Drv RootDev SnapshotId Description\n \
-        ------------ ------- ----------- --- --------- ------------- \
-        --------------------------------------" > .ec2-qv-amis.tmp
-   ;;
-
-  *bash*)
-        # shell appears to be bash
-        echo -ne "\nAMI-id Type Virtual. Drv RootDev SnapshotId Description\n \
+# print header
+echo -ne "\nAMI-id Type Virtual. Drv RootDev SnapshotId Description\n \
         ------------ ------- ----------- --- --------- ------------- \
         --------------------------------------\n" > .ec2-qv-amis.tmp
-   ;;
-esac
 
 # output from aws
 aws ec2 describe-images \
@@ -76,8 +74,8 @@ aws ec2 describe-images \
 #       Description field containing up to 7 strings separated by a single 
 #       space will be printed via below awk statement (last 7 columns).
 #
-awk  '{ printf "%-13s %-8s %-12s %-4s %-10s %-14s %-2s %-2s %-2s %-2s %-2s %-2s \n", \
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' .ec2-qv-amis.tmp
+awk  '{ printf "%-13s %-8s %-12s %-4s %-10s %-14s %-2s %-2s %-2s %-2s \n", \
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-amis.tmp
 
 # print footer
 echo " "
