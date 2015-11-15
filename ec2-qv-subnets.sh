@@ -31,6 +31,7 @@
 # set vars
 BOLD=`tput bold`
 UNBOLD=`tput sgr0`
+E_BADSHELL=7		# exit code if incorrect shell
 
 # functions
 indent18() { sed 's/^/                  /'; }
@@ -40,16 +41,16 @@ printf "\n\n${BOLD}SUBNETS FOR REGION:${UNBOLD} $AWS_DEFAULT_REGION\n\n" | inden
 
 # test default shell, format change if debian default (dash)
 case "$SHELL" in
-  *dash*)
-        # shell is ubuntu default, dash
-        echo "\nName SubnetId Public CIDR-Block #IPs AvailZone Default\n \
-        ------------- --------------- ------ --------------- ---- ---------- -------" > .ec2-qv.tmp
-  ;;
-
   *bash*)
         # shell appears to be bash 
         echo -ne "\nName SubnetId Public CIDR-Block #IPs AvailZone Default\n \
         ------------- --------------- ------ --------------- ---- ---------- -------\n" > .ec2-qv.tmp
+  ;;
+
+  *)
+        # shell other than bash 
+        echo "\nDefault shell appears to be non-bash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+        exit $E_BADSHELL
   ;;
 esac
 

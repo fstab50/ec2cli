@@ -41,6 +41,7 @@ BOLD=`tput bold`
 UNBOLD=`tput sgr0`
 SGROUP1="security-grp01"		# security group to be verified
 SGROUP2="security-grpXRX"
+E_BADSHELL=7 			# exit code if incorrect shell
 E_NETWORK_ACCSS=8       	# exit code if no network access from current location
 
 # spinner progress marker function
@@ -48,7 +49,7 @@ spinner()
 {
     local pid=$!
     local delay=0.1
-    local spinstr='|/-\''
+    local spinstr='|/-\'
     while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local temp=${spinstr#?}
         printf "\r$PROGRESSTXT[%c]  " "$spinstr"
@@ -58,6 +59,19 @@ spinner()
     done
     #printf "    \b\b\b\b"
 }
+
+#
+# validate shell env ----------------------------------------------------------
+#
+
+# test default shell, fail if debian default (dash)
+case "$SHELL" in
+  *dash*)
+        # shell is ubuntu default, dash
+        echo "\nDefault shell appears to be dash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+        exit $E_BADSHELL
+  ;;
+esac
 
 #
 # network access check -------------------------------------------------

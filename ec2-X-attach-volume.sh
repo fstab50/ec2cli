@@ -32,9 +32,19 @@
 # set vars
 BOLD=`tput bold`
 UNBOLD=`tput sgr0`
+E_BADSHELL=7 		# exit code if incorrect shell
 
 # functions
 indent18() { sed 's/^/                  /'; }
+
+# test default shell, fail if debian default (dash)
+case "$SHELL" in
+  *dash*)
+        # shell is ubuntu default, dash
+        echo "\nDefault shell appears to be dash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+        exit $E_BADSHELL
+  ;;
+esac
 
 echo -e "\n"
 

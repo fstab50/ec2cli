@@ -41,20 +41,18 @@ printf "\n\n${BOLD}SNAPSHOTS:${UNBOLD} $AWS_DEFAULT_REGION\n\n" | indent18
 
 # test default shell, format change if debian default (dash)
 case "$SHELL" in
-  *dash*)
-        # shell is ubuntu default, dash
-        echo "\n\nSnapId Vo1. State Prog VolumeId Description\n \
-	------------- ----   --------- ---- ------------ \
-	---------------------------------------------------" \
-	> .ec2-qv-snapshots.tmp 
-  ;;
-
   *bash*)
         # shell appears to be bash 
         echo -ne "\nSnapId Vo1. State Prog VolumeId Description\n \
         ------------- ----  --------- ---- ------------ \
         ---------------------------------------------------\n" \
 	> .ec2-qv-snapshots.tmp
+  ;;
+
+  *)
+        # shell other than bash 
+        echo "\nDefault shell appears to be non-bash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+        exit $E_BADSHELL
   ;;
 esac
 

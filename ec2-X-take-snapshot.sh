@@ -43,6 +43,7 @@ echo -e "\n"
 NOW="$(date +"%Y-%m-%d")"
 BOLD=`tput bold`
 UNBOLD=`tput sgr0`
+E_BADSHELL=7 			# exit code if incorrect shell
 PROGRESSMSG="EC2 Snapshot Started.  Please wait... "
 
 # spinner progress marker function
@@ -60,6 +61,19 @@ spinner()
     done
     #printf "    \b\b\b\b"
 }
+
+#
+# validate check ----------------------------------------------------------
+#
+
+# test default shell, fail if debian default (dash)
+case "$SHELL" in
+  *dash*)
+        # shell is ubuntu default, dash
+        echo "\nDefault shell appears to be dash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+        exit $E_BADSHELL
+  ;;
+esac
 
 #
 # choose volume ----------------------------------------------------------
