@@ -172,7 +172,7 @@ HOSTNAME=$(aws ec2 describe-instances \
         --query 'Reservations[*].Instances[*].[PublicDnsName]') 
 
 # login
-ssh -i ~/AWS/awskey_us-west-2.pem ec2-user@$HOSTNAME
+ssh -i $SSH_KEYS/awskey_us-west-2.pem ec2-user@$HOSTNAME
 
 #
 #<-- end --->
