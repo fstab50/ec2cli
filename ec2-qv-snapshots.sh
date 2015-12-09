@@ -68,8 +68,7 @@ aws ec2 describe-snapshots \
 		State, \
 		Progress,\
 		VolumeId,\
-		Description]" | \
-sort -rk +6n  >> .ec2-qv-snapshots.tmp
+		Description]" | sort -k +6n  >> .ec2-qv-snapshots.tmp
 
 # print and format output
 #
