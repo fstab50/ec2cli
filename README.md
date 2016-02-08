@@ -1,5 +1,10 @@
 # EC2 CLI Utilities  
 
+# UPDATE -- OUTDATED #
+The latest version of this repo is currently maintained at:
+[https://blakeca00@bitbucket.org/blakeca00/ec2.git](https://blakeca00@bitbucket.org/blakeca00/ec2.git)
+
+
 * [About](#About)
 * [License](#License)
 * [Introduction](#Introduction)
