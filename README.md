@@ -5,7 +5,8 @@
 The latest version of this repo is currently maintained at:
 [https://blakeca00@bitbucket.org/blakeca00/ec2.git](https://blakeca00@bitbucket.org/blakeca00/ec2.git)
 
-Please access the repo at the link for latest updates.
+## Please access the repo at the link for latest updates.
+
 ---------------------------------------------------
 
 * [About](#About)
