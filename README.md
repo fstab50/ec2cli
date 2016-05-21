@@ -199,7 +199,7 @@ may work with other shells; however, your mileage may vary.
  
 ## IAM Permissions ##
 
-* #### Quickview Script Required Permissions ####
+#### Quickview Script Required Permissions 
 You'll need appropriate IAM permissions to execute these scripts.  Quickview scripts ("qv" in the filename) simply display data, so by nature require only read only permissions:
 
 ```json
@@ -235,7 +235,7 @@ You'll need appropriate IAM permissions to execute these scripts.  Quickview scr
 
 ```
 
-* #### Execute Script Required Permissions ####
+* #### Execute Script Required Permissions 
 Execute scripts (marked with an "X" in the filename), require additional permissions in addition to the above to actually affect changes to your infrastructure:
 
 ```json
