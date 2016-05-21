@@ -1,17 +1,17 @@
 # EC2 CLI Utilities  
 
-* [About](#About)
-* [License](#License)
-* [Introduction](#Introduction)
-* [Conventions](#Conventions)
-* [Contents](#Contents)
-* [Installation](#Installation)
-* [Configuration](#Configuration)
+* [About](#about-this-repository)
+* [License](#license)
+* [Introduction](#introduction)
+* [Conventions](#conventions)
+* [Contents](#contents)
+* [Installation](#installation)
+* [Configuration](#configuration)
 * [Permissions](#iam-permissions)
-* [Screenshots](#Screenshots)
-* [Aliases (optional)](#Aliases)
-* [Contribution Guidelines](#Contribution)
-* [Contact](#Contact)
+* [Screenshots](#screenshots)
+* [Aliases (optional)](#aliases)
+* [Contribution Guidelines](#contribution)
+* [Contact](#contact)
 
 * * *
 
