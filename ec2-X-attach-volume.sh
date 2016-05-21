@@ -4,7 +4,7 @@
 #                                                                         | 
 #                                                                         |
 #  Author:   Blake Huber                                                  |
-#  Purpose:  Shortcut for mounting of vols via user input                 |
+#  Purpose:  CLI utility for mounting of EBS volumes via user input       |
 #  Name:     ec2-X-attach-volume.sh                                       |
 #  Location: $EC2_REPO                                                    |
 #  Requires: awscli, awk, writable location                               |
@@ -34,17 +34,33 @@ BOLD=`tput bold`
 UNBOLD=`tput sgr0`
 E_BADSHELL=7 		# exit code if incorrect shell
 
-# functions
+# set fs pointer to writeable temp location in memory
+if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]
+then
+        TMPDIR="/dev/shm"
+        cd $TMPDIR     
+else
+        TMPDIR="/tmp"
+        cd $TMPDIR 
+fi
+
+#
+# functions  ------------------------------------------------------------------
+#
+
 indent18() { sed 's/^/                  /'; }
 
-# test default shell, fail if debian default (dash)
-case "$SHELL" in
-  *dash*)
-        # shell is ubuntu default, dash
-        echo "\nDefault shell appears to be dash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+#
+# Validate Shell  ------------------------------------------------------------
+#
+
+# test default shell, fail if not bash
+if [ ! -n "$BASH" ]
+  then
+        # shell other than bash 
+        echo "\nDefault shell appears to be something other than bash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
         exit $E_BADSHELL
-  ;;
-esac
+fi
 
 echo -e "\n"
 

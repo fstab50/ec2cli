@@ -4,8 +4,8 @@
 #                                                                         | 
 #                                                                         |
 #  Author:   Blake Huber                                                  |
-#  Purpose:  Utility for taking snapshots of EBS volumes                  |
-#  Name:     ec2-X-take-snapshot.sh                                       |
+#  Purpose:  CLI utility for starting and connecting to ec2 instances     |
+#  Name:     ec2-X-start-instance.sh                                      |
 #  Location: $EC2_REPO                                                    |
 #  Requires: awscli, jq (JSON parser)                                     |
 #  Environment Variables (required, global):                              |
@@ -15,6 +15,7 @@
 #       AWS_ACCESS_KEY                                                    |
 #       AWS_SECRET_KEY                                                    |
 #       AWS_DEFAULT_REGION                                                |
+#	SSH_KEYS: location of AWS key pairs (.pem files)                  |
 #  User:     $USER                                                        |
 #  Out:      CLI                                                          |
 #  Error:    stderr                                                       |
@@ -22,12 +23,8 @@
 #_________________________________________________________________________|
 
 # Future Enhancements:
-#	- Change default choice to abort (don't start any instances)
-#	- Update choice display to put numbered choices in front of rows
-#       - Modify spinner() to include display of snap progress % with each iteration of internal while loop
 #       - Test for Linux EC2 instance start (this script ONLY good for Linux
 #	  since ssh login at end 
-#       - Error handling for all user entered data
 #     
 
 # < -- Start -->
@@ -39,10 +36,26 @@ NOW=$(date)
 PROGRESSTXT="EC2 Instance Starting Up.  Please wait... "
 BOLD=`tput bold`
 UNBOLD=`tput sgr0`
-SGROUP1="security-grp01"		# security group to be verified
-SGROUP2="security-grpXRX"
-E_BADSHELL=7 			# exit code if incorrect shell
-E_NETWORK_ACCSS=8       	# exit code if no network access from current location
+E_BADSHELL=7                    # exit code if incorrect shell
+E_NETWORK_ACCSS=8               # exit code if no network access from current location
+E_USER_CANCEL=9                 # exit code if user cancel, no instance start
+
+# set fs pointer to writeable temp location in memory
+if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]
+then
+        TMPDIR="/dev/shm"
+        cd $TMPDIR     
+else
+        TMPDIR="/tmp"
+        cd $TMPDIR 
+fi
+
+#
+# functions -------------------------------------------------------------------
+#
+
+# formatting
+indent18() { sed 's/^/                  /'; }
 
 # spinner progress marker function
 spinner()
@@ -64,64 +77,42 @@ spinner()
 # validate shell env ----------------------------------------------------------
 #
 
-# test default shell, fail if debian default (dash)
-case "$SHELL" in
-  *dash*)
-        # shell is ubuntu default, dash
-        echo "\nDefault shell appears to be dash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+# test default shell, fail if not bash
+if [ ! -n "$BASH" ]
+  then
+        # shell other than bash 
+        echo "\nDefault shell appears to be something other than bash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
         exit $E_BADSHELL
-  ;;
-esac
-
-#
-# network access check -------------------------------------------------
-#
-
-echo -e "\nChecking Network Access.  Please wait ..."
-
-# grab myip
-dig +short myip.opendns.com @resolver1.opendns.com > .myip.tmp
-MYIP=$(cat .myip.tmp)
-
-# query ip's from assigned security group
-aws ec2 describe-security-groups \
-        --group-names $SGROUP1 $SGROUP2 \
-        --output text \
-        --query 'SecurityGroups[].[IpPermissions[].IpRanges[*].CidrIp]' > .output.tmp
-
-if grep "$MYIP" .output.tmp > /dev/null
-then
-        echo -e "\nNetwork access ok, proceeding.\n"
-        rm .myip.tmp .output.tmp   # clean up
-else
-        echo -e "\nNo Network access from this location.  Please update security group.\n"
-        rm .myip.tmp .output.tmp   # clean up
-        exit $E_NETWORK_ACCESS
 fi
 
 #
 # choose instance ----------------------------------------------------------
 #
 
-# display volumes associated with default zone for user's AWS account
-sh $EC2_REPO/ec2-qv-instances.sh    # includes header
+# <-- start -->
 
-echo -e "\nEnter the # of the instance you wish to start:"
+echo -e "\n${BOLD}Available Instances: ${UNBOLD}$AWS_DEFAULT_REGION\n" | indent18
+    aws ec2 describe-instances \
+            --output text \
+            --query "Reservations[*].Instances[*]. \
+            [InstanceId, \
+                    InstanceType, \
+                    State.Name, \
+                    SecurityGroups[0].GroupName, \
+                    BlockDeviceMappings[0].Ebs.VolumeId, \
+                    PublicIpAddress, \
+                    Tags[1].Value]" \
+    >> .text-output1.tmp
 
-# collect list of all current AWS Regions globally:
-aws ec2 describe-instances \
-        --output text \
-        --query 'Reservations[*].[Instances[*].InstanceId]' \
->> .text-output.tmp
 
 # Use built-in IFS to read in all lines in tmp file
-IFS=$'\n' read -d '' -r -a INSTANCES < .text-output.tmp
+IFS=$'\n' read -d '' -r -a INSTANCES < .text-output1.tmp
 
 # array max length
-MAXCT=${#INSTANCES[*]} # keep in mind, IFS starts array index at 0
+MAXCT=${#INSTANCES[*]} # IFS starts array index at 0
 
 # load output choice array
-i=0  
+i=0
 while (( i < $MAXCT ))
 do
         echo "($i): ""${INSTANCES[$i]}" >> .arrayoutput.tmp
@@ -129,27 +120,90 @@ do
 done
 
 # display choices from array
-cat .arrayoutput.tmp
+#
+# header
+echo -e "\n     InstanceID    Type     State   SecurityGroup     Root-Volume      PublicIP       Description"
+echo -e "     ----------  ---------  ------- --------------    ------------   --------------   -------------------------"
 
-# read choice in from user
-echo ""
-read -p "Enter # of choice or hit return for default [0]: " CHOICE
-echo ""
-
-# assign volume to choice
-
-if [ -z "$CHOICE" ]
-then
-        # CHOICE is blank, assign default
-        CHOICE=0
-fi
-
-TARGET=${INSTANCES[$CHOICE]}
-echo "You chose to start instance $TARGET."
+# values
+awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-14s %-16s %-2s %-2s %-2s %-2s \n", \
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .arrayoutput.tmp
 
 # clean up
-rm .text-output.tmp
-rm .arrayoutput.tmp
+rm .text-output1.tmp .arrayoutput.tmp
+
+#
+# get user input while checking type and range
+#
+VALID=0    # set loop break
+
+while [ $VALID -eq 0 ]
+do
+        # read choice in from user
+        echo ""
+        read -p "Enter # of choice or hit return for default [quit]: " CHOICE
+        echo ""
+
+        # assign instance to choice
+        if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]
+        then
+                # invalid user entry
+                echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+        else
+                if [ -z "$CHOICE" ]
+                then
+                        # CHOICE is blank, assign default
+                        exit $E_USER_CANCEL
+                else
+                        # valid user entry, exit loop
+                        VALID=1
+                fi
+        fi
+done
+
+tmpID=${INSTANCES[$CHOICE]}
+TARGET=$(echo $tmpID | cut -c 1-10)
+echo "You chose to start instance $TARGET."
+
+#
+# network access check -------------------------------------------------
+#
+
+echo -e "\nChecking Network Access.  Please wait ..."
+
+# retrieve secuirty group(s) of selected ec2 instance
+aws ec2 describe-instances \
+        --output text \
+        --instance-id $TARGET \
+        --query 'Reservations[].Instances[].SecurityGroups[*].GroupId' > .secgrp-ids.tmp 
+
+# discover local ip
+dig +short myip.opendns.com @resolver1.opendns.com > .myip.tmp
+MYIP=$(cat .myip.tmp)
+
+# query ip's from assigned security group
+aws ec2 describe-security-groups \
+        --group-ids $(cat .secgrp-ids.tmp) \
+        --output text \
+        --query 'SecurityGroups[].[IpPermissions[].IpRanges[*].CidrIp]' > .output.tmp
+
+
+if grep "$MYIP" .output.tmp > /dev/null
+then
+        # Access validated
+        echo -e "\nNetwork access ok, proceeding.\n"
+
+        # clean up
+        rm .myip.tmp .output.tmp .secgrp-ids.tmp
+else
+        # No access from current login client location
+        echo -e "\nNo Network access from this location.  Please update security group.\n"
+        
+        # clean up
+        rm .myip.tmp .output.tmp .secgrp-ids.tmp
+        
+        exit $E_NETWORK_ACCESS
+fi
 
 #
 # start instance ---------------------------------------------------------
@@ -164,18 +218,36 @@ aws ec2 wait instance-running --instance-ids $TARGET &
 # call function to show on screen while wait
 spinner
 
+# login delay: loop for i seconds, display counter
+i=10    # count in seconds
+echo -e "\n "
 
-# get public hostname assignment
-HOSTNAME=$(aws ec2 describe-instances \
+while (( i > 0 ))
+do
+        printf "\rInstance available in: ""$i"" seconds"
+        sleep 1
+        i=$(( i-1 ))
+done
+echo -e "\n\nAuthenticating...\n"
+
+
+# discover public ip assignment
+IPADDRESS=$(aws ec2 describe-instances \
         --output text \
         --instance-id $TARGET \
-        --query 'Reservations[*].Instances[*].[PublicDnsName]') 
+        --query 'Reservations[].Instances[].[PublicIpAddress]') 
+
+# discover required access key
+KEY=$(aws ec2 describe-instances \
+        --output text \
+        --instance-id $TARGET \
+        --query 'Reservations[].Instances[].[KeyName]')".pem" 
 
 # login
-ssh -i $SSH_KEYS/awskey_us-west-2.pem ec2-user@$HOSTNAME
+ssh -i $SSH_KEYS/$KEY ec2-user@$IPADDRESS
 
 #
-#<-- end --->
+# <-- end --->
 
 exit 0
 

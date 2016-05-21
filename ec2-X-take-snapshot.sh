@@ -46,7 +46,21 @@ UNBOLD=`tput sgr0`
 E_BADSHELL=7 			# exit code if incorrect shell
 PROGRESSMSG="EC2 Snapshot Started.  Please wait... "
 
-# spinner progress marker function
+# set fs pointer to writeable temp location in memory
+if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]
+then
+        TMPDIR="/dev/shm"
+        cd $TMPDIR     
+else
+        TMPDIR="/tmp"
+        cd $TMPDIR 
+fi
+
+#
+# functions  ------------------------------------------------------------------
+#
+
+# progress marker function
 spinner()
 {
     local pid=$!
@@ -66,14 +80,13 @@ spinner()
 # validate check ----------------------------------------------------------
 #
 
-# test default shell, fail if debian default (dash)
-case "$SHELL" in
-  *dash*)
-        # shell is ubuntu default, dash
-        echo "\nDefault shell appears to be dash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+# test default shell, fail if not bash
+if [ ! -n "$BASH" ]
+  then
+        # shell other than bash 
+        echo "\nDefault shell appears to be something other than bash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
         exit $E_BADSHELL
-  ;;
-esac
+fi
 
 #
 # choose volume ----------------------------------------------------------

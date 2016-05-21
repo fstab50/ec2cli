@@ -3,11 +3,11 @@
 #                                                                         | 
 #                                                                         |
 #  Author:   Blake Huber                                                  |
-#  Purpose:  return location of AZ of EC2 instance                        |
+#  Purpose:  returns the location (region) of an EC2 instance             |
 #  Name:     ec2-az-zone-location.sh                                      |
 #  Location: $EC2_BASE                                                    |
-#  Requires: EC2 api-tools, curl, motd-ec2.sh (parent),                   |
-#            for instance located at AWS datacenter only                  |
+#  Requires: EC2, curl, motd-ec2.sh (parent), instance must be            |
+#            located at AWS datacenter only                               |
 #  Environment Variables (required, global):                              |
 #       EC2_BASE                                                          |
 #       EC2_HOME                                                          |
@@ -48,6 +48,9 @@ REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-
 		  ;;
 		ap-northeast-1*)
 		  LOCATION="Asia Pacific (Tokyo)"
+		  ;;
+		ap-northeast-2*)
+		  LOCATION="Asia Pacific (Seoul, Korea)"
 		  ;;
 		ap-southeast-1*)
 		  LOCATION="Asia Pacific (Singapore)"

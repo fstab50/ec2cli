@@ -48,9 +48,41 @@ echo -e "\n"
 NOW=$(date)
 BOLD=`tput bold`
 UNBOLD=`tput sgr0`
+E_BADSHELL=7              # exit code if incorrect shell detected
+E_BADARG=8                    # exit code if bad input parameter    
+REGION=$AWS_DEFAULT_REGION    # set region from global env var
+
+# set fs pointer to writeable temp location in memory
+if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]
+then
+        TMPDIR="/dev/shm"
+        cd $TMPDIR     
+else
+        TMPDIR="/tmp"
+        cd $TMPDIR 
+fi
 
 #
-###  choose REGION   ########################################################
+# functions  ------------------------------------------------------------------
+#
+
+indent02() { sed 's/^/  /'; }
+
+#
+# Validate Shell  ------------------------------------------------------------
+#
+
+# test default shell, fail if not bash
+if [ ! -n "$BASH" ]
+  then
+        # shell other than bash 
+        echo "\nDefault shell appears to be something other than bash. \
+		Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+        exit $E_BADSHELL
+fi
+
+#
+#  choose region  ------------------------------------------------------------
 #
 
 # collect list of all current AWS Regions globally:
@@ -88,6 +120,9 @@ do
                   ;;
                 ap-northeast-1)
                   LOCATION="Asia Pacific (Tokyo, Japan)"
+		  ;;
+		ap-northeast-2)
+		  LOCATION="Asia Pacific (Seoul, Korea)"
                   ;;
                 ap-southeast-1)
                   LOCATION="Asia Pacific (Singapore)"
@@ -110,9 +145,9 @@ echo -ne ""    "RegionCode Location\n \
         ------------------- --------------------------------\n" > .header.tmp
 
 # print choices
-echo -e "${BOLD}Current AWS Regions Worldwide:${UNBOLD}\n"
-awk '{ printf "%-22s %-2s %-30s \n", $1, $2, $3}' .header.tmp
-awk '{ printf "%-4s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp
+echo -e "${BOLD}Current AWS Regions Worldwide:${UNBOLD}\n" | indent02
+awk '{ printf "%-22s %-2s %-30s \n", $1, $2, $3}' .header.tmp | indent02
+awk '{ printf "%-4s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
 
 # enter loop to validate range and type of user entry
 VALID=0 # set loop break
@@ -121,18 +156,18 @@ while [ $VALID -eq 0 ]
 do
 	# read instance choice in from user
 	echo ""
-	read -p "Select Region [$AWS_DEFAULT_REGION]: " CHOICE
+	read -p "  Select Region [$AWS_DEFAULT_REGION]: " CHOICE
 	echo ""
 
 	if [ -z "$CHOICE" ]
 	then
         	# CHOICE is blank, default region chosen
 	        # use the aws_default_region env variable
-        	echo -e "You Selected: "$AWS_DEFAULT_REGION"\n"
+        	echo -e "  You Selected: "$AWS_DEFAULT_REGION"\n"
 		VALID=1   # exit loop
 	else
 		# CHOICE is a value, check type and range
-		if [[ -n ${CHOICE//[0-9))]/} ]]
+		if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))))]/} ]]
         	then
                        # contains chars
                        echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
@@ -142,7 +177,7 @@ do
         	       then
                 	       # valid range, reset the aws default region to user choice momentarily
 		               AWS_DEFAULT_REGION=${REGIONS[$CHOICE]}
-	                       echo -e "You Selected: "$AWS_DEFAULT_REGION"\n"
+	                       echo -e "  You Selected: "$AWS_DEFAULT_REGION"\n"
         	               VALID=1   # exit loop
 		       else
 	                       # out of range 
@@ -176,8 +211,8 @@ do
 done
 
 # print choices
-echo -e "${BOLD}Operating Systems Available:${UNBOLD}\n"
-awk -F "  " '{ printf "%-4s %-20s \n", $1, $2}' .type.tmp
+echo -e "${BOLD}Operating Systems Available:${UNBOLD}\n" | indent02
+awk -F "  " '{ printf "%-4s %-20s \n", $1, $2}' .type.tmp | indent02
 
 # get user input while checking type and range
 VALID=0    # set loop break
@@ -186,12 +221,12 @@ while [ $VALID -eq 0 ]
 do
 	# read instance choice in from user
 	echo ""
-	read -p "Enter OS type [Linux/UNIX]: " CHOICE
+	read -p "  Enter OS type [Linux/UNIX]: " CHOICE
 	echo ""
 	
 	if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]
 	then
-		echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+		echo "  You must enter an integer number between 0 and $(( $MAXCT-1 ))."
 	else
 		VALID=1
 	fi
@@ -205,7 +240,7 @@ fi
     
 # set type
 TYPE=${OS[$CHOICE]}
-echo -e "You Selected: "$TYPE"\n"
+echo -e "  You Selected: "$TYPE"\n"
 
 
 # clean up
@@ -274,12 +309,12 @@ do
 done
 
 # print output
-echo -e "${BOLD}Choose from the following $TYPE EC2 instance types:\n${UNBOLD}"
+echo -e "${BOLD}Choose from the following $TYPE EC2 instance types:\n${UNBOLD}" | indent02
 echo -e "General Purpose  ""Compute Opt(Gen3)  ""Memory Optimized  ""Storage Optimized  " "Compute Opt(Gen4)" > .header.tmp
 echo -e "---------------  ""----------------  ""----------------  ""-----------------   ""-----------------" >> .header.tmp
-awk -F "  " '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' .header.tmp 
+awk -F "  " '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' .header.tmp | indent02 
 awk '{ printf "%-4s %-15s %-4s %-15s %-4s %-14s %-4s %-15s %-4s %-15s \n", \
-	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' data.output
+	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' data.output | indent02
 echo ""
 
 # clean up
@@ -288,7 +323,7 @@ rm ./.header.tmp
 
 # read instance choice in from user
 echo ""
-read -p "Enter Instance size # or hit return for all spot prices [all]: " CHOICE
+read -p "  Enter Instance size # or hit return for all spot prices [all]: " CHOICE
 echo ""
 
 # assign choice
@@ -300,7 +335,7 @@ then
 	
 	# print title header
 	echo -e "\n"
-        echo -e "${BOLD}Spot pricing for all EC2 instance types @ $AWS_DEFAULT_REGION:\n${UNBOLD}"
+        echo -e "  ${BOLD}Spot pricing for all EC2 instance types${UNBOLD} : $AWS_DEFAULT_REGION:\n"
 
 
 	# Place Future summary here for:  Region, OS, Instances (all instances)
@@ -316,15 +351,15 @@ then
 			#
 			# print column header
 			echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-			echo -e "-------------  ""----------  ""----------  ""--------   " >> .header.tmp
-			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp
+			echo -e "-------------  ""----------  ""----------  ""--------   " >> .header.tmp 
+			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                 	aws ec2 describe-spot-price-history  \
                         	--start-time "$NOW" \
 	                        --product-description "$TYPE" \
         	                --output text | \
                 	        sort -k +5n > .body.tmp     # Cut 1st col, sort by 5th col
-			awk -F " " '{printf "%-20s %-20s %-15s %-15s %-10s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84
+			awk -F " " '{printf "%-20s %-20s %-15s %-15s %-10s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
 	                  ;;
         	        
                         ap-*)
@@ -333,14 +368,14 @@ then
                         # print column header
                         echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
                         echo -e "---------------  ""----------  ""----------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +5n > .body.tmp      # Cut 1st col, sort by 5th col
-                        awk -F " " '{printf "%-20s %-20s %-15s %-15s %-10s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84
+                        awk -F " " '{printf "%-20s %-20s %-15s %-15s %-10s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
                           ;;
   
                 	*)
@@ -349,14 +384,14 @@ then
 		        # print column header
 		        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
 		        echo -e "----------  ""----------  ""----------  ""--------   " >> .header.tmp
-		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp
+		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
 			aws ec2 describe-spot-price-history  \
                 	        --start-time "$NOW" \
                         	--product-description "$TYPE" \
 	                        --output text | \
         	                sort -k +5n > .body.tmp
-			awk -F " " '{printf "%-20s %-15s %-15s %-15s %-10s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84
+			awk -F " " '{printf "%-20s %-15s %-15s %-15s %-10s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
 			;;
 		esac
 		;;
@@ -370,30 +405,30 @@ then
                         # print column header
                         echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
                         echo -e "-------------  ""----------  ""----------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +6n > .body.tmp      # Cut 1st col, sort by 4th col
-                        awk -F " " '{printf "%-20s %-20s %-15s %-3s %-10s %-15s \n", $1, $2, $3, $4, $5, $6}' .body.tmp | cut -c 22-84
+                        awk -F " " '{printf "%-20s %-20s %-15s %-3s %-10s %-15s \n", $1, $2, $3, $4, $5, $6}' .body.tmp | cut -c 22-84 | indent02
                           ;;
                         
 			ap-*)
-			# output formatting ap-northeast-1, ap-southeast-1, or ap-southeast-2
+			# output formatting ap-northeast-1&2, ap-southeast-1&2
 			#
 			# print column header
 			echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
 			echo -e "---------------  ""----------  ""----------  ""--------   " >> .header.tmp
-			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp
+			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +6n > .body.tmp      # Cut 1st col, sort by 4th col
-			awk -F " " '{printf "%-20s %-20s %-15s %-3s %-10s %-15s \n", $1, $2, $3, $4, $5, $6}' .body.tmp | cut -c 22-84
+			awk -F " " '{printf "%-20s %-20s %-15s %-3s %-10s %-15s \n", $1, $2, $3, $4, $5, $6}' .body.tmp | cut -c 22-84 | indent02
                           ;;
 
                         *)
@@ -402,14 +437,14 @@ then
 		        # print column header
 		        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
 		        echo -e "----------  ""----------  ""----------  ""--------   " >> .header.tmp
-		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp
+		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +6n > .body.tmp
-			awk -F " " '{printf "%-20s %-15s %-15s %-3s %-10s %-15s \n", $1, $2, $3, $4, $5, $6}' .body.tmp | cut -c 22-84
+			awk -F " " '{printf "%-20s %-15s %-15s %-3s %-10s %-15s \n", $1, $2, $3, $4, $5, $6}' .body.tmp | cut -c 22-84 | indent02
                         ;;
                 esac
 		;;	
@@ -422,7 +457,7 @@ then
                         # print column header
                         echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
                         echo -e "-------------  ""----------  ""-------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         # special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
@@ -430,14 +465,14 @@ then
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +5n > .body.tmp     # Cut 1st col, sort by 4th col
-	               awk -F " " '{printf "%-20s %-20s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84
+	               awk -F " " '{printf "%-20s %-20s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
                           ;;
 
-                        ap-northeast-1)
+                        ap-northeast-1 | ap-northeast-2)
 	                # print column header
         	        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
                 	echo -e "---------------  ""----------  ""-------  ""--------   " >> .header.tmp
-	                awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp
+	                awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
 			# special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
@@ -445,7 +480,7 @@ then
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +5n > .body.tmp     # Cut 1st col, sort by 4th col
-	               awk -F " " '{printf "%-20s %-20s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84
+	               awk -F " " '{printf "%-20s %-20s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
 
                           ;;
 
@@ -453,7 +488,7 @@ then
                         # print column header
                         echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
                         echo -e "---------------  ""----------  ""-------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         # special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
@@ -461,7 +496,7 @@ then
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +5n > .body.tmp     # Cut 1st col, sort by 4th col
-	               awk -F " " '{printf "%-20s %-20s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84
+	               awk -F " " '{printf "%-20s %-20s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
 
                           ;;
 
@@ -470,7 +505,7 @@ then
                         # print column header
                         echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
                         echo -e "---------------  ""----------  ""-------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         # special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
@@ -478,7 +513,7 @@ then
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +5n > .body.tmp     # Cut 1st col, sort by 4th col
-	               awk -F " " '{printf "%-20s %-20s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84
+	               awk -F " " '{printf "%-20s %-20s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
 
                           ;;
 
@@ -488,13 +523,13 @@ then
                         # print column header
                         echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
                         echo -e "----------  ""----------  ""-------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-15s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp
+                        awk -F " " '{ printf "%-15s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
                         aws ec2 describe-spot-price-history  \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
                                 sort -k +5n > .body.tmp     # Cut 1st col, sort by 4th col
-	               	awk -F " " '{printf "%-15s %-15s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 18-80
+	               	awk -F " " '{printf "%-15s %-15s %-15s %-13s %-15s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 18-80 | indent02
                           ;;
 		esac
 		  ;;
@@ -515,5 +550,8 @@ else
 fi
 
 # <-- end -->
+
+# line feed
+echo -e "\n"
 
 exit 0

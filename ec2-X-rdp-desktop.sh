@@ -4,7 +4,7 @@
 #                                                                         | 
 #                                                                         |
 #  Author:   Blake Huber                                                  |
-#  Purpose:  Starts remote desktop instance and logs in via rdp           |
+#  Purpose:  CLI utility for startup and login of RDP windows instance    |
 #  Name:     ec2-X-rdp-desktop.sh                                         |
 #  Location: $EC2_REPO                                                    |
 #  Requires: awscli, jq (JSON parser), windows EC2 with rdp enabled       |
@@ -32,8 +32,6 @@
 # Definitions:
 #	- EC2 m4.large instance is RDP target
 #	- OS is Windows Server 2008 R2
-#	- Data volume is encrypted [D:\]
-#	- Licensed copy of Office 2013 installed
 
 #
 # <-- start -->
@@ -48,17 +46,36 @@ E_BADSHELL=7		# exit code if incorrect shell detected
 E_NETWORK_ACCSS=8	# exit code if no network access to target instance
 PROGRESSMSG="EC2 instance starting.  Please wait... "
 
+# set fs pointer to writeable temp location in memory
+if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]
+then
+        TMPDIR="/dev/shm"
+        cd $TMPDIR     
+else
+        TMPDIR="/tmp"
+        cd $TMPDIR 
+fi
 
-# test default shell, fail if debian default (dash)
-case "$SHELL" in
-  *dash*)
-        # shell is ubuntu default, dash
-        echo "\nDefault shell appears to be dash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+#
+# functions  -----------------------------------------------------------------
+#
+
+#
+# Validate Shell  ------------------------------------------------------------
+#
+
+# test default shell, fail if not bash
+if [ ! -n "$BASH" ]
+  then
+        # shell other than bash 
+        echo "\nDefault shell appears to be something other than bash. Please rerun with bash. Exiting. Code $E_BADSHELL\n"
         exit $E_BADSHELL
-  ;;
-esac
+fi
 
-# spinner progress marker function
+#
+# spinner progress marker function  ------------------------------------------
+#
+
 spinner()
 {
     local pid=$!
@@ -75,7 +92,7 @@ spinner()
 }
 
 #
-# network access check -------------------------------------------------
+# network access check -------------------------------------------------------
 #
 
 echo -e "\nChecking Network Access.  Please wait ..."
@@ -137,7 +154,7 @@ if [ -f /etc/debian_version ]; then
 	done
 
 	# print choices
-	echo -e "\n${BOLD}Select an RDP Session Window Size:${UNBOLD}\n"
+	echo -e "\n\n${BOLD}Select an RDP Session Window Size:${UNBOLD}\n"
 	awk -F "  " '{ printf "%-4s %-20s \n", $1, $2}' .type.tmp
 
 	# get user input while checking type and range
