@@ -47,7 +47,7 @@ may work with other shells; however, your mileage may vary.
 
 ![](./images/ec2i_running-instances.png)
 
-(See [Screenshots](#Screenshots) section below)
+(See [Screenshots](#screenshots) section below)
 
 * * *
 
@@ -235,7 +235,7 @@ You'll need appropriate IAM permissions to execute these scripts.  Quickview scr
 
 ```
 
-* #### Execute Script Required Permissions 
+#### Execute Script Required Permissions 
 Execute scripts (marked with an "X" in the filename), require additional permissions in addition to the above to actually affect changes to your infrastructure:
 
 ```json
