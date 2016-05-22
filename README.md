@@ -9,7 +9,7 @@
 * [Configuration](#configuration)
 * [Permissions](#iam-permissions)
 * [Screenshots](#screenshots)
-* [Aliases (optional)](#aliases-(\optional)\)
+* [Aliases (optional)](#aliases)
 * [Contribution Guidelines](#contribution-guidelines)
 * [Contact](#contact)
 
@@ -143,7 +143,7 @@ may work with other shells; however, your mileage may vary.
 	$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 ```
 
-* Setup shortcut aliases (optional, see [Aliases (optional)](#Aliases) below)
+* Setup shortcut aliases (optional, see [Aliases (optional)](#aliases) below)
 
 * * *
 
@@ -269,9 +269,9 @@ You can grab the quickview policy [here](./policies/iampolicy-EC2-quickview.json
 
 * * *
 
-## Aliases (Optional) ##
+## Aliases ##
 
-Add the following to your .bash_profile or .bashrc as convenient cli shortcuts:
+This section is optional. Add the following to your .bash_profile or .bashrc as convenient cli shortcuts:
 ```bash
 # User Aliases - AWS
 alias ec2a="sh $EC2_REPO/ec2-qv-AMIs.sh"                 # list of AMIs
