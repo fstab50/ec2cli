@@ -9,8 +9,8 @@
 * [Configuration](#configuration)
 * [Permissions](#iam-permissions)
 * [Screenshots](#screenshots)
-* [Aliases (optional)](#aliases)
-* [Contribution Guidelines](#contribution)
+* [Aliases (optional)](#aliases-(optional))
+* [Contribution Guidelines](#contribution-guidelines)
 * [Contact](#contact)
 
 * * *
