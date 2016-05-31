@@ -25,8 +25,10 @@
 # set vars
 #
 
-BOLD=`tput bold`
-UNBOLD=`tput sgr0`		
+BOLD=`tput bold`              # output formatting
+UNBOLD=`tput sgr0`	      # output formatting	
+white=$(tput setaf 7)         # output formatting
+reset=$(tput sgr0)            # output formatting
 E_BADSHELL=7                  # exit code if incorrect shell detected
 E_BADARG=8                    # exit code if bad input parameter		
 REGION=$AWS_DEFAULT_REGION    # set region from global env var
@@ -100,7 +102,7 @@ then
 	if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ "$1" == "--h" ]
 	then
 		# help menu requested
-		printf "\n  ${BOLD}Help Contents: ${UNBOLD}\n\n" 
+		printf "\n  ${white}${BOLD}Help Contents: ${UNBOLD}${reset}\n\n" 
 		echo -e "  [--help | -h] :  this menu"
 		echo -e "  [region code] :  Instances details for specified alternate region"
 		echo -e "  [no arg]      :  Instance details for region specified by AWS_DEFAUT_REGION env variable\n"
@@ -135,7 +137,7 @@ fi
 # <-- start -->
 
 # print region identifier
-printf "\n\n${BOLD}EC2 Instances${UNBOLD} : $REGION\n\n\n" | indent18
+printf "\n\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n\n" | indent18
 
 # pull json info, all instances
 aws ec2 describe-instances --region $REGION > .jsonoutput.tmp
@@ -227,7 +229,7 @@ then
     	    $1, $2, $3, $4, $5, $6, $7, $8, $9}' .body.tmp | indent02
 
     	# print footer
-    	printf "\n\nTotal Instances [$REGION]: ${BOLD}$MAXCT${UNBOLD}    ($r currently running)\n\n" | indent10
+    	printf "\n\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}    ($r currently running)\n\n" | indent10
 
 else
 	# no running instances, eliminate PublicIP and RunTime columns, print header
@@ -257,7 +259,7 @@ else
 			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .body.tmp | indent02
 
 	# print footer
-	printf "\n\nTotal Instances [$REGION]: ${BOLD}$MAXCT${UNBOLD}    *No running instances.\n\n" | indent10
+	printf "\n\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}    *No running instances.\n\n" | indent10
 
 fi
 
