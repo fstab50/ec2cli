@@ -17,9 +17,10 @@
 
 ## About this repository 
 
-* Purpose:  	CLI utilities for use with Amazon Web Services (AWS)
-* Version:	05/2016
-* Repo: 	[ec2cli] https://blakeca00@bitbucket.org/blakeca00/ec2cli.git 
+* Purpose:      CLI utilities for use with Amazon Web Services (AWS)
+* Version:      05/2016
+* Repo:         [ec2cli] https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+* Mirror repo located at: https://github.com/t-stark/ec2cli 
 
 * * *
 
@@ -34,11 +35,11 @@
 
 EC2cli Utilities were developed to make life easier when working with AWS services
 in a cli environment.  The scripts utilize AWS' cli tools to enable you to send signed 
-requests to Amazon's API to perform uses cases previously performed using the 
-console interface.  Using these will save time and effort to perform operations
+requests to Amazon's API to perform uses cases typically accomplished using the 
+console interface.  EC2cli will save time and effort to perform operations
 such as taking a snapshot or listing which EC2 instances are running.
 
-That being said, the scripts in this repo are designed for use with relatively low AWS resource counts.  In other words, if you are operating at scale and have 1000 EBS volumes, these will prove cumbersome since are no embedded filtering capabilities (if you would like to contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you have already developed your own tools for managing and operating AWS resources in a commercial environment.
+That being said, the scripts in this repo are designed for use with relatively low AWS resource counts.  If you are operating at scale, these will prove cumbersome since are no embedded filtering capabilities (if you would like to contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you have already developed your own tools for managing and operating AWS resources in a commercial environment.
 
 While I realize that accomplishing the same functionality these scripts provide is far easier with the AWS ruby or python SDK's, I developed these in bash to make them easy for system administrators and solution architects to modify for their particular use cases.
 
