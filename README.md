@@ -6,10 +6,10 @@
 * [Contents](#contents)
 * [Installation](#installation)
 * [Configuration](#configuration)
+* [Aliases](#aliases)
 * [Permissions](#iam-permissions)
 * [Usage](#usage)
 * [Screenshots](#screenshots)
-* [Aliases (optional)](#aliases)
 * [Contribution Guidelines](#contribution-guidelines)
 * [Contact](#contact)
 
@@ -172,6 +172,23 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 ```
 
 * * *
+
+## Aliases ##
+
+This section is optional. Add the following to your .bash_profile or .bashrc as convenient cli shortcuts:
+```bash
+# Shortcut Aliases - AWS
+alias ec2a="$EC2_REPO/ec2cli -a list"      # list of Amazon Machine Images, default region
+alias ec2i="$EC2_REPO/ec2cli -i list"      # list of EC2 instances, default region
+alias ec2s="$EC2_REPO/ec2cli -s list"      # list of snapshots, default region
+alias ec2g="$EC2_REPO/ec2cli -g list"      # list of security groups, default region
+alias ec2b="$EC2_REPO/ec2cli -b list"      # list of subnets, default region
+alias ec2v="$EC2_REPO/ec2cli -v list"      # list of Elastic Block Store Volumes, default region
+alias ec2n="$EC2_REPO/ec2cli -n list"      # list of VPCs, default region
+alias awsnet="$EC2_REPO/ec2cli -N list"    # complete networking configuration, default region
+```
+
+* * *
  
 ## IAM Permissions ##
 
@@ -230,22 +247,6 @@ You'll need appropriate IAM permissions to execute ec2cli.
 
 You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
 
-* * *
-
-## Aliases ##
-
-This section is optional. Add the following to your .bash_profile or .bashrc as convenient cli shortcuts:
-```bash
-# Shortcut Aliases - AWS
-alias ec2a="$EC2_REPO/ec2cli -a list"      # list of Amazon Machine Images, default region
-alias ec2i="$EC2_REPO/ec2cli -i list"      # list of EC2 instances, default region
-alias ec2s="$EC2_REPO/ec2cli -s list"      # list of snapshots, default region
-alias ec2g="$EC2_REPO/ec2cli -g list"      # list of security groups, default region
-alias ec2b="$EC2_REPO/ec2cli -b list"      # list of subnets, default region
-alias ec2v="$EC2_REPO/ec2cli -v list"      # list of Elastic Block Store Volumes, default region
-alias ec2n="$EC2_REPO/ec2cli -n list"      # list of VPCs, default region
-alias awsnet="$EC2_REPO/ec2cli -N list"    # complete networking configuration, default region
-```
 * * *
 
 ## Usage ##
