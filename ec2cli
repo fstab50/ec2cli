@@ -1,0 +1,1502 @@
+#!/bin/bash
+#_________________________________________________________________________
+#                                                                         | 
+#                                                                         |
+#  Author:   Blake Huber                                                  |
+#  Purpose:  Display details AWS ec2 resources from cli environment       |  
+#  Name:     ec2cli                                                       |
+#  Location: $EC2_REPO                                                    |
+#  Requires: awscli, awk, sed, jq                                         |
+#  Environment Variables (required, global):                              |
+#            SSH_KEYS                                                     |
+#            AWS_ACCESS_KEY                                               |
+#            AWS_SECRET_KEY                                               |
+#            AWS_DEFAULT_REGION                                           |
+#		     REMOTE_RDP_PASSWD                                            |
+#  User:     $user                                                        |
+#  Output:   CLI                                                          |
+#  Error:    stderr                                                       |
+#  Log:  $script_path/logs/                                               |
+#                                                                         |
+#_________________________________________________________________________|
+
+#	
+# global variables
+#
+pkg="ec2cli"
+version="0.7"
+script_path=$(cd $(dirname $0); pwd -P)
+ec2cli_log="$script_path/logs/ec2cli.log"
+host=$(hostname)
+E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
+E_NOLOG=2                     # exit code if failure to create log dir, log file
+E_BADSHELL=3                  # exit code if incorrect shell detected
+E_USER_CANCEL=7               # exit code if user cancel
+E_BADARG=8                    # exit code if bad input parameter		
+E_NETWORK_ACCESS=9            # exit code if no network access from current location
+E_MISC=11                     # exit code if miscellaneous (unspecified) error
+
+# create log dir for ec2cli
+if [[ ! -d $script_path/logs ]]; then
+    if ! mkdir -p "$script_path/logs"; then
+        echo "$pkg: failed to make log directory: $script_path/logs"
+        exit $E_NOLOG
+    fi
+fi
+
+#
+# Formatting
+# 
+blue=$(tput setaf 4)
+cyan=$(tput setaf 6)
+green=$(tput setaf 2)
+purple=$(tput setaf 5)
+red=$(tput setaf 1)
+white=$(tput setaf 7)
+yellow=$(tput setaf 3)
+reset=$(tput sgr0)
+#
+BOLD=`tput bold`              
+UNBOLD=`tput sgr0`           
+
+# indent 
+indent02() { sed 's/^/  /'; }
+indent10() { sed 's/^/          /'; }
+indent15() { sed 's/^/               /'; }
+indent18() { sed 's/^/                  /'; }
+
+#
+# system functions  ------------------------------------------------------
+#
+
+function ec2cli-help(){
+  cat <<EOM
+
+ Help Contents
+
+   ${white}${BOLD}Usage${UNBOLD}${reset} : ec2cli [OPTION] [COMMAND] [REGIONCODE] 
+
+   ${white}${BOLD}Options${UNBOLD}${reset} :
+     -a, --images       Amazon Machine Image (AMI) details for region
+     -b, --subnets      Virtual Private Cloud (VPC) Subnet details
+     -g, --sgroups      Security Group details for region
+     -h, --help         Output this message
+     -i, --instances    EC2 Instance details for region
+     -n, --vpc          Virtual Private Cloud (VPC) Network details for region
+     -N, --network      All network details for region
+     -s, --snapshots    Snapshot details for region    
+     -t, --tags         Tags details for EC2 sub services (all regions)
+     -v, --volumes      Elastic Block Store (EBS) Volume details for region
+  
+   ${white}${BOLD}Commands${UNBOLD}${reset} (optional) : 
+     list               List aws resource details [DEFAULT]
+     attach             Attach/ Detach aws resource 
+     create             Create new aws resource
+     run                Run/ start existing aws resource
+
+   ${white}${BOLD}Region Codes${UNBOLD}${reset} (optional) : 
+     ap-northeast-1     Asia Pacific (Tokyo, Japan)       
+     ap-northeast-2     Asia Pacific (Seoul, Korea)      
+     ap-south-1         Asia Pacific (Mumbai, India)
+     ap-southeast-1     Asia Pacific (Singapore)       
+     ap-southeast-2     Asia Pacific (Sydney, Austrailia) 
+     eu-central-1       Europe (Frankfurt, Germany)       
+     eu-west-1          Europe (Ireland)          
+     sa-east-1          South America (Sao Paulo, Brazil)
+     us-east-1          United States (N. Virgina)   
+     us-west-1          United States (N. California)    
+     us-west-2          United States (Oregon)  
+
+     If region code omitted, defaults to AWS default region 
+    
+   For additional help, see https://bitbucket.org/blakeca00/ec2cli/overview
+
+EOM
+}
+
+function ec2cli-help-command-attach(){
+    cat <<EOM
+
+  COMMAND : ${BOLD}${white}attach${UNBOLD}${reset}
+
+    The ${BOLD}${white}attach${UNBOLD}${reset} command can be used with the following options:
+     -v, --volumes      Attach (Detach) EBS Volume to (from) an existing instance
+
+EOM
+}
+
+function ec2cli-help-command-create(){
+    cat <<EOM
+
+  COMMAND : ${BOLD}${white}create${UNBOLD}${reset}
+
+    The ${BOLD}${white}create${UNBOLD}${reset} command can be used with the following options:
+     -a, --images       Create an Amazon Machine Image (AMI) from an EC2 instance
+     -s, --snapshots    Create a snapshot from an EBS Volume
+     -v, --volumes      Create an EBS Volume from a snapshot
+
+EOM
+}
+
+function ec2cli-help-command-run(){
+    cat <<EOM
+
+  COMMAND : ${BOLD}${white}run${UNBOLD}${reset}
+
+    The ${BOLD}${white}run${UNBOLD}${reset} command can be used with the following options:
+     -i, --instances    Run/ Login to EC2 instances in specified region
+     
+EOM
+}
+
+function ec2cli-logger(){
+    local msg="$1"
+    if [[ ! $ec2cli_log ]]; then
+        echo "$pkg: cannot call ec2cli-logger with ec2cli_log undefined"
+        exit $E_NOLOG
+    fi
+    echo "$(date +'%b %d %T') $host $pkg: $msg" >> "$ec2cli_log"
+}
+
+function ec2cli-message(){
+    local msg="$1"
+    ec2cli-logger "INFO: $msg"
+    [[ $quiet ]] && return
+    shift
+    pref="----"
+    if [[ $1 ]]; then
+        pref="${1:0:4}"
+        shift
+    fi
+    echo -e "\n${yellow}[ $cyan$pref$yellow ]$reset  $msg\n"
+}
+
+function ec2cli-error(){
+    local msg="$1"
+    ec2cli-logger "ERROR: $msg"
+    echo -e "\n${yellow}[ ${red}ERRR$yellow ]$reset  $msg\n"
+}
+
+function ec2cli-error-exit(){
+    local msg="$1"
+    local status="$2"
+    ec2cli-error "$msg"
+    exit $status
+}
+
+function ec2cli-precheck(){
+    #
+    ## test default shell ##
+    if [ ! -n "$BASH" ]; then
+        # shell other than bash 
+        ec2cli-error-exit "Default shell appears to be something other than bash. Please rerun with bash. Aborting (code $E_BADSHELL)" $E_BADSHELL
+    fi
+    ## set fs pointer to writeable temp location ##
+    if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]; then
+            # in-memory
+            TMPDIR="/dev/shm"
+            cd $TMPDIR     
+    else
+            TMPDIR="/tmp"
+            cd $TMPDIR 
+    fi
+    ## check for required cli tools ##
+    for prog in aws ssh dig; do
+        if ! type "$prog" > /dev/null 2>&1; then
+            ec2cli-error-exit "$prog is required and not found in the PATH. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+        fi
+    done
+    ## check if awscli tools are configured ##
+    if [[ ! -f $HOME/.aws/config ]]; then
+        ec2cli-error-exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+    fi
+    ## validate aws default region set (Must be located after awscli config check) ##
+    if [[ $(env | grep AWS_DEFAULT_REGION) ]]; then
+	   REGION=$AWS_DEFAULT_REGION
+    else
+        # global env not set, check aws default region setting
+        REGION=$(aws configure list | grep region | awk '{print $2}')
+    fi
+    ## check for jq, use system installed version if found, otherwise use bundled ##
+    if which jq > /dev/null; then
+        jq=$(which jq)
+    else
+        jq="assets/jq/$system/jq"
+        if [[ ! -f $jq ]]; then
+            ec2cli-error-exit "no viable jq binary found, Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+        fi
+    fi
+    ## check global environment variables, linux instances ##
+	if [[ ! $(env | grep SSH_KEYS) ]]; then
+		#
+		# path to ec2 .pem files not found, auto-login \
+		# to instances will fail when attempted
+		#
+		ec2cli-error "SSH_KEYS environment variable not set. Option -r, --run will fail." $E_DEPENDENCY
+	fi
+    #
+    # <-- end function ec2cli-precheck -->
+    #
+}
+
+function ec2cli-precheck-windows(){
+	#
+	# Linux client RDP login deps
+	#
+	# check global environment variables, windows instances
+	if [[ ! $(env | grep REMOTE_RDP_PASSWD) ]]; then
+		#
+		# RDP password not found, auto-login to windows \
+		# instances via RDP will fail when attempted
+		#
+		ec2cli-error-exit "REMOTE_RDP_PASSWD global environment variable not set. Login to RDP EC2 instances will fail. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+	fi
+
+    # check RDP for accessing windows instances from Linux
+	if ! type rdesktop > /dev/null 2>1; then
+		#
+		# RDP app not found, auto-login to windows \
+		# instances via RDP will fail when attempted
+		#
+		ec2cli-error-exit "rdesktop app not found. Login to RDP EC2 instances will fail. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+	fi
+    #
+    # <-- end function ec2cli-precheck-windows -->
+    #	
+}
+
+function ec2cli-convert-time(){
+    # time format refactor
+    num=$1
+    min=0
+    hour=0
+    day=0
+    if((num>59));then
+        ((sec=num%60))
+        ((num=num/60))
+        if((num>59));then
+            ((min=num%60))
+            ((num=num/60))
+            if((num>23));then
+                ((hour=num%24))
+                ((day=num/24))
+            else
+                ((hour=num))
+            fi
+        else
+            ((min=num))
+        fi
+    else
+        ((sec=num))
+    fi
+    echo "$day"d,"$hour"h,"$min"m  
+    #
+    # <-- end function ec2cli-convert-time -->
+    #
+}
+
+function ec2cli-attach-volume(){
+    # vars
+    local CHOICE              # user selection
+    local DEFAULTDEV          # default device
+    local DEVICE
+    local tmpVOLID
+    local tmpINSTANCEID
+    local INSTANCEID
+    local REGION=$1
+    local MAXCT               # array length
+    local msg                 # msg string
+    local VALID               # loop break
+    local VOLID
+
+    ## choose volume ##---------------------------------------------------
+    echo -e "\n${BOLD}Volume choices: ${UNBOLD}$REGION\n" | indent18
+    ec2cli-volumes $REGION > .text-output0.tmp
+    grep "vol-" .text-output0.tmp > .text-output1.tmp 
+
+    # Use built-in IFS to read in all lines in tmp file
+    IFS=$'\n' read -d '' -r -a VOLUMES < .text-output1.tmp
+
+    # array max length
+    MAXCT=${#VOLUMES[*]} # keep in mind, IFS starts array index at 0
+
+    # load output choice array
+    i=0  
+    while (( i < $MAXCT )); do
+            echo "($i): ""${VOLUMES[$i]}" >> .arrayoutput.tmp
+            i=$(( $i+1 ))
+    done
+
+    # header display choices from array
+    echo -e "\n     VolumeID      GB  State     Attached  InstanceId  VolType   Avail-Zone  Description"
+    echo -e "     ------------  --  --------  --------  ----------  --------  ----------  ----------------------------"
+
+    # values
+    awk  '{ printf "%-4s %-13s %-3s %-9s %-9s %-11s %-9s %-11s %-2s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' .arrayoutput.tmp
+
+    # Enter control structure to get user selection and validate
+    VALID=0 # set loop break
+
+    while [ $VALID -eq 0 ]; do
+        # read volume choice in from user
+        echo ""
+        read -p "Enter # of choice or hit return for default [0]: " CHOICE
+        echo ""
+            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+            # invalid user entry
+                    echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+            else
+                    # valid user entry, exit loop
+                    VALID=1
+            fi
+    done
+
+    # assign volume to choice
+    if [ -z "$CHOICE" ]; then
+            # CHOICE is blank, assign to default
+            CHOICE=0
+    fi
+
+    tmpVOLID=${VOLUMES[$CHOICE]}
+    VOLID=$(echo $tmpVOLID | cut -c 1-12)
+    echo "Volume "$VOLID" chosen."
+
+    # clean up
+    rm .text-output0.tmp .text-output1.tmp .arrayoutput.tmp
+
+    ## choose instance ## ------------------------------------------------
+    echo -e "\n${BOLD}EC2 Instance choices: ${UNBOLD}$REGION\n" | indent18
+    ec2cli-instances $REGION > .text-output0.tmp
+    grep "i-" .text-output0.tmp > .text-output1.tmp
+
+    # Use built-in IFS to read in all lines in tmp file
+    IFS=$'\n' read -d '' -r -a INSTANCES < .text-output1.tmp
+
+    # array max length
+    MAXCT=${#INSTANCES[*]} # keep in mind, IFS starts array index at 0
+
+    # load output choice array
+    i=0
+    while (( i < $MAXCT )); do
+            echo "($i): ""${INSTANCES[$i]}" >> .arrayoutput.tmp
+            i=$(( $i+1 ))
+    done
+
+    # header to display choices from array
+    echo -e "\n     InstanceId    Type     State    SecurityGroup    Root-Volume     Version"
+    echo -e "     ----------- ---------  -------  --------------   ------------   ---------" 
+
+    # values
+    awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-14s %-9s \n", \
+        $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp
+
+    # Enter control structure to get user selection and validate
+    VALID=0 # loop break
+    while [ $VALID -eq 0 ]; do
+            # read volume choice in from user
+            echo ""
+            read -p "Enter # of choice or hit return for default [0]: " CHOICE
+            echo ""
+            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+                    # invalid user entry
+                    echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+            else
+                    # valid user entry, exit loop
+                    VALID=1
+            fi
+    done
+
+    # assign volume to choice
+    if [ -z "$CHOICE" ]; then
+            # CHOICE is blank, assign to default
+            CHOICE=0
+    fi
+
+    tmpINSTANCEID=${INSTANCES[$CHOICE]}
+    INSTANCEID=$(echo $tmpINSTANCEID | cut -c 1-10)
+    echo -e "Instance "$INSTANCEID" chosen.\n"
+
+    # clean up
+    rm .text-output0.tmp .text-output1.tmp .arrayoutput.tmp
+
+    ## choose device ## --------------------------------------------------
+    read -p  "Enter device to mount to [/dev/sda1]:  " DEVICE
+    DEFAULTDEV="/dev/sda1"
+
+    if [ -z "$DEVICE" ]
+    then
+      DEVICE=$DEFAULTDEV
+    else
+      DEVICE=$DEVICE
+    fi
+
+    # execute
+    echo -e "\nAttaching volume.....\n"
+    aws ec2 attach-volume \
+        --volume-id $VOLID \
+        --instance-id $INSTANCEID \
+        --device $DEVICE \
+        --output table
+    ## FIXME: capture error conditions if attach fails
+    ## send to $msg
+
+    # log and exit
+    if [[ "cat $msg | grep error" ]]; then
+        # errors while attaching
+        ec2cli-error-exit "$msg" $E_MISC
+    else
+        ec2cli-message "Volume $VOLID attached to instance $INSTANCEID in region $REGION." INFO
+    fi
+    #
+    # <-- end function ec2cli-attach-volume -->
+    #   
+}
+
+function ec2cli-create-snapshot(){
+    # vars
+    local REGION=$1
+    local NOW="$(date +"%Y-%m-%d")"
+    local PROGRESSMSG="EC2 Snapshot Started.  Please wait... "
+    #
+    # choose volume ------------------------------------------------------
+    #
+    # display volumes associated with default zone for user's AWS account
+    sh $EC2_REPO/ec2-qv-volumes.sh    # includes header
+
+    echo -e "\nEnter the # of the volume of which you wish to take a snapshot."
+
+    # collect list of all current AWS Regions globally:
+    aws ec2 describe-volumes \
+            --output text \
+            --query 'Volumes[*].[VolumeId]' \
+    >> .create-snapshot.tmp
+
+    # Use built-in IFS to read in all lines in tmp file
+    IFS=$'\n' read -d '' -r -a VOLUMES < .create-snapshot.tmp
+
+    # array max length
+    MAXCT=${#VOLUMES[*]} # keep in mind, IFS starts array index at 0
+
+    # load output choice array
+    i=0  
+    while (( i < $MAXCT )); do
+            echo "($i): ""${VOLUMES[$i]}" >> .arrayoutput.tmp
+            i=$(( $i+1 ))
+    done
+
+    # display choices from array
+    cat .arrayoutput.tmp
+
+    # read volume choice in from user
+    echo ""
+    read -p "Enter # of choice or hit return for default [0]: " CHOICE
+    echo ""
+
+    # assign volume to choice
+    if [ -z "$CHOICE" ]; then
+            # CHOICE is blank, assign default
+            CHOICE=0
+    fi
+
+    VOLID=${VOLUMES[$CHOICE]}
+    echo "You chose to create a snapshot of Volume $VOLID."
+
+    # clean up
+    rm .create-snapshot.tmp .arrayoutput.tmp
+
+    #
+    # create snapshot ----------------------------------------------------
+    #
+    # description = concatenate volume date + Name tag
+    NAMETAG=$(aws ec2 describe-volumes \
+            --volume-id  $VOLID \
+            --query 'Volumes[*].[Tags[0].Value]' \
+            --output text)
+
+    DESCRIPTION=$NOW", ""$NAMETAG"
+
+    # start snapshot
+    aws ec2 create-snapshot --volume-id $VOLID --description "$DESCRIPTION" | jq . 
+
+    # progress meter while wait, inspect snapshot for VOLID
+    aws ec2 wait snapshot-completed --filters Name="volume-id",Values=$VOLID &
+
+    # call function to show on screen while wait
+    ec2cli-spinner  
+
+    # log and exit
+    ec2cli-message "Snapshot created $NOW in region $REGION." INFO
+    #
+    # <-- end function ec2cli-create-snapshot -->
+    #
+}
+
+function ec2cli-instances(){
+    # vars
+    local TOTAL             # region EC2 instance count
+    local REGION=$1         # region identifier
+    local NOW               # date, formatted
+    local LAUNCHTIME        # date/time launched from json object
+    local EPOCHLT           # LAUNCHTIME in epoch seconds
+    local RUNSECS           # runtime in sec
+    local MAXCT             # max length of array (json object)
+
+    # print region identifier
+    printf "\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n" | indent18
+
+    # pull json info, all instances in region
+    aws ec2 describe-instances --region $REGION > .jsonoutput.tmp
+
+    # load fields into respective arrays
+    ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
+    ARR_IP=( $(jq -r '.Reservations[].Instances[].PublicIpAddress' .jsonoutput.tmp) )
+    ARR_LT=( $(jq -r '.Reservations[].Instances[].LaunchTime' .jsonoutput.tmp) )
+    ARR_ID=( $(jq -r '.Reservations[].Instances[].InstanceId' .jsonoutput.tmp) )
+    ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' .jsonoutput.tmp) )
+    ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' .jsonoutput.tmp) )
+    # limit security grp name to 15 chars
+    ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' .jsonoutput.tmp | cut -c 1-15) )
+    # limit length of tag fields to 20 chars
+    ARR_TAG=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+    # count instances found
+    MAXCT=${#ARR_STATE[*]} 
+
+    #
+    # test, running instances
+    #
+    if [ "$(printf '%s\n' "${ARR_STATE[@]}" | grep "running")" ]; then
+        #
+        # at least 1 running instance found, calc runtime
+        i=0     # counter
+        r=0     # running instance count
+
+        while (( i < $MAXCT )); do
+            if [ "${ARR_STATE[$i]}" == "running" ]; then
+                # calc now in UTC epoch seconds
+                NOW=$(date -u +%s)
+
+                # calc launchtime
+                LAUNCHTIME="${ARR_LT[$i]}"
+                EPOCHLT=$(date -d"$LAUNCHTIME" +%s)
+                RUNSECS=$(( $NOW-$EPOCHLT ))    # runtime (seconds)
+                RT[$i]=$(ec2cli-convert-time $RUNSECS)
+                # track # running instances
+                r=$(( $r+1 ))
+            else
+                # if not running, blank runtime
+                RT[$i]="-"
+            fi
+            # convert public IP format
+            if [ "${ARR_IP[$i]}" == "null" ]; then
+                # alter IP format
+                ARR_IP[$i]="None"
+            fi
+            i=$(( $i+1 ))    # incr counter
+        done
+
+        # print header
+        echo -ne "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime Tag\n \
+            ----------  ---------  ---------- --------------    ------------   \
+            --------------  -----------   --------------------\n" > .body.tmp
+        #
+        # output table of json array
+        #
+        i=0
+        while (( i < $MAXCT )); do
+            echo "${ARR_ID[$i]}  ${ARR_TYPE[$i]}  ${ARR_STATE[$i]} ${ARR_SG[$i]}  \
+                  ${ARR_DEV[$i]}  ${ARR_IP[$i]}  ${RT[$i]}  ${ARR_TAG[$i]}" >> .body.tmp
+            i=$(( $i+1 ))
+        done
+        #
+        # print and format output
+        #
+        awk  '{ printf "%-11s %-10s %-11s %-15s %-13s %-15s %-12s %-2s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9}' .body.tmp | indent02
+        # print footer
+        printf "\n\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}    ($r currently running)\n\n" | indent10
+    else
+        # no running instances, eliminate PublicIP and RunTime columns, print header
+        echo -ne "InstanceId* Type State SecurityGroup Root-Volume Tag\n \
+            ---------- --------- ---------- -------------- ------------ \
+            --------------------\n" > .body.tmp
+        #
+        # output table of json array
+        #
+        i=0
+        while (( i < $MAXCT )); do
+            echo "${ARR_ID[$i]} ${ARR_TYPE[$i]} ${ARR_STATE[$i]} ${ARR_SG[$i]} \
+                  ${ARR_DEV[$i]} ${ARR_TAG[$i]}" >> .body.tmp
+            # incr ct     
+            i=$(( $i+1 ))
+        done
+            # print and format output
+            awk  '{ printf "%-11s %-10s %-11s %-16s %-13s %-10s %-2s %-2s %-2s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .body.tmp | indent02
+
+        # print footer
+        printf "\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}    *No running instances.\n\n" | indent10
+
+    fi
+
+    # clean up
+    rm .body.tmp .jsonoutput.tmp
+
+    #
+    # <-- end function ec2cli-instances -->
+    #
+}
+
+function ec2cli-images(){
+    # vars
+    local REGION=$1
+    local TOTAL
+
+    # print region identifier
+    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n\n" | indent18
+
+    # print header
+    echo -ne "AMI-id Type vType Drv RootDev SnapshotId Description\n \
+            ------------ ------- ----------- --- --------- ------------- \
+            --------------------------------------\n" > .ec2-qv-amis.tmp
+
+    # output from aws
+    aws ec2 describe-images \
+        --owner self \
+        --output text \
+        --region $REGION \
+        --query "Images[*]. \
+            [ImageId, \
+            ImageType, \
+            VirtualizationType, \
+            RootDeviceType, \
+            RootDeviceName, \
+            BlockDeviceMappings[0].Ebs.SnapshotId, \
+            Description]" \
+    >> .ec2-qv-amis.tmp
+
+    # count total
+    TOTAL=$(cat .ec2-qv-amis.tmp | grep ami | wc -l)
+
+    # print and format output
+    awk  '{ printf "%-13s %-8s %-12s %-4s %-10s %-14s %-2s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-amis.tmp | indent02
+
+    # print footer
+    printf "\nTotal AMI Count [$REGION]: ${white}${BOLD}$TOTAL${UNBOLD}${reset}\n\n" | indent18
+
+    # clean up
+    rm .ec2-qv-amis.tmp
+    #
+    # <-- end function ec2cli-images -->
+    #
+}
+
+function ec2cli-rdp-login(){
+	# vars
+	local CHOICE                     # user selection variable
+	local i                          # loop counter
+	local IPADDRESS=$2               # public IP address of RDP windows instance
+	local MAXCT                      # array size
+	local SIZE="90%"                 # RDP session win size relative to client resolution
+	local RDP_USER="Administrator"   # default rdp user, Win instance login
+	local TARGET=$1                  # target EC2 instance for starting/ log in
+	local VALID                      # loop break
+
+	# verify login prereqs
+	ec2cli-precheck-windows
+
+	# load array with choices
+	RDP_SIZE[0]="90%"
+	RDP_SIZE[1]="1366x768"
+	RDP_SIZE[2]="1400x860"
+	RDP_SIZE[3]="1900x1000"
+	# size of array
+	MAXCT=${#RDP_SIZE[*]}
+
+	i=0    # counter
+	while (( i < $MAXCT )); do
+        	echo "($i): ""${RDP_SIZE[$i]}"  >> .type.tmp
+        	i=$(( $i+1 ))
+	done
+
+	# print choices
+	echo -e "\n\n${BOLD}Select an RDP Session Window Size:${UNBOLD}\n"
+	awk -F "  " '{ printf "%-4s %-20s \n", $1, $2}' .type.tmp
+
+	# get user input while checking type and range
+	VALID=0    # set loop break
+
+	while [[ $VALID -eq 0 ]]; do
+        	# read instance choice in from user
+	        echo ""
+        	read -p "Enter # RDP window resolution or hit return for relative size [90%]: " CHOICE
+	        echo ""
+
+        	if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+				# invalid user entry
+                echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+        	else
+				# valid user entry, exit loop
+                VALID=1
+        	fi
+	done
+
+	if [ -z "$CHOICE" ]
+	then
+        	# CHOICE is blank, default chosen
+	        CHOICE=0
+	fi
+
+	# set type
+	SIZE=${RDP_SIZE[$CHOICE]}
+
+	# log
+	ec2cli-message "Starting RDP Session with $SIZE RDP window size on instance ($TARGET)." INFO
+
+	# Start rdp desktop session
+	rdesktop -u $RDP_USER -p $REMOTE_RDP_PASSWD -g $SIZE -a 24 $IPADDRESS & 
+	
+	### FIXME: Support multiple passwds. Solicit passwd from user or default to \
+	### shell global env var (REMOTE_RDP_PASSWD) ###
+    
+    # clean up
+    rm .type.tmp
+    
+    # log and exit
+    ec2cli-logger "INFO: RDP Instance ($TARGET) started. RDP session size: $SIZE."
+    exit 0
+    #
+    # <-- end function ec2cli-rdp-login -->
+    #
+}
+
+function ec2cli-run-instances(){
+	# vars
+	local IPADDRESS       		# public IP of instance
+	local KEY             		# name of ssh key (.pem file) 
+	local MAXCT           		# array length
+	local MYIP            		# local IP of client running $pkg
+	local NOW=$(date)     		# current time
+	local OS              		# operating system of instance
+	local PROGRESSTXT="EC2 Instance Starting Up.  Please wait... "
+	local REGION=$1       		# target region
+	local SSH_USER="ec2-user"   # default ssh user for login, Linux instance
+	local TARGET                # instance to be started/ login
+	local tmpID           		# temp holder for instance ID
+	local VALID           		# loop break
+	#
+	# choose instance ----------------------------------------------------
+	#
+	aws ec2 describe-instances \
+	        --region $REGION \
+	        --output text \
+	        --query "Reservations[*].Instances[*]. \
+	            [InstanceId, \
+	            InstanceType, \
+	            State.Name, \
+	            SecurityGroups[0].GroupName, \
+	            BlockDeviceMappings[0].Ebs.VolumeId, \
+	            PublicIpAddress, \
+	            Tags[0].Value]" \
+	>> .text-output1.tmp
+
+	# Use built-in IFS to read in all lines in tmp file
+	IFS=$'\n' read -d '' -r -a INSTANCES < .text-output1.tmp
+
+	# calc array max length | test for 0 instances
+	MAXCT=${#INSTANCES[*]} # IFS starts array index at 0
+    if [[ $MAXCT = 0 ]]; then
+        # no instances in region
+        ec2cli-message "No EC2 instances found in region $REGION." UDEF
+        exit 0
+    fi
+
+    # header
+    echo -e "\n${white}${BOLD}Available Instances${UNBOLD}${reset}: $AWS_DEFAULT_REGION\n" | indent18
+	# load output choice array
+	i=0
+	while (( i < $MAXCT )); do
+	        echo "($i): ""${INSTANCES[$i]}" >> .arrayoutput.tmp
+	        i=$(( $i+1 ))
+	done
+
+	# display choices from array
+	echo -e "     InstanceID    Type     State   SecurityGroup     Root-Volume      PublicIP       Description"
+	echo -e "     ----------  ---------  ------- --------------    ------------   --------------   -------------------------"
+
+	# values
+	awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-14s %-16s %-2s %-2s %-2s %-2s \n", \
+	        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .arrayoutput.tmp
+
+	# clean up
+	rm .text-output1.tmp .arrayoutput.tmp
+
+	#
+	# get user input while checking type and range
+	#
+	VALID=0    # set loop break
+
+	while [ $VALID -eq 0 ]; do
+	        # read choice in from user
+	        echo ""
+	        read -p "Enter instance # to start/ log in [quit]: " CHOICE
+	        echo ""
+
+	        # assign instance to choice
+	        if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+	                # invalid user entry
+	                echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+	                ### FIXME:  Fails if enter integer with 2 digits ###
+	        else
+	                if [[ -z "$CHOICE" ]]; then
+	                        # CHOICE is blank, assign default
+	                        exit $E_USER_CANCEL
+	                else
+	                        # valid user entry, exit loop
+	                        VALID=1
+	                fi
+	        fi
+	done
+    # msg instance to start/ login
+	tmpID=${INSTANCES[$CHOICE]}
+	TARGET=$(echo $tmpID | cut -c 1-10)
+    # msg out
+	ec2cli-message "Starting instance ($TARGET)." INFO
+
+	#
+	# network access check -----------------------------------------------
+	#
+	ec2cli-message "Verifying Network Access to ($TARGET). Please wait ..." INFO
+
+	# retrieve secuirty group(s) of selected ec2 instance
+	aws ec2 describe-instances \
+	        --region $REGION \
+	        --output text \
+	        --instance-id $TARGET \
+	        --query 'Reservations[].Instances[].SecurityGroups[*].GroupId' > .secgrp-ids.tmp 
+
+	# discover local ip
+	dig +short myip.opendns.com @resolver1.opendns.com > .myip.tmp
+	MYIP=$(cat .myip.tmp)  
+	### FIXME:  Mv Network Access CHK to standalone function. ###
+	### Needs to also validate 0.0.0.0/0, not just client IP  ###
+
+	# query ip's from assigned security group
+	aws ec2 describe-security-groups \
+	        --region $REGION \
+	        --group-ids $(cat .secgrp-ids.tmp) \
+	        --output text \
+	        --query 'SecurityGroups[].[IpPermissions[].IpRanges[*].CidrIp]' > .output.tmp
+
+
+	if grep "$MYIP" .output.tmp > /dev/null; then
+	        # Access validated
+	        #echo -e "\nNetwork access ok, proceeding.\n"
+			ec2cli-message "Network access verified to ($TARGET). Proceeding..." INFO
+	        
+	        # clean up
+	        rm .myip.tmp .output.tmp .secgrp-ids.tmp
+	else
+	        # No access from current login client location	        
+	        # clean up
+	        rm .myip.tmp .output.tmp .secgrp-ids.tmp
+	        
+	        ec2cli-error-exit "No Network access from this location. Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
+	fi
+
+	#
+	# start instance -----------------------------------------------------
+	#
+
+	# start remote instance, login if already running
+	aws ec2 start-instances --region $REGION --instance-ids $TARGET | jq . 
+
+	# wait for instance to start, return after
+	aws ec2 wait instance-running --region $REGION --instance-ids $TARGET &
+
+	# call function to show on screen while wait
+	ec2cli-spinner
+
+	# FIXME (HACK) | login delay: loop for i seconds, display counter
+	i=10    # count in seconds
+	echo -e "\n "
+
+	while (( i > 0 )); do
+	        printf "\rInstance available in: ""$i"" seconds"
+	        sleep 1
+	        i=$(( i-1 ))
+	done
+	ec2cli-message "Authenticating to instance ($TARGET)..." INFO
+
+	#
+	# Log in -------------------------------------------------------------
+	#
+	
+	# retrieve json object for selected instance
+	aws ec2 describe-instances \
+		--region $REGION \
+		--instance-id $TARGET > .jsonoutput.tmp
+	
+	# discover public ip assignment
+	IPADDRESS=$(jq -r '.Reservations[].Instances[].PublicIpAddress' .jsonoutput.tmp)
+	#
+	# validate IP as public
+	if [[ $IPADDRESS == "null" ]]; then
+		ec2cli-error-exit "No public IP address found for ($TARGET). Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
+	fi
+
+	# Check Windows or Linux
+	OS=$(jq -r '.Reservations[].Instances[].Platform' .jsonoutput.tmp)
+
+	if [[ $OS == "windows" ]]; then
+			# windows instance, validate deps & log in via RDP
+			ec2cli-rdp-login $TARGET $IPADDRESS
+	else
+		# Linux instance, discover required access key
+		KEY=$(jq -r '.Reservations[].Instances[].KeyName' .jsonoutput.tmp)".pem"
+		
+		# update log and login
+		ec2cli-logger "INFO: Linux Instance ($TARGET) started. "
+		ssh -i $SSH_KEYS/$KEY $SSH_USER@$IPADDRESS
+
+		# clean up and exit
+		rm .jsonoutput.tmp
+    	exit 0
+	fi
+    #
+    # <-- end function ec2cli-run-instances -->
+    #	
+}
+
+function ec2cli-securitygroups(){
+    # vars
+    local REGION=$1
+    local TOTAL
+
+    # print region identifier
+    printf "\n${white}${BOLD}SECURITY GROUPS${UNBOLD}${reset} : $REGION\n\n" | indent18
+
+    # print header 
+    echo -ne "GroupName Group-Id Ports Ports CidrIp VpcId Description\n \
+            ---------------- ----------- ----- ----- ----------------- ------------ \
+            ---------------------------\n" > .ec2-qv-securitygroups.tmp
+
+    # output from aws
+    aws ec2 describe-security-groups \
+        --output text \
+        --region $REGION \
+        --query "SecurityGroups[*]. \
+            [GroupName, \
+            GroupId, \
+            IpPermissions[0].FromPort, \
+            IpPermissions[0].ToPort, \
+            IpPermissions[0].IpRanges[0].CidrIp, \
+            VpcId, \
+            Tags[0].Value]" \
+    >> .ec2-qv-securitygroups.tmp
+
+    # count total
+    TOTAL=$(cat .ec2-qv-securitygroups.tmp | grep "sg-" | wc -l)
+
+    # print and format output
+    awk  '{ printf "%-18s %-13s %-6s %-7s %-19s %-14s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7}' .ec2-qv-securitygroups.tmp | indent02
+
+    # print footer
+    printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} Security Groups in region [$REGION]\n\n" | indent15
+
+    # clean up
+    rm .ec2-qv-securitygroups.tmp
+    #
+    # <-- end function ec2cli-securitygroups -->
+    #
+}
+
+function ec2cli-snapshots(){
+    # vars
+    local REGION=$1
+    local SUM
+    local TOTAL
+
+    # Sum size of all snapshots (footer)
+    SUM=$(aws ec2 describe-snapshots --region $REGION --owner self | jq -r '.Snapshots | map(.VolumeSize) | add') 
+
+    if [ $SUM == "null" ] || [ $SUM -eq 0 ]
+    then
+        # print footer if no snapshots found
+        printf "\n** ${white}${BOLD}0${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}0${UNBOLD}${reset} GB (est) **\n\n" | indent10
+    else
+        # snapshots found, print region identifier
+        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION\n\n" | indent18
+
+        # print header 
+        echo -ne "SnapId Vo1. State Prog VolumeId Description\n \
+                ------------- ----  --------- ---- ------------ \
+                ----------------------------------------\n" > .ec2-qv-snapshots.tmp
+        
+        # output from aws
+        aws ec2 describe-snapshots \
+            --owner self \
+            --output text \
+            --region $REGION \
+            --query "Snapshots[*]. \
+                [SnapshotId, \
+                VolumeSize, \
+                State, \
+                Progress,\
+                VolumeId,\
+                Description]" | \
+        sort -k +6  >> .ec2-qv-snapshots.tmp
+
+        # count total
+        TOTAL=$(cat .ec2-qv-snapshots.tmp | grep "snap-" | wc -l)
+
+        # print and format output
+        awk  '{ printf "%-14s %-5s %-10s %-5s %-13s %-2s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9}' .ec2-qv-snapshots.tmp | indent02
+
+        # print footer
+        printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} GB (est)\n\n" | indent10
+
+        # clean up
+        rm .ec2-qv-snapshots.tmp
+    fi
+    #
+    # <-- end function ec2cli-snapshots -->
+    #
+}
+
+function ec2cli-spinner(){
+	# visual progress marker function
+	#
+	# vars
+    local pid=$!
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf "\r$PROGRESSTXT[%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    #printf "    \b\b\b\b"
+
+    #
+    # <-- end function ec2cli-spinner -->
+    #
+}
+
+
+function ec2cli-subnets(){
+    # vars
+    local TOTAL
+    local REGION=$1
+
+    # print region identifier
+    printf "\n${white}${BOLD}SUBNETS${UNBOLD}${reset} : $REGION\n\n" | indent18
+
+    # print header 
+    echo -ne "Name SubnetId Public CIDR-Block #IPs AvailZone Default\n \
+    ------------- --------------- ------ --------------- ---- ---------- -------\n" > .ec2-qv.tmp
+
+    # output from aws
+    aws ec2 describe-subnets \
+        --output text \
+        --region $REGION \
+        --query "Subnets[*]. \
+            [Tags[0].Value, \
+            SubnetId, \
+            MapPublicIpOnLaunch, \
+            CidrBlock, \
+            AvailableIpAddressCount, \
+            AvailabilityZone, \
+            DefaultForAz]" | sort -k +4n >> .ec2-qv.tmp
+
+    # count total
+    TOTAL=$(cat .ec2-qv.tmp | grep "subnet-" | wc -l)
+
+    # print and format output
+    awk  '{ printf "%-15s %-17s %-7s %-16s %-6s %-12s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7}' .ec2-qv.tmp | indent02
+
+    # print footer
+    printf "\nTotal Subnets, [$REGION]: ${white}${BOLD}$TOTAL${UNBOLD}${reset}\n\n" | indent15
+
+    # clean up
+    rm .ec2-qv.tmp
+    
+    #
+    # <-- end function ec2cli-subnets -->
+    #
+}
+
+function ec2cli-tags(){
+    # vars
+    local RESOURCEID
+
+    ### FIXME - add ability to display tags for specified resource id ###
+
+    # print header
+    echo " "
+
+    # output from aws
+    aws ec2 describe-tags --output table
+
+    # print footer
+    echo " "
+
+    #
+    # <-- end function ec2cli-tags -->
+    #
+}
+
+function ec2cli-volumes(){
+    # vars
+    local REGION=$1
+    local SUM
+    local TOTAL
+
+    # sum total size of all volumes (display in footer)
+    SUM=$(aws ec2 describe-volumes --region $REGION | jq -r '.Volumes | map(.Size) | add')
+
+    if [ $SUM == "null" ] || [ $SUM -eq 0 ]
+    then
+        # print footer if no volumes found
+        printf "\n** ${white}${BOLD}0${UNBOLD}${reset} volumes in region [$REGION], total ${white}${BOLD}0${UNBOLD}${reset} GB **\n\n" | indent10
+    else
+        #
+        # volumes found, print region identifier
+        #
+        printf "\n${white}${BOLD}EBS VOLUMES${UNBOLD}${reset} : $REGION\n\n" | indent18
+
+        # print header 
+        echo -ne "Volume-Id GB State Attached InstanceId VolType Avail-Zone Description\n \
+                ------------ -- -------- -------- ---------- -------- ---------- \
+                -----------------------------\n" > .ec2-qv-volumes.tmp
+        
+        # output from aws
+        aws ec2 describe-volumes \
+            --output text \
+            --region $REGION \
+            --query "Volumes[*]. \
+                [VolumeId, \
+                Size, \
+                State, \
+                Attachments[0].State,
+                Attachments[0].InstanceId, \
+                VolumeType, \
+                AvailabilityZone, \
+                Tags[0].Value]" \
+        >> .ec2-qv-volumes.tmp
+
+        # count total
+        TOTAL=$(cat .ec2-qv-volumes.tmp | grep "vol-" | wc -l)
+
+        # print and format output
+        awk  '{ printf "%-13s %-3s %-9s %-9s %-11s %-9s %-11s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-volumes.tmp | indent02
+
+        # print footer
+        printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} volumes in region [$REGION], total "${white}${BOLD}$SUM${UNBOLD}${reset}" GB\n\n" | indent10
+
+        # clean up
+        rm .ec2-qv-volumes.tmp
+    fi
+
+    #
+    # <-- end function ec2cli-volumes -->
+    #
+}
+
+function ec2cli-vpcs(){
+    # vars
+    local TOTAL
+
+    # print region identifier
+    printf "\n${white}${BOLD}Virtual Private Clouds (VPC)${UNBOLD}${reset} : $REGION\n\n" | indent18
+
+    # print header 
+    echo -ne "VpcId State Tenancy CIDR-Block Default\n \
+            ------------ --------- ------- ------------------ -------\n" > .ec2-qv-vpc.tmp
+
+    # output from aws
+    aws ec2 describe-vpcs \
+        --output text \
+      --region $REGION \
+        --query "Vpcs[*]. \
+            [VpcId, \
+            State, \
+            InstanceTenancy, \
+            CidrBlock, \
+            IsDefault]" | sort -k +4n \
+    >> .ec2-qv-vpc.tmp 
+
+    # count total
+    TOTAL=$(cat .ec2-qv-vpc.tmp | grep "vpc-" | wc -l)
+
+    # print and format output
+    #
+    # Note: Since awk is looking for blank space as delimiter, we allow spaces
+    #       in the description field by telling awk these are 2 char columns.
+    #
+    awk  '{ printf "%-14s %-10s %-9s %-20s %-9s \n", \
+            $1, $2, $3, $4, $5}' .ec2-qv-vpc.tmp | indent02
+
+    # print footer
+    printf "\nTotal VPCs, $REGION: ${white}${BOLD}$TOTAL${UNBOLD}${reset}\n\n" | indent18
+
+    # clean up
+    rm .ec2-qv-vpc.tmp
+
+    #
+    # <-- end function ec2cli-vpcs -->
+    #
+}
+
+function parse-regioncode(){
+	#
+    # retrieve codes for all valid AWS Regions globally:
+    #
+    aws ec2 describe-regions --output text --query 'Regions[*].[RegionName]' > .rawoutput.tmp
+
+    if [ "$1" == "$(grep $1 .rawoutput.tmp 2>/dev/null)" ]; then
+        # aws region given
+        REGION=$1
+    else
+        # bad regioncode, clean up and exit
+        rm .rawoutput.tmp
+        ec2cli-error-exit "Invalid AWS region code [ $1 ]. See ec2cli --help. Exiting (code $E_BADARG)" $E_BADARG
+    fi
+    # clean up
+    rm .rawoutput.tmp   
+    #
+    # <-- end function parse-regioncode -->
+    #
+}
+
+function parse-command(){
+    COMMAND=$1
+    # check if command is a region code
+    if [[ $COMMAND = ??-*-[1-9] ]]; then
+        # region code given instead 
+        # user requests default (list)
+        parse-regioncode $COMMAND
+        COMMAND="list"    # set to default, no command given
+    fi
+    case $COMMAND in 
+        attach | Attach | ATTACH | attch | atach)
+            COMMAND="attach"
+            ;;
+        list | List | LIST | lis | li | l)
+            COMMAND="list"
+            ;;
+        create | Create | CREATE | creat | cre | cr )
+            COMMAND="create"
+            ;;
+        run | Run | RUN | ru | r | start | Start)
+            COMMAND="run"
+            ;;
+        *)
+            ec2cli-error "Command [ $COMMAND ] unknown. Invalid option specified. (code $E_BADARG)" $E_BADARG
+            ec2cli-help
+            exit $E_BADARG
+            ;;
+    esac
+    #
+    # <-- end function parse-command -->
+    #
+}
+
+#
+# START (MAIN) ----------------------------------------------------------------
+#
+
+# validate pre-run conditions
+ec2cli-precheck
+
+# validate region code
+if [[ $3 ]]; then
+    parse-regioncode $3
+fi 
+if [[ $2 ]]; then
+    parse-command $2
+else
+    COMMAND="list"    # if command not given, set to default 
+fi
+if [[ $1 ]]; then
+    OPTION=$1   
+    case $COMMAND in
+        attach | Attach | ATTACH)    
+            # parse options
+            case $OPTION in 
+                -v | --volumes)
+                    #
+                    # attach EBS Volume to instance in specified region
+                    #
+                    ec2cli-message "Attach functionality under development" STUB
+                    #ec2cli-attach-volume $REGION
+                    ;;
+                *)
+                    ec2cli-message "Option [ $1 ] not supported for $COMMAND command." INFO
+                    ec2cli-help-command-attach
+                    ;;
+            esac
+            ;;
+
+        create | Create | CREATE)
+            # parse options
+            case $OPTION in           
+                -a | -ami | -amis | --amis | -images | --images)
+                    #
+                    # display details of Amazon Machine Images for region [STUB]
+                    #
+                    ec2cli-message "functionality currently under development" STUB
+                    #ec2cli-create-ami $REGION
+                    ;;
+                -h | --h | -help | --help)
+                    #
+                    # display help contents
+                    #
+                    ec2cli-help
+                    ;;
+                -s | -snapshots | -snapshot | --snapshot | --snapshots)
+                    #
+                    # display details of EC2 snapshots for region
+                    #
+                    ec2cli-create-snapshot $REGION
+                    ;;
+                -v | --volumes)
+                    #
+                    # create EBS Volume in specified region
+                    #
+                    ec2cli-message "create volume functionality under development" STUB
+                    #ec2cli-create-volume $REGION
+                    ;;
+                *)
+                    ec2cli-message "Option [ $1 ] not supported for $COMMAND command." INFO
+                    ec2cli-help-command-create
+                    ;;
+            esac
+            ;;
+
+        list | List | LIST)
+            # parse options
+            case $OPTION in           
+                -a | -ami | -amis | --amis | -images | --images)
+                    #
+                    # display details of Amazon Machine Images for region
+                    #
+                    ec2cli-images $REGION
+                	;;
+                -b | -subnets | --subnet | --subnets)
+                    #
+                    # display details of all regional vpc subnets
+                    #
+                    ec2cli-subnets $REGION
+                	;;
+                -g | --sgroups | --securitygroups)
+                    #
+                    # display details of EC2 security groups for region
+                    #
+                    ec2cli-securitygroups $REGION
+                	;;
+                -h | --h | -help | --help)
+                    #
+                    # display help contents
+                    #
+                    ec2cli-help
+                	;;
+                -i | --instances)
+                    #
+                    # display instances details for region
+                    #
+                    ec2cli-instances $REGION
+                	;;
+                -n | --vpcs)
+                    #
+                    # display details of vpcs for region
+                    #
+                    ec2cli-vpcs $REGION
+                	;;
+                -N | --network | --networks)
+        			#
+        			# display all network details for region
+        			#
+        			ec2cli-vpcs $REGION
+        			ec2cli-subnets $REGION
+        			ec2cli-securitygroups $REGION
+        			;;
+                -t | --tags)
+                    #
+                    # display details of all EC2 tags for region
+                    #
+                    ec2cli-tags         # No region parameter, tags are global 
+                	;;
+                -s | -snapshots | -snapshot | --snapshot | --snapshots)
+                    #
+                    # display details of EC2 snapshots for region
+                    #
+                    ec2cli-snapshots $REGION
+                	;;
+                -v | --volumes)
+                    #
+                    # display details of EBS Volume Snapshots for region
+                    #
+                    ec2cli-volumes $REGION
+                	;;
+                *)
+                    ec2cli-error "Option [ $1 ] unknown. Invalid option specified. (code $E_BADARG)" $E_BADARG
+                    ec2cli-help
+                    exit $E_BADARG
+                	;;
+            esac
+            ;;
+
+        run | Run | RUN | start | Start)
+            # parse options
+            case $OPTION in           
+                -a | -ami | -amis | --amis | -images | --images)
+                    #
+                    # Create instance from Amazon Machine Image in region [STUB]
+                    #
+                    ec2cli-message "run image functionality under development" STUB
+                    #ec2cli-create-instance $REGION
+                    ;;
+                -h | --h | -help | --help)
+                    #
+                    # display help contents
+                    #
+                    ec2cli-help
+                    ;;
+                -i | --instances)
+                    #
+                    # start instance / login if already running
+                    #
+                    ec2cli-run-instances $REGION
+                    ;;
+                -s | -snapshots | -snapshot | --snapshot | --snapshots)
+                    #
+                    # Create a volume from EC2 snapshots in specified region [STUB]
+                    #
+                    ec2cli-message "create volume from snapshot functionality under development" STUB
+                    #ec2cli-create-volume $REGION
+                    ;;
+                *)
+                    ec2cli-message "Option [ $1 ] not supported for $COMMAND command." INFO
+                    ec2cli-help-command-run
+                    ;;
+            esac
+            ;;
+    esac
+else
+    # no options specified, display help (-h, --help)
+    ec2cli-help
+fi
+
+#
+# END (MAIN) ------------------------------------------------------------------
+#
+
+exit 0
