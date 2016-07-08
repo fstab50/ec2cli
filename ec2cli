@@ -12,7 +12,7 @@
 #            AWS_ACCESS_KEY                                               |
 #            AWS_SECRET_KEY                                               |
 #            AWS_DEFAULT_REGION                                           |
-#		     REMOTE_RDP_PASSWD                                            |
+#	     REMOTE_RDP_PASSWD                                            |
 #  User:     $user                                                        |
 #  Output:   CLI                                                          |
 #  Error:    stderr                                                       |
@@ -152,7 +152,7 @@ EOM
 function ec2cli-logger(){
     local msg="$1"
     if [[ ! $ec2cli_log ]]; then
-        echo "$pkg: cannot call ec2cli-logger with ec2cli_log undefined"
+        echo "$pkg: failure to call ec2cli-logger, $ec2cli_log location undefined"
         exit $E_NOLOG
     fi
     echo "$(date +'%b %d %T') $host $pkg: $msg" >> "$ec2cli_log"
@@ -266,7 +266,7 @@ function ec2cli-precheck-windows(){
 }
 
 function ec2cli-convert-time(){
-    # time format refactor
+    # time format conversion (http://stackoverflow.com/users/1030675/choroba)
     num=$1
     min=0
     hour=0
