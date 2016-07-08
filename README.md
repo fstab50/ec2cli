@@ -1,13 +1,13 @@
-# EC2 CLI Utilities  
+# ec2cli - Utilities for working with Amazon EC2 
 
 * [About](#about-this-repository)
 * [License](#license)
 * [Introduction](#introduction)
-* [Conventions](#conventions)
 * [Contents](#contents)
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Permissions](#iam-permissions)
+* [Usage](#usage)
 * [Screenshots](#screenshots)
 * [Aliases (optional)](#aliases)
 * [Contribution Guidelines](#contribution-guidelines)
@@ -18,7 +18,7 @@
 ## About this repository 
 
 * Purpose:      CLI utilities for use with Amazon Web Services (AWS)
-* Version:      05/2016
+* Version:      0.7 
 * Repo:         [ec2cli] https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 * Mirror repo located at: https://github.com/t-stark/ec2cli 
 
@@ -27,24 +27,23 @@
 ## License 
 
 * All utilities contained herein are copyrighted and made available under GPLv2
-* See [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html)
+* See [LICENSE](./LICENSE)
 
 * * *
 
 ## Introduction 
 
-EC2cli Utilities were developed to make life easier when working with AWS services
-in a cli environment.  The scripts utilize AWS' cli tools to enable you to send signed 
+EC2cli was developed to make life easier when working with AWS services in a
+cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed 
 requests to Amazon's API to perform uses cases typically accomplished using the 
 console interface.  EC2cli will save time and effort to perform operations
 such as taking a snapshot or listing which EC2 instances are running.
 
-That being said, the scripts in this repo are designed for use with relatively low AWS resource counts.  If you are operating at scale, these will prove cumbersome since are no embedded filtering capabilities (if you would like to contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you have already developed your own tools for managing and operating AWS resources in a commercial environment.
+That being said, ec2cli was designed for use with relatively low AWS resource counts.  If you are operating at scale, these will prove cumbersome since are no embedded filtering capabilities (if you would like to contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you have already developed your own tools for managing and operating AWS resources in a commercial environment.
 
-While I realize that accomplishing the same functionality these scripts provide is far easier with the AWS ruby or python SDK's, I developed these in bash to make them easy for system administrators and solution architects to modify for their particular use cases.
+While I realize that accomplishing the same functionality is easier with the AWS ruby or python SDK's, I developed these in bash to make them easy for system administrators and solution architects to modify for their particular use cases.
 
-_Dependency Note_:  these utilities were developed and tested under bash.  Some 
-may work with other shells; however, your mileage may vary.
+_Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
 
 ![](./images/ec2i_running-instances.png)
 
@@ -52,40 +51,17 @@ may work with other shells; however, your mileage may vary.
 
 * * *
 
-## Conventions ##
-
-* "qv" in the filename means "Quick view", a read only (ro) report
-
-
-* "X" in the filename indicates "Executable".  These make permanent changes to your 
-      account resources such as creating a snapshot or mounting a new partition.  Use 
-      with caution.  Your IAM user must have rw permissions on the respective
-      resources you wish to add or modify using X scripts.
-
-* * *
-
 ## Contents ##
 ```bash
-* ec2-qv-AMIs.sh                # Quick view list of all AMI's associated with default region
-* ec2-qv-instances.sh           # Quick view list of all EC2 instances in the default region 
-* ec2-qv-securitygroups.sh      # Quick view list of all security groups associated
-* ec2-qv-snapshots.sh           # Quick view list of all snapshots in default region
-* ec2-qv-spot-prices.sh         # Quick view of spot prices in a region you specify
-* ec2-qv-subnets.sh             # Quick view of subnets in the default region
-* ec2-qv-tags.sh                # Quick view of EC2 tags
-* ec2-qv-volumes.sh             # Quick view list of all volumes in the default region
-* ec2-qv-vpc.sh                 # Quick view list of all default region vpc's
-* ec2-X-attach-volume.sh        # Utility for attaching a volume to an instance
-* ec2-X-rdp-desktop.sh          # Client utility for starting a windows RDP instance
-* ec2-X-start-instance.sh       # Utility for starting an EC2 instance from a list
-* ec2-X-take-snapshot.sh        # Utility for taking snapshots
+* ec2cli                    # Main executable for working with EC2 resources from cli environment
+* ec2-qv-spot-prices.sh     # Quick view of spot prices in region specified
 
-# init/ 
+# init/                     # EC2 host-based scripts
 
-* motd-ec2.sh                   # dynamic message of the day for EC2 instances. Dep on ec2-az-location.sh
-* ec2-hostname.sh               # resets EC2 hostname upon (re)start, part of init process
-* ec2-az-location.sh            # grabs region from metadata service. Called by motd-ec2.sh
-* ec2.bash_profile              # sample from my EC2 bash_profile
+* motd-ec2.sh               # dynamic message of the day for EC2 instances. Dep on ec2-az-location.sh
+* ec2-hostname.sh           # resets EC2 hostname upon (re)start, part of init process
+* ec2-az-location.sh        # grabs region from metadata service. Called by motd-ec2.sh
+* ec2.bash_profile          # sample bash_profile (Amazon Linux)
 ```
 
 * * *
@@ -115,7 +91,6 @@ may work with other shells; however, your mileage may vary.
 
 	export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
 	export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
-	export EC2_BASE=/usr/local/ec2         # location of host-based init scripts
 	export AWS_ACCESS_KEY=XXXXXXXXXXXXX    # Your IAM Access Key
 	export AWS_SECRET_KEY=XXXXXXXXXXXXX    # Your Secret Key
 	export AWS_DEFAULT_REGION=us-west-2    # Primary AWS Region  
@@ -200,8 +175,8 @@ may work with other shells; however, your mileage may vary.
  
 ## IAM Permissions ##
 
-#### Quickview Script Required Permissions 
-You'll need appropriate IAM permissions to execute these scripts.  Quickview scripts ("qv" in the filename) simply display data, so by nature require only read only permissions:
+#### ec2cli Required Permissions ####
+You'll need appropriate IAM permissions to execute ec2cli.  
 
 ```json
 {
@@ -230,21 +205,8 @@ You'll need appropriate IAM permissions to execute these scripts.  Quickview scr
             "Effect": "Allow",
             "Action": "autoscaling:Describe*",
             "Resource": "*"
-        }
-    ]
-}
-
-```
-
-#### Execute Script Required Permissions 
-Execute scripts (marked with an "X" in the filename), require additional permissions in addition to the above to actually affect changes to your infrastructure:
-
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
+        },
         {
-            "Sid": "Stmt1454688142000",
             "Effect": "Allow",
             "Action": [
                 "ec2:AttachVolume",
@@ -259,14 +221,14 @@ Execute scripts (marked with an "X" in the filename), require additional permiss
             ],
             "Resource": [
                 "*"
-            ]
+        ]
         }
     ]
 }
 
 ```
 
-You can grab the quickview policy [here](./policies/iampolicy-EC2-quickview.json) or the combined IAM policy for all scripts [here](./policies/iampolicy-EC2-full.json).
+You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
 
 * * *
 
@@ -274,106 +236,164 @@ You can grab the quickview policy [here](./policies/iampolicy-EC2-quickview.json
 
 This section is optional. Add the following to your .bash_profile or .bashrc as convenient cli shortcuts:
 ```bash
-# User Aliases - AWS
-alias ec2a="sh $EC2_REPO/ec2-qv-AMIs.sh"                 # list of AMIs
-alias ec2i="sh $EC2_REPO/ec2-qv-instances.sh"            # list of instances
-alias ec2s="sh $EC2_REPO/ec2-qv-snapshots.sh"            # list of snapshots
-alias ec2sg="sh $EC2_REPO/ec2-qv-securitygroups.sh"      # list of sec groups
-alias ec2sub="sh $EC2_REPO/ec2-qv-subnets.sh"            # list of subnets
-alias ec2v="sh $EC2_REPO/ec2-qv-volumes.sh"              # list of EBS vols
-alias ec2vpc="sh $EC2_REPO/ec2-qv-vpc.sh"                # list of VPCs
-alias awsnet="ec2vpc && ec2sub && ec2sg"                 # Networking config
+# Shortcut Aliases - AWS
+alias ec2a="$EC2_REPO/ec2cli -a list"      # list of Amazon Machine Images, default region
+alias ec2i="$EC2_REPO/ec2cli -i list"      # list of EC2 instances, default region
+alias ec2s="$EC2_REPO/ec2cli -s list"      # list of snapshots, default region
+alias ec2g="$EC2_REPO/ec2cli -g list"      # list of security groups, default region
+alias ec2b="$EC2_REPO/ec2cli -b list"      # list of subnets, default region
+alias ec2v="$EC2_REPO/ec2cli -v list"      # list of Elastic Block Store Volumes, default region
+alias ec2n="$EC2_REPO/ec2cli -n list"      # list of VPCs, default region
+alias awsnet="$EC2_REPO/ec2cli -N list"    # complete networking configuration, default region
 ```
 * * *
 
-## Screenshots ##
-#### Quickview Utilities #####
-All quickview scripts display AWS resources for your default region unless an alternate region is given as a parameter.
-
-*Note: commands shown assume short notation specified in "Aliases (Optional)" section above*
- 
+## Usage ##
 ```bash
-$ ec2vpc    # default aws region, us-west-2
+$ ./ec2cli --help     
+
+ Help Contents
+
+   Usage : ec2cli [OPTION] [COMMAND] [REGIONCODE] 
+
+   Options :
+     -a, --images       Amazon Machine Image (AMI) details for region
+     -b, --subnets      Virtual Private Cloud (VPC) Subnet details
+     -g, --sgroups      Security Group details for region
+     -h, --help         Output this message
+     -i, --instances    EC2 Instance details for region
+     -n, --vpc          Virtual Private Cloud (VPC) Network details for region
+     -N, --network      All network details for region
+     -s, --snapshots    Snapshot details for region    
+     -t, --tags         Tags details for EC2 sub services (all regions)
+     -v, --volumes      Elastic Block Store (EBS) Volume details for region
+  
+   Commands (optional) : 
+     list               List aws resource details [DEFAULT]
+     attach             Attach/ Detach aws resource 
+     create             Create new aws resource
+     run                Run/ start existing aws resource
+
+   Region Codes (optional) : 
+     ap-northeast-1     Asia Pacific (Tokyo, Japan)       
+     ap-northeast-2     Asia Pacific (Seoul, Korea)      
+     ap-south-1         Asia Pacific (Mumbai, India)
+     ap-southeast-1     Asia Pacific (Singapore)       
+     ap-southeast-2     Asia Pacific (Sydney, Austrailia) 
+     eu-central-1       Europe (Frankfurt, Germany)       
+     eu-west-1          Europe (Ireland)          
+     sa-east-1          South America (Sao Paulo, Brazil)
+     us-east-1          United States (N. Virgina)   
+     us-west-1          United States (N. California)    
+     us-west-2          United States (Oregon)  
+
+     If region code omitted, defaults to AWS default region 
+    
+   For additional help, see https://bitbucket.org/blakeca00/ec2cli/overview
+```
+#### Notes: ####
+* OPTION is required. Since an option represents a disparate AWS resource, only 1 option (resource) at a time is supported.
+* COMMAND is optional.  If no COMMAND given as a parameter, ec2cli defaults to the `list` command and lists details of the EC2 resource specified by the OPTION parameter
+* REGIONCODE is optional. If no REGIONCODE given as a parameter, ec2cli defaults to the AWS default region defined in the $AWS_DEFAULT_REGION environment variable (if present); or alternately, the awscli config file.
+* `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable additional resource types as additional types are added.
+
+* * *
+
+## Screenshots ##
+#### ec2cli `list` command #####
+List command displays AWS resource details for your AWS default region if no region specified. If an alternate region given as a parameter, displays resource details for the specified region.
+
+```bash
+$ ./ec2cli -n list   # list vpc nextwork details, AWS default aws region (us-west-2)
 ```
 ![](./images/ec2vpc.png)
 
 ```bash
-$ ec2vpc eu-west-1    # alternate (non-default) region given as parameter
+$ ./ec2cli -n list eu-west-1    # list vpc nextwork details, alternate region (eu-west-1)
 ```
 ![](./images/ec2vpc_altregion.png)
 
 ```bash
-$ ec2sub
+$ ./ec2cli -b list   # list subnet details, AWS default region (us-west-2)
 ```
 ![](./images/ec2sub.png)
 
 ```bash
-$ ec2sub eu-west-1    # alt region specified
+$ ./ec2cli -b list eu-west-1    # list subnet details, alternate region (eu-west-1)
 ```
 ![](./images/ec2sub_altregion.png)
 
 ```bash
-$ ec2i    # no running instances  
+$ ./ec2cli -i list   # list ec2 instances, AWS default region (us-west-2)
 ```
 ![](./images/ec2i.png)
 
 ```bash
-$ ec2i    # running instances
+$ ./ec2cli -i list  # list (running) ec2 instances, AWS default region (us-west-2)
 ```
 ![](./images/ec2i_running-instances.png)
 
 ```bash
-$ ec2i --help     
-```
-![](./images/ec2i_helpmenu.png)
-
-```bash
-$ ec2v
+$ ./ec2cli -v list   # list ebs volume details, AWS default region (us-west-2)
 ```
 ![](./images/ec2v.png)
 
 ```bash
-$ ec2s
+$ ./ec2cli -s list   # list snapshots, AWS default region (us-west-2)
 ```
 ![](./images/ec2s.png)
 
 ```bash
-$ ec2sg
+$ ./ec2cli -g list   # list security group details, AWS default region (us-west-2)
 ```
 ![](./images/ec2sg.png)
 
 ```bash
-$ ec2sg us-east-1    # alt region specified
+$ ./ec2cli -g list us-east-1    # list security group details, alt region (us-east-1)
 ```
 ![](./images/ec2sg_altregion.png)
 
-#### Quickview -- Spot Prices ###
+* * * 
+## Screenshots ##
+#### ec2cli `run` command ####
+
+*Note: this utility may also be used to automate login to a running EC2 instance*
+*as well as starting a stopped instance. See step 2. (below)* 
+
 ```bash
-$ sh ec2-qv-spot-prices.sh
+$ ./ec2cli -i run    # run/ log on to EC2 instances in default region
 ```
-1.Select region for which you wish to view spot prices (default region auto selected via environment variables): 
+1.Select from list of instance choices:
 
-![](./images/spotprice_region.png)
+![](./images/start-instance_01.png)
 
-2.Select Operating System:   
+2.After instance is chosen, ec2cli performs a network access check:
 
-![](./images/spotprice_os.png)
+  * Access check sources the security group and validates IPs listed in the group against your local IP. 
+  * _Note_: if the instance you chose is already running, the ec2cli moves immediately to authentication (Step 4).
 
-3.Select a specific instance type or all instances.
+![](./images/start-instance_02.png)
 
-![](./images/spotprice_types.png)
+3.If network access check succeeds, the ec2 wait function is called to prevent login until the instance starts.
 
-4a.If specific instance type selected:
+![](./images/start-instance_03.png)
 
-![](./images/spotprice_1instance.png)
+4.Authentication start:
 
-4b.If default [all] selected, output is an ordered list (increasing):
+  * Public IP and ssh key name are sourced from instance json data via api call.
+  * The ssh key is then located on your local machine in the dir specified by the ``$SSH_KEYS`` env variable. 
 
-![](./images/spotprice_all.png)
+![](./images/start-instance_04.png)
 
-#### Execute Utilities ####
+5.Login established (entire start sequence shown)
 
-[Screenshots](./readme_x-scripts.md)
+![](./images/start-instance_05.png)
+
+* * *
+## Screenshots ##
+#### Spot Price Utility ####
+
+[Screenshots (continued)](./README_spot.md)
 
 * * *
 
