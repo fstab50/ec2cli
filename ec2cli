@@ -12,7 +12,7 @@
 #            AWS_ACCESS_KEY                                               |
 #            AWS_SECRET_KEY                                               |
 #            AWS_DEFAULT_REGION                                           |
-#	     REMOTE_RDP_PASSWD                                            |
+#     	     REMOTE_RDP_PASSWD                                            |
 #  User:     $user                                                        |
 #  Output:   CLI                                                          |
 #  Error:    stderr                                                       |
@@ -311,7 +311,7 @@ function ec2cli-attach-volume(){
 
     ## choose volume ##---------------------------------------------------
     echo -e "\n${BOLD}Volume choices: ${UNBOLD}$REGION\n" | indent18
-    ec2cli-volumes $REGION > .text-output0.tmp
+    ec2cli-list-volumes $REGION > .text-output0.tmp
     grep "vol-" .text-output0.tmp > .text-output1.tmp 
 
     # Use built-in IFS to read in all lines in tmp file
@@ -367,7 +367,7 @@ function ec2cli-attach-volume(){
 
     ## choose instance ## ------------------------------------------------
     echo -e "\n${BOLD}EC2 Instance choices: ${UNBOLD}$REGION\n" | indent18
-    ec2cli-instances $REGION > .text-output0.tmp
+    ec2cli-list-instances $REGION > .text-output0.tmp
     grep "i-" .text-output0.tmp > .text-output1.tmp
 
     # Use built-in IFS to read in all lines in tmp file
@@ -532,7 +532,7 @@ function ec2cli-create-snapshot(){
     #
 }
 
-function ec2cli-instances(){
+function ec2cli-list-instances(){
     # vars
     local TOTAL             # region EC2 instance count
     local REGION=$1         # region identifier
@@ -643,11 +643,11 @@ function ec2cli-instances(){
     rm .body.tmp .jsonoutput.tmp
 
     #
-    # <-- end function ec2cli-instances -->
+    # <-- end function ec2cli-list-instances -->
     #
 }
 
-function ec2cli-images(){
+function ec2cli-list-images(){
     # vars
     local REGION=$1
     local TOTAL
@@ -688,7 +688,7 @@ function ec2cli-images(){
     # clean up
     rm .ec2-qv-amis.tmp
     #
-    # <-- end function ec2cli-images -->
+    # <-- end function ec2cli-list-images -->
     #
 }
 
@@ -773,10 +773,11 @@ function ec2cli-rdp-login(){
 
 function ec2cli-run-instances(){
 	# vars
-	local IPADDRESS       		# public IP of instance
+	local ACCESS                # flag if ssh access from login location
+    local IPADDRESS       		# public IP of instance
 	local KEY             		# name of ssh key (.pem file) 
 	local MAXCT           		# array length
-	local MYIP            		# local IP of client running $pkg
+	local MYCIDR           		# local IP of client running $pkg
 	local NOW=$(date)     		# current time
 	local OS              		# operating system of instance
 	local PROGRESSTXT="EC2 Instance Starting Up.  Please wait... "
@@ -785,8 +786,9 @@ function ec2cli-run-instances(){
 	local TARGET                # instance to be started/ login
 	local tmpID           		# temp holder for instance ID
 	local VALID           		# loop break
+    local i                     # loop counter
 	#
-	# choose instance ----------------------------------------------------
+	# choose instance -----------------
 	#
 	aws ec2 describe-instances \
 	        --region $REGION \
@@ -829,12 +831,7 @@ function ec2cli-run-instances(){
 	awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-14s %-16s %-2s %-2s %-2s %-2s \n", \
 	        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .arrayoutput.tmp
 
-	# clean up
-	rm .text-output1.tmp .arrayoutput.tmp
-
-	#
 	# get user input while checking type and range
-	#
 	VALID=0    # set loop break
 
 	while [ $VALID -eq 0 ]; do
@@ -850,7 +847,8 @@ function ec2cli-run-instances(){
 	                ### FIXME:  Fails if enter integer with 2 digits ###
 	        else
 	                if [[ -z "$CHOICE" ]]; then
-	                        # CHOICE is blank, assign default
+	                        # CHOICE is blank, clean up and assign default [quit]
+                            rm .arrayoutput.tmp .text-output1.tmp
 	                        exit $E_USER_CANCEL
 	                else
 	                        # valid user entry, exit loop
@@ -862,10 +860,10 @@ function ec2cli-run-instances(){
 	tmpID=${INSTANCES[$CHOICE]}
 	TARGET=$(echo $tmpID | cut -c 1-10)
     # msg out
-	ec2cli-message "Starting instance ($TARGET)." INFO
+	ec2cli-message "Instance ($TARGET) selected." INFO
 
 	#
-	# network access check -----------------------------------------------
+	# network access check ------------
 	#
 	ec2cli-message "Verifying Network Access to ($TARGET). Please wait ..." INFO
 
@@ -878,61 +876,70 @@ function ec2cli-run-instances(){
 
 	# discover local ip
 	dig +short myip.opendns.com @resolver1.opendns.com > .myip.tmp
-	MYIP=$(cat .myip.tmp)  
-	### FIXME:  Mv Network Access CHK to standalone function. ###
-	### Needs to also validate 0.0.0.0/0, not just client IP  ###
+    MYCIDR="$(cat .myip.tmp)/32"
 
-	# query ip's from assigned security group
-	aws ec2 describe-security-groups \
-	        --region $REGION \
-	        --group-ids $(cat .secgrp-ids.tmp) \
-	        --output text \
-	        --query 'SecurityGroups[].[IpPermissions[].IpRanges[*].CidrIp]' > .output.tmp
+    # grab security group details
+    aws ec2 describe-security-groups --region $REGION --group-ids $(cat .secgrp-ids.tmp) > .jsonoutput.tmp
+    ARR_PORT=( $(jq -r '.SecurityGroups[].IpPermissions[].ToPort' .jsonoutput.tmp) )
+    ARR_IP=( $(jq -r '.SecurityGroups[].IpPermissions[].IpRanges[].CidrIp' .jsonoutput.tmp) )
+    MAXCT=${#ARR_PORT[*]} 
 
+    i=0    # counter
+    while (( i < $MAXCT )); do
+        if [[ ${ARR_PORT[$i]} = 22 ]]; then
+            if [[ ${ARR_IP[$i]} == "$MYCIDR" ]] || [[ ${ARR_IP[$i]} == "0.0.0.0/0" ]]; then
+                ACCESS=1
+                i=$MAXCT    # access found, break
+            fi
+        fi
+        # incr counter
+        i=$(( $i + 1 ))
+    done
 
-	if grep "$MYIP" .output.tmp > /dev/null; then
+	if [[ $ACCESS = 1 ]]; then
 	        # Access validated
-	        #echo -e "\nNetwork access ok, proceeding.\n"
-			ec2cli-message "Network access verified to ($TARGET). Proceeding..." INFO
-	        
+			ec2cli-message "SSH access verified to instance ($TARGET). Proceeding..." INFO
 	        # clean up
-	        rm .myip.tmp .output.tmp .secgrp-ids.tmp
+	        rm .myip.tmp .jsonoutput.tmp .secgrp-ids.tmp
 	else
-	        # No access from current login client location	        
-	        # clean up
-	        rm .myip.tmp .output.tmp .secgrp-ids.tmp
-	        
-	        ec2cli-error-exit "No Network access from this location. Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
+	        # No access from current login client location, clean up
+	        rm .arrayoutput.tmp .text-output1.tmp .myip.tmp .jsonoutput.tmp .secgrp-ids.tmp
+	        # log, exit
+	        ec2cli-error-exit "No ssh access to instance ($TARGET). Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
 	fi
 
 	#
-	# start instance -----------------------------------------------------
+	# start instance ------------------
 	#
+	# check to see if already started
+    if [[ $(grep $TARGET .text-output1.tmp | grep running) ]]; then
+        # instance already running, skip start
+        ec2cli-message "Instance ($TARGET) already running.  Logging in..." INFO
+    else
+        # instance not running, attempt to start
+	    aws ec2 start-instances --region $REGION --instance-ids $TARGET | jq . 
 
-	# start remote instance, login if already running
-	aws ec2 start-instances --region $REGION --instance-ids $TARGET | jq . 
+	    # wait for instance to start, return after
+	    aws ec2 wait instance-running --region $REGION --instance-ids $TARGET &
 
-	# wait for instance to start, return after
-	aws ec2 wait instance-running --region $REGION --instance-ids $TARGET &
+	    # call function to show on screen while wait
+	    ec2cli-spinner
 
-	# call function to show on screen while wait
-	ec2cli-spinner
+	    # FIXME (HACK) | login delay: loop for i seconds, display counter
+    	i=10    # count in seconds
+	    echo -e "\n "
 
-	# FIXME (HACK) | login delay: loop for i seconds, display counter
-	i=10    # count in seconds
-	echo -e "\n "
-
-	while (( i > 0 )); do
+	    while (( i > 0 )); do
 	        printf "\rInstance available in: ""$i"" seconds"
 	        sleep 1
 	        i=$(( i-1 ))
-	done
-	ec2cli-message "Authenticating to instance ($TARGET)..." INFO
+	    done
+    fi
 
 	#
-	# Log in -------------------------------------------------------------
+	# Log in --------------------------
 	#
-	
+    ec2cli-message "Authenticating to instance ($TARGET)..." INFO
 	# retrieve json object for selected instance
 	aws ec2 describe-instances \
 		--region $REGION \
@@ -961,7 +968,7 @@ function ec2cli-run-instances(){
 		ssh -i $SSH_KEYS/$KEY $SSH_USER@$IPADDRESS
 
 		# clean up and exit
-		rm .jsonoutput.tmp
+		rm .arrayoutput.tmp .text-output1.tmp .jsonoutput.tmp 
     	exit 0
 	fi
     #
@@ -969,7 +976,7 @@ function ec2cli-run-instances(){
     #	
 }
 
-function ec2cli-securitygroups(){
+function ec2cli-list-securitygroups(){
     # vars
     local REGION=$1
     local TOTAL
@@ -1009,11 +1016,11 @@ function ec2cli-securitygroups(){
     # clean up
     rm .ec2-qv-securitygroups.tmp
     #
-    # <-- end function ec2cli-securitygroups -->
+    # <-- end function ec2cli-list-securitygroups -->
     #
 }
 
-function ec2cli-snapshots(){
+function ec2cli-list-snapshots(){
     # vars
     local REGION=$1
     local SUM
@@ -1063,7 +1070,7 @@ function ec2cli-snapshots(){
         rm .ec2-qv-snapshots.tmp
     fi
     #
-    # <-- end function ec2cli-snapshots -->
+    # <-- end function ec2cli-list-snapshots -->
     #
 }
 
@@ -1089,7 +1096,7 @@ function ec2cli-spinner(){
 }
 
 
-function ec2cli-subnets(){
+function ec2cli-list-subnets(){
     # vars
     local TOTAL
     local REGION=$1
@@ -1128,11 +1135,11 @@ function ec2cli-subnets(){
     rm .ec2-qv.tmp
     
     #
-    # <-- end function ec2cli-subnets -->
+    # <-- end function ec2cli-list-subnets -->
     #
 }
 
-function ec2cli-tags(){
+function ec2cli-list-tags(){
     # vars
     local RESOURCEID
 
@@ -1148,11 +1155,11 @@ function ec2cli-tags(){
     echo " "
 
     #
-    # <-- end function ec2cli-tags -->
+    # <-- end function ec2cli-list-tags -->
     #
 }
 
-function ec2cli-volumes(){
+function ec2cli-list-volumes(){
     # vars
     local REGION=$1
     local SUM
@@ -1206,11 +1213,11 @@ function ec2cli-volumes(){
     fi
 
     #
-    # <-- end function ec2cli-volumes -->
+    # <-- end function ec2cli-list-volumes -->
     #
 }
 
-function ec2cli-vpcs(){
+function ec2cli-list-vpcs(){
     # vars
     local TOTAL
 
@@ -1251,7 +1258,7 @@ function ec2cli-vpcs(){
     rm .ec2-qv-vpc.tmp
 
     #
-    # <-- end function ec2cli-vpcs -->
+    # <-- end function ec2cli-list-vpcs -->
     #
 }
 
@@ -1328,7 +1335,7 @@ fi
 if [[ $1 ]]; then
     OPTION=$1   
     case $COMMAND in
-        attach | Attach | ATTACH)    
+        attach | Attach | ATTACH | attac)    
             # parse options
             case $OPTION in 
                 -v | --volumes)
@@ -1345,7 +1352,7 @@ if [[ $1 ]]; then
             esac
             ;;
 
-        create | Create | CREATE)
+        create | Create | CREATE | creat)
             # parse options
             case $OPTION in           
                 -a | -ami | -amis | --amis | -images | --images)
@@ -1381,26 +1388,26 @@ if [[ $1 ]]; then
             esac
             ;;
 
-        list | List | LIST)
+        list | List | LIST | lis)
             # parse options
             case $OPTION in           
                 -a | -ami | -amis | --amis | -images | --images)
                     #
                     # display details of Amazon Machine Images for region
                     #
-                    ec2cli-images $REGION
+                    ec2cli-list-images $REGION
                 	;;
                 -b | -subnets | --subnet | --subnets)
                     #
                     # display details of all regional vpc subnets
                     #
-                    ec2cli-subnets $REGION
+                    ec2cli-list-subnets $REGION
                 	;;
                 -g | --sgroups | --securitygroups)
                     #
                     # display details of EC2 security groups for region
                     #
-                    ec2cli-securitygroups $REGION
+                    ec2cli-list-securitygroups $REGION
                 	;;
                 -h | --h | -help | --help)
                     #
@@ -1412,39 +1419,39 @@ if [[ $1 ]]; then
                     #
                     # display instances details for region
                     #
-                    ec2cli-instances $REGION
+                    ec2cli-list-instances $REGION
                 	;;
                 -n | --vpcs)
                     #
                     # display details of vpcs for region
                     #
-                    ec2cli-vpcs $REGION
+                    ec2cli-list-vpcs $REGION
                 	;;
-                -N | --network | --networks)
+                -N | --network | --networks | --Network | --Networks)
         			#
         			# display all network details for region
         			#
-        			ec2cli-vpcs $REGION
-        			ec2cli-subnets $REGION
-        			ec2cli-securitygroups $REGION
+        			ec2cli-list-vpcs $REGION
+        			ec2cli-list-subnets $REGION
+        			ec2cli-list-securitygroups $REGION
         			;;
                 -t | --tags)
                     #
                     # display details of all EC2 tags for region
                     #
-                    ec2cli-tags         # No region parameter, tags are global 
+                    ec2cli-list-tags         # No region parameter, tags are global 
                 	;;
                 -s | -snapshots | -snapshot | --snapshot | --snapshots)
                     #
                     # display details of EC2 snapshots for region
                     #
-                    ec2cli-snapshots $REGION
+                    ec2cli-list-snapshots $REGION
                 	;;
                 -v | --volumes)
                     #
                     # display details of EBS Volume Snapshots for region
                     #
-                    ec2cli-volumes $REGION
+                    ec2cli-list-volumes $REGION
                 	;;
                 *)
                     ec2cli-error "Option [ $1 ] unknown. Invalid option specified. (code $E_BADARG)" $E_BADARG
