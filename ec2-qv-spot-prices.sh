@@ -124,7 +124,7 @@ do
 		ap-northeast-2)
 		  LOCATION="Asia Pacific (Seoul, Korea)"
                   ;;
-		ap-south)
+		ap-south-1)
 		  LOCATION="Asia Pacific (Mumbai, India)"
 		  ;;
                 ap-southeast-1)

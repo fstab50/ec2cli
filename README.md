@@ -178,6 +178,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 This section is optional. Add the following to your .bash_profile or .bashrc as convenient cli shortcuts:
 ```bash
 # Shortcut Aliases - AWS
+alias ec2cli="$EC2_REPO/ec2cli"            # path to ec2cli
 alias ec2a="$EC2_REPO/ec2cli -a list"      # list of Amazon Machine Images, default region
 alias ec2i="$EC2_REPO/ec2cli -i list"      # list of EC2 instances, default region
 alias ec2s="$EC2_REPO/ec2cli -s list"      # list of snapshots, default region
@@ -294,8 +295,8 @@ $ ./ec2cli --help
 ```
 #### Notes: ####
 * OPTION is required. Since an option represents a disparate AWS resource, only 1 option (resource) at a time is supported.
-* COMMAND is optional.  If no COMMAND given as a parameter, ec2cli defaults to the `list` command and lists details of the EC2 resource specified by the OPTION parameter
-* REGIONCODE is optional. If no REGIONCODE given as a parameter, ec2cli defaults to the AWS default region defined in the $AWS_DEFAULT_REGION environment variable (if present); or alternately, the awscli config file.
+* COMMAND is required.  If omitted, ec2cli defaults to the list command and lists details of the EC2 resource specified by the OPTION parameter.
+* REGIONCODE is optional. If omitted, ec2cli defaults to the AWS default region defined in the $AWS_DEFAULT_REGION environment variable (if present); or alternately, the awscli config file.
 * `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable additional resource types as additional types are added.
 
 * * *
