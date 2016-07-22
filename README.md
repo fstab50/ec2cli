@@ -295,7 +295,7 @@ $ ./ec2cli --help
 ```
 #### Notes: ####
 * OPTION is required. Since an option represents a disparate AWS resource, only 1 option (resource) at a time is supported.
-* COMMAND is required.  If omitted, ec2cli defaults to the list command and lists details of the EC2 resource specified by the OPTION parameter.
+* COMMAND is optional. If omitted, ec2cli defaults to the 'list' command and lists details of the EC2 resource specified by the OPTION parameter.
 * REGIONCODE is optional. If omitted, ec2cli defaults to the AWS default region defined in the $AWS_DEFAULT_REGION environment variable (if present); or alternately, the awscli config file.
 * `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable additional resource types as additional types are added.
 
