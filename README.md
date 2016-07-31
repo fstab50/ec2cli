@@ -84,16 +84,15 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 ```
 
 * Environment variables: 
-	Setup the following global environment variables by adding each to your
-	.bashrc or .bash_profile
+	Setup the following global environment variables by adding each to your	.bashrc or .bash_profile (substitute your respective values)
 ```bash                              
-	# .bashrc 
+	# .bashrc / .bash_profile 
 
 	export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
 	export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
 	export AWS_ACCESS_KEY=XXXXXXXXXXXXX    # Your IAM Access Key
 	export AWS_SECRET_KEY=XXXXXXXXXXXXX    # Your Secret Key
-	export AWS_DEFAULT_REGION=us-west-2    # Primary AWS Region  
+	export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
 ```
 
 * Install [awscli](https://github.com/aws/aws-cli/)
@@ -118,8 +117,6 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 ```bash
 	$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 ```
-
-* Setup shortcut aliases (optional, see [Aliases (optional)](#aliases) below)
 
 * * *
 
@@ -171,6 +168,13 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 	complete -C aws_completer aws
 ```
 
+* Update your path by adding the following to your .bashrc, .bash_profile, or .profile:
+```bash
+    export PATH=$PATH:$EC2_REPO
+```
+
+* Setup shortcut aliases (optional, see [Aliases](#aliases) below)
+
 * * *
 
 ## Aliases ##
@@ -178,7 +182,6 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 This section is optional. Add the following to your .bash_profile or .bashrc as convenient cli shortcuts:
 ```bash
 # Shortcut Aliases - AWS
-alias ec2cli="$EC2_REPO/ec2cli"            # path to ec2cli
 alias ec2a="$EC2_REPO/ec2cli -a list"      # list of Amazon Machine Images, default region
 alias ec2i="$EC2_REPO/ec2cli -i list"      # list of EC2 instances, default region
 alias ec2s="$EC2_REPO/ec2cli -s list"      # list of snapshots, default region

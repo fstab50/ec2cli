@@ -810,7 +810,7 @@ function ec2cli-run-instances(){
 	MAXCT=${#INSTANCES[*]} # IFS starts array index at 0
     if [[ $MAXCT = 0 ]]; then
         # no instances in region
-        ec2cli-message "No EC2 instances found in region $REGION." UDEF
+        ec2cli-message "No EC2 instances found in region $REGION." INFO
         exit 0
     fi
 
@@ -1075,9 +1075,9 @@ function ec2cli-list-snapshots(){
 }
 
 function ec2cli-spinner(){
-	# visual progress marker function
-	#
-	# vars
+    # visual progress marker function
+    # http://stackoverflow.com/users/2869509/wizurd
+    # vars
     local pid=$!
     local delay=0.1
     local spinstr='|/-\'
@@ -1088,8 +1088,6 @@ function ec2cli-spinner(){
         sleep $delay
         printf "\b\b\b\b\b\b"
     done
-    #printf "    \b\b\b\b"
-
     #
     # <-- end function ec2cli-spinner -->
     #
