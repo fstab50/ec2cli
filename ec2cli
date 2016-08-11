@@ -8,15 +8,18 @@
 #  Location: $EC2_REPO                                                    |
 #  Requires: awscli, awk, sed, jq                                         |
 #  Environment Variables (required, global):                              |
-#            SSH_KEYS                                                     |
-#            AWS_ACCESS_KEY                                               |
-#            AWS_SECRET_KEY                                               |
-#            AWS_DEFAULT_REGION                                           |
-#     	     REMOTE_RDP_PASSWD                                            |
+#                                                                         |
+#      SSH_KEYS            :   Dir containing ssh keys (.pem) files       |
+#      AWS_ACCESS_KEY      :   IAM User Private Key                       |
+#      AWS_SECRET_KEY      :   IAM User Public Key                        |
+#      AWS_DEFAULT_REGION  :   Home AWS region                            |
+#      EC2_REPO            :   Location of ec2cli utility                 |
+#      REMOTE_RDP_PASSWD   :   Windows Login passwd (optional)            |
+#                                                                         |
 #  User:     $user                                                        |
 #  Output:   CLI                                                          |
 #  Error:    stderr                                                       |
-#  Log:  $script_path/logs/                                               |
+#  Log:  $pkg_path/logs/                                                  |
 #                                                                         |
 #_________________________________________________________________________|
 
@@ -25,8 +28,8 @@
 #
 pkg="ec2cli"
 version="0.7"
-script_path=$(cd $(dirname $0); pwd -P)
-ec2cli_log="$script_path/logs/ec2cli.log"
+pkg_path=$(cd $(dirname $0); pwd -P)
+ec2cli_log="$pkg_path/logs/ec2cli.log"
 host=$(hostname)
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
 E_NOLOG=2                     # exit code if failure to create log dir, log file
@@ -37,9 +40,9 @@ E_NETWORK_ACCESS=9            # exit code if no network access from current loca
 E_MISC=11                     # exit code if miscellaneous (unspecified) error
 
 # create log dir for ec2cli
-if [[ ! -d $script_path/logs ]]; then
-    if ! mkdir -p "$script_path/logs"; then
-        echo "$pkg: failed to make log directory: $script_path/logs"
+if [[ ! -d $pkg_path/logs ]]; then
+    if ! mkdir -p "$pkg_path/logs"; then
+        echo "$pkg: failed to make log directory: $pkg_path/logs"
         exit $E_NOLOG
     fi
 fi
@@ -457,17 +460,18 @@ function ec2cli-create-snapshot(){
     # vars
     local REGION=$1
     local NOW="$(date +"%Y-%m-%d")"
-    local PROGRESSMSG="EC2 Snapshot Started.  Please wait... "
+    local PROGRESSMSG="Snapshot creation started... "
     #
     # choose volume ------------------------------------------------------
     #
     # display volumes associated with default zone for user's AWS account
-    sh $EC2_REPO/ec2-qv-volumes.sh    # includes header
+    ec2cli-list-volumes $REGION   # includes header
 
     echo -e "\nEnter the # of the volume of which you wish to take a snapshot."
 
     # collect list of all current AWS Regions globally:
     aws ec2 describe-volumes \
+            --region $REGION \
             --output text \
             --query 'Volumes[*].[VolumeId]' \
     >> .create-snapshot.tmp
@@ -487,29 +491,30 @@ function ec2cli-create-snapshot(){
 
     # display choices from array
     cat .arrayoutput.tmp
+    # clean up
+    rm .create-snapshot.tmp .arrayoutput.tmp
 
     # read volume choice in from user
     echo ""
-    read -p "Enter # of choice or hit return for default [0]: " CHOICE
+    read -p "Enter # of choice or hit return quit [quit]: " CHOICE
     echo ""
 
     # assign volume to choice
     if [ -z "$CHOICE" ]; then
             # CHOICE is blank, assign default
             CHOICE=0
+            exit 0
     fi
 
     VOLID=${VOLUMES[$CHOICE]}
-    echo "You chose to create a snapshot of Volume $VOLID."
-
-    # clean up
-    rm .create-snapshot.tmp .arrayoutput.tmp
-
+    ec2cli-message "Creating snapshot of $VOLID in region $REGION." INFO
+    
     #
     # create snapshot ----------------------------------------------------
     #
     # description = concatenate volume date + Name tag
     NAMETAG=$(aws ec2 describe-volumes \
+            --region $REGION \
             --volume-id  $VOLID \
             --query 'Volumes[*].[Tags[0].Value]' \
             --output text)
@@ -517,13 +522,18 @@ function ec2cli-create-snapshot(){
     DESCRIPTION=$NOW", ""$NAMETAG"
 
     # start snapshot
-    aws ec2 create-snapshot --volume-id $VOLID --description "$DESCRIPTION" | jq . 
+    aws ec2 create-snapshot \
+            --region $REGION \
+            --volume-id $VOLID \
+            --description "$DESCRIPTION" | jq . 
 
     # progress meter while wait, inspect snapshot for VOLID
-    aws ec2 wait snapshot-completed --filters Name="volume-id",Values=$VOLID &
+    aws ec2 wait snapshot-completed \
+            --region $REGION \
+            --filters Name="volume-id",Values=$VOLID &
 
     # call function to show on screen while wait
-    ec2cli-spinner  
+    ec2cli-spinner $PROGRESSMSG
 
     # log and exit
     ec2cli-message "Snapshot created $NOW in region $REGION." INFO
@@ -1075,6 +1085,8 @@ function ec2cli-list-snapshots(){
 }
 
 function ec2cli-spinner(){
+    # vars
+    local PROGRESSTXT="Please wait..."
     # visual progress marker function
     # http://stackoverflow.com/users/2869509/wizurd
     # vars
@@ -1209,7 +1221,6 @@ function ec2cli-list-volumes(){
         # clean up
         rm .ec2-qv-volumes.tmp
     fi
-
     #
     # <-- end function ec2cli-list-volumes -->
     #
