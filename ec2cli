@@ -467,14 +467,19 @@ function ec2cli-create-snapshot(){
     # display volumes associated with default zone for user's AWS account
     ec2cli-list-volumes $REGION   # includes header
 
-    echo -e "\nEnter the # of the volume of which you wish to take a snapshot."
-
     # collect list of all current AWS Regions globally:
     aws ec2 describe-volumes \
             --region $REGION \
             --output text \
             --query 'Volumes[*].[VolumeId]' \
     >> .create-snapshot.tmp
+
+    # check for non-zero ebs volumes in region
+    if [[ ! "$(grep "vol-" .create-snapshot.tmp)" ]]; then
+        # no ebs volumes to snapshot, exit
+        rm .create-snapshot.tmp
+        ec2cli-error-exit "No EBS volumes in region $REGION. Exiting." $E_DEPENDENCY
+    fi
 
     # Use built-in IFS to read in all lines in tmp file
     IFS=$'\n' read -d '' -r -a VOLUMES < .create-snapshot.tmp
@@ -490,6 +495,7 @@ function ec2cli-create-snapshot(){
     done
 
     # display choices from array
+    echo -e "\nEnter the # of the volume of which you wish to take a snapshot."
     cat .arrayoutput.tmp
     # clean up
     rm .create-snapshot.tmp .arrayoutput.tmp
