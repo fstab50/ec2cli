@@ -461,88 +461,105 @@ function ec2cli-create-snapshot(){
     local REGION=$1
     local NOW="$(date +"%Y-%m-%d")"
     local PROGRESSMSG="Snapshot creation started... "
-    #
-    # choose volume ------------------------------------------------------
-    #
-    # display volumes associated with default zone for user's AWS account
-    ec2cli-list-volumes $REGION   # includes header
-
-    # collect list of all current AWS Regions globally:
-    aws ec2 describe-volumes \
-            --region $REGION \
-            --output text \
-            --query 'Volumes[*].[VolumeId]' \
-    >> .create-snapshot.tmp
-
-    # check for non-zero ebs volumes in region
-    if [[ ! "$(grep "vol-" .create-snapshot.tmp)" ]]; then
-        # no ebs volumes to snapshot, exit
-        rm .create-snapshot.tmp
-        ec2cli-error-exit "No EBS volumes in region $REGION. Exiting." $E_DEPENDENCY
-    fi
-
-    # Use built-in IFS to read in all lines in tmp file
-    IFS=$'\n' read -d '' -r -a VOLUMES < .create-snapshot.tmp
-
-    # array max length
-    MAXCT=${#VOLUMES[*]} # keep in mind, IFS starts array index at 0
-
-    # load output choice array
-    i=0  
-    while (( i < $MAXCT )); do
-            echo "($i): ""${VOLUMES[$i]}" >> .arrayoutput.tmp
-            i=$(( $i+1 ))
-    done
-
-    # display choices from array
-    echo -e "\nEnter the # of the volume of which you wish to take a snapshot."
-    cat .arrayoutput.tmp
-    # clean up
-    rm .create-snapshot.tmp .arrayoutput.tmp
-
-    # read volume choice in from user
-    echo ""
-    read -p "Enter # of choice or hit return quit [quit]: " CHOICE
-    echo ""
-
-    # assign volume to choice
-    if [ -z "$CHOICE" ]; then
-            # CHOICE is blank, assign default
-            CHOICE=0
-            exit 0
-    fi
-
-    VOLID=${VOLUMES[$CHOICE]}
-    ec2cli-message "Creating snapshot of $VOLID in region $REGION." INFO
+    local VALID    # loop break
     
-    #
-    # create snapshot ----------------------------------------------------
-    #
-    # description = concatenate volume date + Name tag
-    NAMETAG=$(aws ec2 describe-volumes \
-            --region $REGION \
-            --volume-id  $VOLID \
-            --query 'Volumes[*].[Tags[0].Value]' \
-            --output text)
+    VALID=0
+    while [ $VALID -eq 0 ]; do
+        #
+        # choose volume ----------------------
+        #
+        # display volumes associated with default zone for user's AWS account
+        ec2cli-list-volumes $REGION   # includes header
 
-    DESCRIPTION=$NOW", ""$NAMETAG"
+        # collect list of all current AWS Regions globally:
+        aws ec2 describe-volumes \
+                --region $REGION \
+                --output text \
+                --query 'Volumes[*].[VolumeId]' \
+        >> .create-snapshot.tmp
 
-    # start snapshot
-    aws ec2 create-snapshot \
-            --region $REGION \
-            --volume-id $VOLID \
-            --description "$DESCRIPTION" | jq . 
+        # check for non-zero ebs volumes in region
+        if [[ ! "$(grep "vol-" .create-snapshot.tmp)" ]]; then
+            # no ebs volumes to snapshot, exit
+            rm .create-snapshot.tmp
+            ec2cli-error-exit "No EBS volumes in region $REGION. Exiting." $E_DEPENDENCY
+        fi
 
-    # progress meter while wait, inspect snapshot for VOLID
-    aws ec2 wait snapshot-completed \
-            --region $REGION \
-            --filters Name="volume-id",Values=$VOLID &
+        # Use built-in IFS to read in all lines in tmp file
+        IFS=$'\n' read -d '' -r -a VOLUMES < .create-snapshot.tmp
 
-    # call function to show on screen while wait
-    ec2cli-spinner $PROGRESSMSG
+        # array max length
+        MAXCT=${#VOLUMES[*]} # keep in mind, IFS starts array index at 0
 
-    # log and exit
-    ec2cli-message "Snapshot created $NOW in region $REGION." INFO
+        # load output choice array
+        i=0  
+        while (( i < $MAXCT )); do
+                echo "($i): ""${VOLUMES[$i]}" >> .arrayoutput.tmp
+                i=$(( $i+1 ))
+        done
+
+        # display choices from array
+        echo -e "\nEnter the # of the volume of which you wish to take a snapshot."
+        cat .arrayoutput.tmp
+        # clean up
+        rm .create-snapshot.tmp .arrayoutput.tmp
+
+        # read volume choice in from user
+        echo ""
+        read -p "Enter # of choice or hit return quit [quit]: " CHOICE
+        echo ""
+
+        # assign volume to choice
+        if [ -z "$CHOICE" ]; then
+                # CHOICE is blank, assign default
+                CHOICE=0
+                VALID=1
+                return
+        fi
+
+        VOLID=${VOLUMES[$CHOICE]}
+        ec2cli-message "Creating snapshot of $VOLID in region $REGION." INFO
+        
+        #
+        # create snapshot ----------------------------------------------------
+        #
+        # description = concatenate volume date + Name tag
+        NAMETAG=$(aws ec2 describe-volumes \
+                --region $REGION \
+                --volume-id  $VOLID \
+                --query 'Volumes[*].[Tags[0].Value]' \
+                --output text)
+
+        DESCRIPTION=$NOW", ""$NAMETAG"
+
+        # start snapshot
+        aws ec2 create-snapshot \
+                --region $REGION \
+                --volume-id $VOLID \
+                --description "$DESCRIPTION" | jq . 
+
+        # progress meter while wait, inspect snapshot for VOLID
+        aws ec2 wait snapshot-completed \
+                --region $REGION \
+                --filters Name="volume-id",Values=$VOLID &
+
+        # call function to show on screen while wait
+        ec2cli-spinner $PROGRESSMSG
+
+        # log and exit
+        ec2cli-message "Snapshot [$VOLID] created $NOW in region $REGION." INFO
+        
+        # create more snapshots
+        echo ""
+        read -p "Create another snapshot? [quit]: " CHOICE
+        echo ""
+        if [ -z "$CHOICE" ]; then
+                # CHOICE is blank, assign default (quit)
+                VALID=1
+                return
+        fi
+    # end while loop
+    done
     #
     # <-- end function ec2cli-create-snapshot -->
     #
@@ -974,7 +991,10 @@ function ec2cli-run-instances(){
 
 	if [[ $OS == "windows" ]]; then
 			# windows instance, validate deps & log in via RDP
-			ec2cli-rdp-login $TARGET $IPADDRESS
+            # clean up
+            rm .arrayoutput.tmp .text-output1.tmp .jsonoutput.tmp 
+			# windows login
+            ec2cli-rdp-login $TARGET $IPADDRESS
 	else
 		# Linux instance, discover required access key
 		KEY=$(jq -r '.Reservations[].Instances[].KeyName' .jsonoutput.tmp)".pem"

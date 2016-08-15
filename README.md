@@ -255,7 +255,7 @@ You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-q
 
 ## Usage ##
 ```bash
-$ ./ec2cli --help     
+$ ec2cli --help     
 
  Help Contents
 
@@ -309,52 +309,52 @@ $ ./ec2cli --help
 List command displays AWS resource details for your AWS default region if no region specified. If an alternate region given as a parameter, displays resource details for the specified region.
 
 ```bash
-$ ./ec2cli -n list   # list vpc nextwork details, AWS default aws region (us-west-2)
+$ ec2cli -n list   # list vpc nextwork details, AWS default aws region (us-west-2)
 ```
 ![](./images/ec2vpc.png)
 
 ```bash
-$ ./ec2cli -n list eu-west-1    # list vpc nextwork details, alternate region (eu-west-1)
+$ ec2cli -n list eu-west-1    # list vpc nextwork details, alternate region (eu-west-1)
 ```
 ![](./images/ec2vpc_altregion.png)
 
 ```bash
-$ ./ec2cli -b list   # list subnet details, AWS default region (us-west-2)
+$ ec2cli -b list   # list subnet details, AWS default region (us-west-2)
 ```
 ![](./images/ec2sub.png)
 
 ```bash
-$ ./ec2cli -b list eu-west-1    # list subnet details, alternate region (eu-west-1)
+$ ec2cli -b list eu-west-1    # list subnet details, alternate region (eu-west-1)
 ```
 ![](./images/ec2sub_altregion.png)
 
 ```bash
-$ ./ec2cli -i list   # list ec2 instances, AWS default region (us-west-2)
+$ ec2cli -i list   # list ec2 instances, AWS default region (us-west-2)
 ```
 ![](./images/ec2i.png)
 
 ```bash
-$ ./ec2cli -i list  # list (running) ec2 instances, AWS default region (us-west-2)
+$ ec2cli -i list  # list (running) ec2 instances, AWS default region (us-west-2)
 ```
 ![](./images/ec2i_running-instances.png)
 
 ```bash
-$ ./ec2cli -v list   # list ebs volume details, AWS default region (us-west-2)
+$ ec2cli -v list   # list ebs volume details, AWS default region (us-west-2)
 ```
 ![](./images/ec2v.png)
 
 ```bash
-$ ./ec2cli -s list   # list snapshots, AWS default region (us-west-2)
+$ ec2cli -s list   # list snapshots, AWS default region (us-west-2)
 ```
 ![](./images/ec2s.png)
 
 ```bash
-$ ./ec2cli -g list   # list security group details, AWS default region (us-west-2)
+$ ec2cli -g list   # list security group details, AWS default region (us-west-2)
 ```
 ![](./images/ec2sg.png)
 
 ```bash
-$ ./ec2cli -g list us-east-1    # list security group details, alt region (us-east-1)
+$ ec2cli -g list us-east-1    # list security group details, alt region (us-east-1)
 ```
 ![](./images/ec2sg_altregion.png)
 
@@ -366,7 +366,7 @@ $ ./ec2cli -g list us-east-1    # list security group details, alt region (us-ea
 *as well as starting a stopped instance. See step 2. (below)* 
 
 ```bash
-$ ./ec2cli -i run    # run/ log on to EC2 instances in default region
+$ ec2cli -i run    # run/ log on to EC2 instances in default region
 ```
 1.Select from list of instance choices:
 
