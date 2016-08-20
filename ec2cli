@@ -213,7 +213,7 @@ function ec2cli-precheck(){
     if [[ ! -f $HOME/.aws/config ]]; then
         ec2cli-error-exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
     fi
-    ## validate aws default region set (Must be located after awscli config check) ##
+    ## validate aws default region set (must occur post awscli config check) ##
     if [[ $(env | grep AWS_DEFAULT_REGION) ]]; then
 	   REGION=$AWS_DEFAULT_REGION
     else
@@ -534,6 +534,7 @@ function ec2cli-create-snapshot(){
 
         # start snapshot
         aws ec2 create-snapshot \
+                --output json \
                 --region $REGION \
                 --volume-id $VOLID \
                 --description "$DESCRIPTION" | jq . 
@@ -579,7 +580,7 @@ function ec2cli-list-instances(){
     printf "\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n" | indent18
 
     # pull json info, all instances in region
-    aws ec2 describe-instances --region $REGION > .jsonoutput.tmp
+    aws ec2 describe-instances --region $REGION --output json > .jsonoutput.tmp
 
     # load fields into respective arrays
     ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
@@ -630,8 +631,8 @@ function ec2cli-list-instances(){
 
         # print header
         echo -ne "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime Tag\n \
-            ----------  ---------  ---------- --------------    ------------   \
-            --------------  -----------   --------------------\n" > .body.tmp
+            ----------  ---------  ------- --------------  ------------   \
+            --------------  ----------   --------------------\n" > .body.tmp
         #
         # output table of json array
         #
@@ -644,14 +645,14 @@ function ec2cli-list-instances(){
         #
         # print and format output
         #
-        awk  '{ printf "%-11s %-10s %-11s %-15s %-13s %-15s %-12s %-2s %-2s \n", \
+        awk  '{ printf "%-11s %-10s %-8s %-15s %-13s %-15s %-11s %-2s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9}' .body.tmp | indent02
         # print footer
         printf "\n\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}    ($r currently running)\n\n" | indent10
     else
         # no running instances, eliminate PublicIP and RunTime columns, print header
         echo -ne "InstanceId* Type State SecurityGroup Root-Volume Tag\n \
-            ---------- --------- ---------- -------------- ------------ \
+            ---------- --------- ------- -------------- ------------ \
             --------------------\n" > .body.tmp
         #
         # output table of json array
@@ -664,7 +665,7 @@ function ec2cli-list-instances(){
             i=$(( $i+1 ))
         done
             # print and format output
-            awk  '{ printf "%-11s %-10s %-11s %-16s %-13s %-10s %-2s %-2s %-2s %-2s \n", \
+            awk  '{ printf "%-11s %-10s %-8s %-16s %-13s %-10s %-2s %-2s %-2s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .body.tmp | indent02
 
         # print footer
@@ -912,7 +913,10 @@ function ec2cli-run-instances(){
     MYCIDR="$(cat .myip.tmp)/32"
 
     # grab security group details
-    aws ec2 describe-security-groups --region $REGION --group-ids $(cat .secgrp-ids.tmp) > .jsonoutput.tmp
+    aws ec2 describe-security-groups \
+        --output json \
+        --region $REGION \
+        --group-ids $(cat .secgrp-ids.tmp) > .jsonoutput.tmp
     ARR_PORT=( $(jq -r '.SecurityGroups[].IpPermissions[].ToPort' .jsonoutput.tmp) )
     ARR_IP=( $(jq -r '.SecurityGroups[].IpPermissions[].IpRanges[].CidrIp' .jsonoutput.tmp) )
     MAXCT=${#ARR_PORT[*]} 
@@ -950,7 +954,7 @@ function ec2cli-run-instances(){
         ec2cli-message "Instance ($TARGET) already running.  Logging in..." INFO
     else
         # instance not running, attempt to start
-	    aws ec2 start-instances --region $REGION --instance-ids $TARGET | jq . 
+	    aws ec2 start-instances --region $REGION --output json --instance-ids $TARGET | jq . 
 
 	    # wait for instance to start, return after
 	    aws ec2 wait instance-running --region $REGION --instance-ids $TARGET &
@@ -975,7 +979,8 @@ function ec2cli-run-instances(){
     ec2cli-message "Authenticating to instance ($TARGET)..." INFO
 	# retrieve json object for selected instance
 	aws ec2 describe-instances \
-		--region $REGION \
+        --region $REGION \
+        --output json \
 		--instance-id $TARGET > .jsonoutput.tmp
 	
 	# discover public ip assignment
@@ -1202,7 +1207,9 @@ function ec2cli-list-volumes(){
     local TOTAL
 
     # sum total size of all volumes (display in footer)
-    SUM=$(aws ec2 describe-volumes --region $REGION | jq -r '.Volumes | map(.Size) | add')
+    SUM=$(aws ec2 describe-volumes \
+        --region $REGION \
+        --output json | jq -r '.Volumes | map(.Size) | add')
 
     if [ $SUM == "null" ] || [ $SUM -eq 0 ]
     then
@@ -1266,7 +1273,7 @@ function ec2cli-list-vpcs(){
     # output from aws
     aws ec2 describe-vpcs \
         --output text \
-      --region $REGION \
+        --region $REGION \
         --query "Vpcs[*]. \
             [VpcId, \
             State, \
