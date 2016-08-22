@@ -31,6 +31,9 @@ version="0.7"
 pkg_path=$(cd $(dirname $0); pwd -P)
 ec2cli_log="$pkg_path/logs/ec2cli.log"
 host=$(hostname)
+system=$(uname)
+
+# error codes
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
 E_NOLOG=2                     # exit code if failure to create log dir, log file
 E_BADSHELL=3                  # exit code if incorrect shell detected
@@ -38,14 +41,6 @@ E_USER_CANCEL=7               # exit code if user cancel
 E_BADARG=8                    # exit code if bad input parameter		
 E_NETWORK_ACCESS=9            # exit code if no network access from current location
 E_MISC=11                     # exit code if miscellaneous (unspecified) error
-
-# create log dir for ec2cli
-if [[ ! -d $pkg_path/logs ]]; then
-    if ! mkdir -p "$pkg_path/logs"; then
-        echo "$pkg: failed to make log directory: $pkg_path/logs"
-        exit $E_NOLOG
-    fi
-fi
 
 #
 # Formatting
@@ -188,12 +183,20 @@ function ec2cli-error-exit(){
 }
 
 function ec2cli-precheck(){
-    #
     ## test default shell ##
     if [ ! -n "$BASH" ]; then
         # shell other than bash 
         ec2cli-error-exit "Default shell appears to be something other than bash. Please rerun with bash. Aborting (code $E_BADSHELL)" $E_BADSHELL
     fi
+
+    ## create log dir for ec2cli ##
+    if [[ ! -d $pkg_path/logs ]]; then
+        if ! mkdir -p "$pkg_path/logs"; then
+            echo "$pkg: failed to make log directory: $pkg_path/logs"
+            exit $E_NOLOG
+        fi
+    fi
+
     ## set fs pointer to writeable temp location ##
     if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]; then
             # in-memory
@@ -203,16 +206,19 @@ function ec2cli-precheck(){
             TMPDIR="/tmp"
             cd $TMPDIR 
     fi
+    
     ## check for required cli tools ##
     for prog in aws ssh dig; do
         if ! type "$prog" > /dev/null 2>&1; then
             ec2cli-error-exit "$prog is required and not found in the PATH. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
         fi
     done
+    
     ## check if awscli tools are configured ##
     if [[ ! -f $HOME/.aws/config ]]; then
         ec2cli-error-exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
     fi
+    
     ## validate aws default region set (must occur post awscli config check) ##
     if [[ $(env | grep AWS_DEFAULT_REGION) ]]; then
 	   REGION=$AWS_DEFAULT_REGION
@@ -220,22 +226,24 @@ function ec2cli-precheck(){
         # global env not set, check aws default region setting
         REGION=$(aws configure list | grep region | awk '{print $2}')
     fi
+    
     ## check for jq, use system installed version if found, otherwise use bundled ##
     if which jq > /dev/null; then
         jq=$(which jq)
     else
         jq="assets/jq/$system/jq"
         if [[ ! -f $jq ]]; then
-            ec2cli-error-exit "no viable jq binary found, Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+            ec2cli-error-exit "no viable json parser binary (jq) found, Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
         fi
     fi
+    
     ## check global environment variables, linux instances ##
 	if [[ ! $(env | grep SSH_KEYS) ]]; then
 		#
 		# path to ec2 .pem files not found, auto-login \
 		# to instances will fail when attempted
 		#
-		ec2cli-error "SSH_KEYS environment variable not set. Option -r, --run will fail." $E_DEPENDENCY
+		ec2cli-error "SSH_KEYS environment variable not set. Login will fail when Command 'run' attempted." $E_DEPENDENCY
 	fi
     #
     # <-- end function ec2cli-precheck -->
@@ -244,7 +252,7 @@ function ec2cli-precheck(){
 
 function ec2cli-precheck-windows(){
 	#
-	# Linux client RDP login deps
+	# Windows RDP login deps (Linux client rdesktop)
 	#
 	# check global environment variables, windows instances
 	if [[ ! $(env | grep REMOTE_RDP_PASSWD) ]]; then
@@ -821,7 +829,8 @@ function ec2cli-run-instances(){
 	local tmpID           		# temp holder for instance ID
 	local VALID           		# loop break
     local i                     # loop counter
-	#
+	
+    #
 	# choose instance -----------------
 	#
 	aws ec2 describe-instances \
@@ -858,11 +867,11 @@ function ec2cli-run-instances(){
 	done
 
 	# display choices from array
-	echo -e "     InstanceID    Type     State   SecurityGroup     Root-Volume      PublicIP       Description"
-	echo -e "     ----------  ---------  ------- --------------    ------------   --------------   -------------------------"
+	echo -e "     InstanceID    Type     State    SecurityGroup    Root-Volume     PublicIP      Description"
+	echo -e "     ----------  ---------  -------  ---------------  ------------  --------------  -------------------------"
 
 	# values
-	awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-14s %-16s %-2s %-2s %-2s %-2s \n", \
+	awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-13s %-15s %-2s %-2s %-2s %-2s \n", \
 	        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .arrayoutput.tmp
 
 	# get user input while checking type and range
