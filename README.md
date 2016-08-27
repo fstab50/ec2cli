@@ -1,4 +1,4 @@
-# ec2cli - Utilities for working with Amazon EC2 
+# EC2cli - Utilities for working with Amazon EC2 
 
 * [About](#about-this-repository)
 * [License](#license)
@@ -17,10 +17,10 @@
 
 ## About this repository 
 
-* Purpose:      CLI utilities for use with Amazon Web Services (AWS)
-* Version:      0.7 
-* Repo:         [ec2cli] https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
-* Mirror repo located at: https://github.com/t-stark/ec2cli 
+* Purpose:       CLI utilities for use with Amazon Web Services (AWS)
+* Version:       0.7 
+* Repo:          [ec2cli] https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+* Mirror repo:   https://github.com/t-stark/ec2cli 
 
 * * *
 
