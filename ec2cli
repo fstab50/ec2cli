@@ -584,9 +584,6 @@ function ec2cli-list-instances(){
     local RUNSECS           # runtime in sec
     local MAXCT             # max length of array (json object)
 
-    # print region identifier
-    printf "\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n" | indent18
-
     # pull json info, all instances in region
     aws ec2 describe-instances --region $REGION --output json > .jsonoutput.tmp
 
@@ -604,9 +601,19 @@ function ec2cli-list-instances(){
     # count instances found
     MAXCT=${#ARR_STATE[*]} 
 
+    # test for presence of instances in region
+    if [ $MAXCT -eq 0 ]; then
+        # no instances in region
+        printf "\n** ${white}${BOLD}$MAXCT${UNBOLD}${reset} Instances found in region [$REGION] **\n\n" | indent10
+        return
+    fi
+
     #
-    # test, running instances
+    # instances in region.  test if running instances
     #
+    # print region identifier
+    printf "\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n" | indent18
+
     if [ "$(printf '%s\n' "${ARR_STATE[@]}" | grep "running")" ]; then
         #
         # at least 1 running instance found, calc runtime
