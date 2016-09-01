@@ -77,7 +77,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 * Install jq, a JSON parser from your local distribution repository.
 ```bash
-	$ sudo apt-get install jq    # Ubuntu, Ubuntu-based distributions
+	$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
 ```
 ```bash
 	$ sudo yum install jq        # RedHat, Fedora, CentOS 
@@ -319,42 +319,43 @@ $ ec2cli -n list eu-west-1    # list vpc nextwork details, alternate region (eu-
 ![](./images/ec2vpc_altregion.png)
 
 ```bash
-$ ec2cli -b list   # list subnet details, AWS default region (us-west-2)
+$ ec2cli -b    # list subnet details, AWS default region (us-west-2)
+               # if no COMMAND given, command defaults to 'list'
 ```
 ![](./images/ec2sub.png)
 
 ```bash
-$ ec2cli -b list eu-west-1    # list subnet details, alternate region (eu-west-1)
+$ ec2cli -b eu-west-1    # list subnet details, alternate region (eu-west-1)
 ```
 ![](./images/ec2sub_altregion.png)
 
 ```bash
-$ ec2cli -i list   # list ec2 instances, AWS default region (us-west-2)
+$ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
 ```
 ![](./images/ec2i.png)
 
 ```bash
-$ ec2cli -i list  # list (running) ec2 instances, AWS default region (us-west-2)
+$ ec2cli -i    # list (running) ec2 instances, AWS default region (us-west-2)
 ```
 ![](./images/ec2i_running-instances.png)
 
 ```bash
-$ ec2cli -v list   # list ebs volume details, AWS default region (us-west-2)
+$ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
 ```
 ![](./images/ec2v.png)
 
 ```bash
-$ ec2cli -s list   # list snapshots, AWS default region (us-west-2)
+$ ec2cli -s    # list snapshots, AWS default region (us-west-2)
 ```
 ![](./images/ec2s.png)
 
 ```bash
-$ ec2cli -g list   # list security group details, AWS default region (us-west-2)
+$ ec2cli -g    # list security group details, AWS default region (us-west-2)
 ```
 ![](./images/ec2sg.png)
 
 ```bash
-$ ec2cli -g list us-east-1    # list security group details, alt region (us-east-1)
+$ ec2cli -g us-east-1    # list security group details, alt region (us-east-1)
 ```
 ![](./images/ec2sg_altregion.png)
 
