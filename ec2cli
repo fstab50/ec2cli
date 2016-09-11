@@ -6,7 +6,7 @@
 #  Purpose:  Display details AWS ec2 resources from cli environment       |  
 #  Name:     ec2cli                                                       |
 #  Location: $EC2_REPO                                                    |
-#  Requires: awscli, awk, sed, jq                                         |
+#  Requires: awscli, jq, dig, awk, sed                                    |
 #  Environment Variables (required, global):                              |
 #                                                                         |
 #      SSH_KEYS            :   Dir containing ssh keys (.pem) files       |
@@ -26,7 +26,7 @@
 #	
 # global variables
 #
-pkg="ec2cli"
+pkg=$(basename $0)
 version="0.7"
 pkg_path=$(cd $(dirname $0); pwd -P)
 ec2cli_log="$pkg_path/logs/ec2cli.log"
@@ -53,7 +53,7 @@ red=$(tput setaf 1)
 white=$(tput setaf 7)
 yellow=$(tput setaf 3)
 reset=$(tput sgr0)
-#
+#   
 BOLD=`tput bold`              
 UNBOLD=`tput sgr0`           
 
@@ -464,6 +464,144 @@ function ec2cli-attach-volume(){
     #   
 }
 
+function ec2cli-create-image(){
+    # vars
+    local REGION=$1         # aws region
+    local CHOICE            # variable to hold user choice
+    local DESCRIPTION       # user provided description for newly created image
+    local INSTANCEID        # instance chosen for image creation
+    local MAXCT             # max number of values in array
+    local NOW               # date, formatted
+    local NAME              # user provided name for newly created image
+    local VALID             # loop break
+
+    # pull json info, all instances in region
+    aws ec2 describe-instances --region $REGION --output json > .jsonoutput.tmp
+
+    # load fields into respective arrays
+    ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
+    ARR_IP=( $(jq -r '.Reservations[].Instances[].PublicIpAddress' .jsonoutput.tmp) )
+    ARR_LT=( $(jq -r '.Reservations[].Instances[].LaunchTime' .jsonoutput.tmp) )
+    ARR_ID=( $(jq -r '.Reservations[].Instances[].InstanceId' .jsonoutput.tmp) )
+    ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' .jsonoutput.tmp) )
+    ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' .jsonoutput.tmp) )
+    # limit security grp name to 15 chars
+    ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' .jsonoutput.tmp | cut -c 1-15) )
+    # limit length of tag fields to 20 chars
+    ARR_TAG=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+    # count instances found
+    MAXCT=${#ARR_STATE[*]} 
+
+    # test for 0 instances in region
+    if [[ $MAXCT = 0 ]]; then
+        # no instances in region
+        ec2cli-logger "INFO: function ec2cli-create-image: attempt to create AMI image"
+        ec2cli-message "No EC2 instances found in region $REGION." INFO
+        return
+    fi
+
+    # > 0 instances in region, print region identifier
+    printf "\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n" | indent18
+
+    #
+    # output table of json array
+    #
+    i=0
+    while (( i < $MAXCT )); do
+        echo "($i): "${ARR_ID[$i]} ${ARR_TYPE[$i]} ${ARR_STATE[$i]} ${ARR_SG[$i]} \
+              ${ARR_DEV[$i]} ${ARR_TAG[$i]} >> .arrayoutput.tmp
+        # incr ct     
+        i=$(( $i+1 ))
+    done
+
+    # display choices from array
+    echo -e "     InstanceID    Type     State    SecurityGroup    Root-Volume   Description"
+    echo -e "     ----------  ---------  -------  ---------------  ------------  -------------------------"
+
+    # values
+    awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-13s %-2s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .arrayoutput.tmp 
+
+    # print footer
+    printf "\nTotal Instances in region [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n" | indent10
+
+    # get user input while checking type and range
+    VALID=0    # set loop break
+    while [ $VALID -eq 0 ]; do
+            # read choice in from user
+            echo ""
+            read -p "${yellow}  Enter instance # to create Amazon Machine Image (AMI) [quit]: ${reset}" CHOICE 
+            echo ""
+
+            # assign instance to choice
+            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+                    # invalid user entry
+                    echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+                    ### FIXME:  Fails if enter integer with 2 digits ###
+            else
+                    if [[ -z "$CHOICE" ]]; then
+                            # CHOICE is blank, clean up and assign default [quit]
+                            rm .arrayoutput.tmp 
+                            return
+                            #exit $E_USER_CANCEL
+                    else
+                            # valid user entry, exit loop
+                            VALID=1
+                    fi
+            fi
+    done
+
+    ## retrieve tag values Description, Name ##
+    INSTANCEID=${ARR_ID[$CHOICE]}
+    # retrieve json object for selected instance
+    aws ec2 describe-instances \
+        --region $REGION \
+        --instance-ids $INSTANCEID \
+        --output json > .jsoninstance.tmp
+    NOW="$(date +"%Y-%m-%d")"
+    TAGS=( $(jq -r '.Reservations[].Instances[].Tags[].Key' .jsoninstance.tmp) )
+    
+    # search thru array of tags assoc with this instances
+    NAME=""             # initialize
+    DESCRIPTION=""      # initialize
+    i=0                 # counter
+    for key in ${TAGS[*]}; do
+        # get Name 
+        if [ $key == "Name" ] || [ $key == "name" ]; then
+            NAME=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
+        fi        
+        # get description
+        if [ $key == "Description" ] || [ $key == "description" ]; then
+            DESCRIPTION=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
+        fi
+        # increment
+        i=$(( $i+1 ))
+    done
+
+    ## defaults if no tags ##
+    if [ "$NAME" == "" ]; then
+        # no name tag exists, set to instance-id
+        NAME="AMI_"$INSTANCEID
+    fi
+    if [ "$DESCRIPTION" == "" ]; then 
+        # no description tag exists
+        DESCRIPTION="Image_created: "$NOW
+    fi
+
+    # TEST
+    echo -e "\nName is: "$NAME
+    echo -e "Description is: "$DESCRIPTION
+
+    # create image
+    aws ec2 create-image --region $REGION --instance-id $INSTANCEID --name "$NAME" --description "$DESCRIPTION"
+
+    # clean up
+    rm .jsonoutput.tmp .arrayoutput.tmp .jsoninstance.tmp
+    #
+    # <-- end function ec2cli-create-image -->
+    #
+}
+
 function ec2cli-create-snapshot(){
     # vars
     local REGION=$1
@@ -601,13 +739,14 @@ function ec2cli-list-instances(){
     # count instances found
     MAXCT=${#ARR_STATE[*]} 
 
-    # test for presence of instances in region
-    if [ $MAXCT -eq 0 ]; then
+    # test for 0 instances in region
+    if [[ $MAXCT = 0 ]]; then
         # no instances in region
-        printf "\n** ${white}${BOLD}$MAXCT${UNBOLD}${reset} Instances found in region [$REGION] **\n\n" | indent10
+        ec2cli-logger "INFO: function ec2cli-list-instances: list instances"
+        ec2cli-message "No EC2 instances found in region $REGION." INFO
         return
     fi
-
+    
     #
     # instances in region.  test if running instances
     #
@@ -699,15 +838,7 @@ function ec2cli-list-instances(){
 function ec2cli-list-images(){
     # vars
     local REGION=$1
-    local TOTAL
-
-    # print region identifier
-    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n\n" | indent18
-
-    # print header
-    echo -ne "AMI-id Type vType Drv RootDev SnapshotId Description\n \
-            ------------ ------- ----------- --- --------- ------------- \
-            --------------------------------------\n" > .ec2-qv-amis.tmp
+    local MAXCT
 
     # output from aws
     aws ec2 describe-images \
@@ -722,20 +853,62 @@ function ec2cli-list-images(){
             RootDeviceName, \
             BlockDeviceMappings[0].Ebs.SnapshotId, \
             Description]" \
-    >> .ec2-qv-amis.tmp
+    > .ec2-qv-amis.tmp
 
     # count total
-    TOTAL=$(cat .ec2-qv-amis.tmp | grep ami | wc -l)
+    MAXCT=$(cat .ec2-qv-amis.tmp | grep ami | wc -l)
+
+    # test for 0 instances in region
+    if [[ $MAXCT = 0 ]]; then
+        # no instances in region
+        ec2cli-logger "INFO: function ec2cli-list-images: list AMI images"
+        ec2cli-message "No Amazon Machine Images found in region $REGION." INFO
+        rm .ec2-qv-amis.tmp    # clean up
+        return
+    fi
+
+    ## ISSUE 29 PREWORK ##
+    # retrieve json array
+    aws ec2 describe-images --region $REGION --output json --owner self > .jsonimages.tmp
+    ARR_IMAGEID=( $(jq -r ".Images[].ImageId" .jsonimages.tmp) )
+    ARR_TYPE=( $(jq -r ".Images[].ImageType" .jsonimages.tmp) )
+    ARR_VTYPE=( $(jq -r ".Images[].VirtualizationType" .jsonimages.tmp) )
+    ARR_CREATEDATE=( $(jq -r ".Images[].CreationDate" .jsonimages.tmp) )
+    ARR_SNAP=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" .jsonimages.tmp) )
+    ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp) )
+    
+    # convert date-time format to %Y-%m-%d
+    i=0     # initialize counter
+    for date in ${ARR_CREATEDATE[*]}; do
+        ARR_CREATEDATE[$i]=$(date -d${ARR_CREATEDATE[$i]}  +%Y-%m-%d)
+        # echo "Formatted create date is: "${ARR_CREATEDATE[$i]}    # TESTING
+        # increment counter
+        i=$(( $i+1 ))
+    done
+
+    ## END ISSUE 29 ##
+
+    # print header
+    echo -ne "AMI-id Type vType Drv RootDev SnapshotId Description\n \
+            ------------ ------- ----------- --- --------- ------------- \
+            --------------------------------------\n" > .header.tmp
+
+    # create final output to be formatted
+    cat .header.tmp > .output.tmp
+    cat .ec2-qv-amis.tmp >> .output.tmp
+
+    # print region identifier
+    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n\n" | indent18
 
     # print and format output
     awk  '{ printf "%-13s %-8s %-12s %-4s %-10s %-14s %-2s %-2s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-amis.tmp | indent02
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .output.tmp | indent02
 
     # print footer
-    printf "\nTotal AMI Count [$REGION]: ${white}${BOLD}$TOTAL${UNBOLD}${reset}\n\n" | indent18
+    printf "\nTotal AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n\n" | indent18
 
     # clean up
-    rm .ec2-qv-amis.tmp
+    rm .ec2-qv-amis.tmp .header.tmp .output.tmp .jsonimages.tmp
     #
     # <-- end function ec2cli-list-images -->
     #
@@ -860,12 +1033,13 @@ function ec2cli-run-instances(){
 	MAXCT=${#INSTANCES[*]} # IFS starts array index at 0
     if [[ $MAXCT = 0 ]]; then
         # no instances in region
-        ec2cli-message "No EC2 instances found in region $REGION." INFO
-        exit 0
+        ec2cli-logger "INFO: function ec2cli-run-instances: attempt to run instances"
+        ec2cli-message "No EC2 instances found in region $REGION" INFO
+        return
     fi
 
     # header
-    echo -e "\n${white}${BOLD}Available Instances${UNBOLD}${reset}: $AWS_DEFAULT_REGION\n" | indent18
+    echo -e "\n${white}${BOLD}Available Instances${UNBOLD}${reset}: $REGION\n" | indent18
 	# load output choice array
 	i=0
 	while (( i < $MAXCT )); do
@@ -1417,8 +1591,8 @@ if [[ $1 ]]; then
                     #
                     # display details of Amazon Machine Images for region [STUB]
                     #
-                    ec2cli-message "functionality currently under development" STUB
-                    #ec2cli-create-ami $REGION
+                    #ec2cli-message "functionality currently under development" STUB
+                    ec2cli-create-image $REGION
                     ;;
                 -h | --h | -help | --help)
                     #
