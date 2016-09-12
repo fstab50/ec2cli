@@ -570,7 +570,7 @@ function ec2cli-create-image(){
     for key in ${TAGS[*]}; do
         # get Name 
         if [ $key == "Name" ] || [ $key == "name" ]; then
-            NAME="AMI."$TIME"."$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
+            NAME=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)"/AMI."$TIME
         fi        
         # get description
         if [ $key == "Description" ] || [ $key == "description" ]; then
@@ -590,12 +590,12 @@ function ec2cli-create-image(){
         DESCRIPTION="InstanceId_"$INSTANCEID
     fi
 
-    # TEST
-    echo -e "\nAMI Name: "$NAME
-    echo -e "AMI Description: "$DESCRIPTION
+    # label output
+    echo -e "\n${white}AMI Name :${reset} "$NAME
+    echo -e "${white}AMI Description :${reset} "$DESCRIPTION
     echo ""
     # create image
-    aws ec2 create-image --region $REGION --instance-id $INSTANCEID --name "$NAME" --description "$DESCRIPTION" --output table
+    #aws ec2 create-image --region $REGION --instance-id $INSTANCEID --name "$NAME" --description "$DESCRIPTION" --output table
 
     # clean up
     rm .jsonoutput.tmp .arrayoutput.tmp .jsoninstance.tmp
