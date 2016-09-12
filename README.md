@@ -18,7 +18,7 @@
 ## About this repository 
 
 * Purpose:       CLI utilities for use with Amazon Web Services (AWS)
-* Version:       0.7 
+* Version:       0.74 
 * Repo:          [ec2cli] https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 * Mirror repo:   https://github.com/t-stark/ec2cli 
 

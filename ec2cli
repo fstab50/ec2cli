@@ -559,7 +559,8 @@ function ec2cli-create-image(){
         --region $REGION \
         --instance-ids $INSTANCEID \
         --output json > .jsoninstance.tmp
-    NOW="$(date +"%Y-%m-%d")"
+    NOW=$(date +"%Y-%m-%dT%H:%M:%S")    # date + 24 hr time
+    TIME=$(date +"%H.%M.%S")            # 24 hr time stamp
     TAGS=( $(jq -r '.Reservations[].Instances[].Tags[].Key' .jsoninstance.tmp) )
     
     # search thru array of tags assoc with this instances
@@ -569,11 +570,11 @@ function ec2cli-create-image(){
     for key in ${TAGS[*]}; do
         # get Name 
         if [ $key == "Name" ] || [ $key == "name" ]; then
-            NAME=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
+            NAME="AMI.T"$TIME"."$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
         fi        
         # get description
         if [ $key == "Description" ] || [ $key == "description" ]; then
-            DESCRIPTION=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
+            DESCRIPTION="InstanceId_"$INSTANCEID" "$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
         fi
         # increment
         i=$(( $i+1 ))
@@ -581,12 +582,12 @@ function ec2cli-create-image(){
 
     ## defaults if no tags ##
     if [ "$NAME" == "" ]; then
-        # no name tag exists, set to instance-id
-        NAME="AMI_"$INSTANCEID
+        # no name tag exists, append unique 24 hr time stamp
+        NAME="AMI.T"$TIME
     fi
     if [ "$DESCRIPTION" == "" ]; then 
         # no description tag exists
-        DESCRIPTION="Image_created: "$NOW
+        DESCRIPTION="InstanceId_"$INSTANCEID
     fi
 
     # TEST
@@ -862,8 +863,8 @@ function ec2cli-list-images(){
     ARR_VTYPE=( $(jq -r ".Images[].VirtualizationType" .jsonimages.tmp) )
     ARR_CREATEDATE=( $(jq -r ".Images[].CreationDate" .jsonimages.tmp) )
     ARR_SNAP=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" .jsonimages.tmp) )
-    ARR_NAME=( $(jq -r ".Images[].Name" .jsonimages.tmp | cut -c 1-20) )    # limit to 20 chars
-    #ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp | cut -c 1-27) )    # limit to 27 chars
+    ARR_NAME=( $(jq -r ".Images[].Name" .jsonimages.tmp | cut -c 1-25) )    # limit to 20 chars
+    ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp | cut -c 1-27) )    # limit to 27 chars
 
     # convert date-time format to %Y-%m-%d
     i=0     # initialize counter
@@ -877,7 +878,7 @@ function ec2cli-list-images(){
     # print header
     echo -ne "AMI-id CreateDate Type vType SnapshotId NameTag\n \
             ------------ ----------  ------- -----  ------------- \
-            --------------------\n" > .body.tmp
+            -------------------------\n" > .body.tmp
 
     # output table of json array
     i=0
