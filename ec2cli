@@ -570,11 +570,11 @@ function ec2cli-create-image(){
     for key in ${TAGS[*]}; do
         # get Name 
         if [ $key == "Name" ] || [ $key == "name" ]; then
-            NAME="AMI.T"$TIME"."$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
+            NAME="AMI."$TIME"."$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
         fi        
         # get description
         if [ $key == "Description" ] || [ $key == "description" ]; then
-            DESCRIPTION="InstanceId_"$INSTANCEID" "$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
+            DESCRIPTION=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
         fi
         # increment
         i=$(( $i+1 ))
@@ -583,7 +583,7 @@ function ec2cli-create-image(){
     ## defaults if no tags ##
     if [ "$NAME" == "" ]; then
         # no name tag exists, append unique 24 hr time stamp
-        NAME="AMI.T"$TIME
+        NAME="AMI."$TIME
     fi
     if [ "$DESCRIPTION" == "" ]; then 
         # no description tag exists
@@ -591,11 +591,11 @@ function ec2cli-create-image(){
     fi
 
     # TEST
-    echo -e "\nName is: "$NAME
-    echo -e "Description is: "$DESCRIPTION
-
+    echo -e "\nAMI Name: "$NAME
+    echo -e "AMI Description: "$DESCRIPTION
+    echo ""
     # create image
-    aws ec2 create-image --region $REGION --instance-id $INSTANCEID --name "$NAME" --description "$DESCRIPTION"
+    aws ec2 create-image --region $REGION --instance-id $INSTANCEID --name "$NAME" --description "$DESCRIPTION" --output table
 
     # clean up
     rm .jsonoutput.tmp .arrayoutput.tmp .jsoninstance.tmp
@@ -864,21 +864,21 @@ function ec2cli-list-images(){
     ARR_CREATEDATE=( $(jq -r ".Images[].CreationDate" .jsonimages.tmp) )
     ARR_SNAP=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" .jsonimages.tmp) )
     ARR_NAME=( $(jq -r ".Images[].Name" .jsonimages.tmp | cut -c 1-25) )    # limit to 20 chars
-    ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp | cut -c 1-27) )    # limit to 27 chars
+    ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp) )    # limit to 27 chars
 
-    # convert date-time format to %Y-%m-%d
+    # convert date-time format to %Y-%m-%d.T%H:%M
     i=0     # initialize counter
     for date in ${ARR_CREATEDATE[*]}; do
-        ARR_CREATEDATE[$i]=$(date -d${ARR_CREATEDATE[$i]}  +%Y-%m-%d)
+        ARR_CREATEDATE[$i]=$(date -d${ARR_CREATEDATE[$i]}  +%Y-%m-%d.T%H:%M)
         # echo "Formatted create date is: "${ARR_CREATEDATE[$i]}    # TESTING
         # increment counter
         i=$(( $i+1 ))
     done
 
     # print header
-    echo -ne "AMI-id CreateDate Type vType SnapshotId NameTag\n \
-            ------------ ----------  ------- -----  ------------- \
-            -------------------------\n" > .body.tmp
+    echo -ne "AMI-id CreateDateTime Type vType SnapshotId Name\n \
+            ------------ -----------------  ------- -----  ------------- \
+            -------------------------\n" > .header.tmp
 
     # output table of json array
     i=0
@@ -889,19 +889,23 @@ function ec2cli-list-images(){
         i=$(( $i+1 ))
     done
 
+    # sort and combine results
+    cat .header.tmp > .output.tmp
+    cat .body.tmp | sort -k +2 >> .output.tmp
+
     ## print and format output ##
     # region identifier
     printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n\n" | indent18
 
     # print and format output
-    awk  '{ printf "%-13s %-11s %-8s %-6s %-14s %-10s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8}' .body.tmp | indent02
+    awk  '{ printf "%-13s %-18s %-8s %-6s %-14s %-10s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8}' .output.tmp | indent02
 
     # print footer
     printf "\nTotal AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n\n" | indent18
 
     # clean up
-    rm .body.tmp .jsonimages.tmp
+    rm .body.tmp .jsonimages.tmp .output.tmp
     #
     # <-- end function ec2cli-list-images -->
     #
