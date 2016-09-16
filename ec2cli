@@ -27,7 +27,7 @@
 # global variables
 #
 pkg=$(basename $0)
-version="0.7"
+version="0.74"
 pkg_path=$(cd $(dirname $0); pwd -P)
 ec2cli_log="$pkg_path/logs/ec2cli.log"
 host=$(hostname)
@@ -842,7 +842,11 @@ function ec2cli-list-images(){
     # vars
     local i             # counter
     local REGION=$1     # region passed from global identifier
+    local NUMLIST       # boolean parameter, 1 = output numbered list
     local MAXCT         # array length
+
+    # print out numbered list of instances?
+    if [[ $2 ]] && [[ $2 -eq 1 ]]; then NUMLIST=1; fi
 
     # retrieve json array
     aws ec2 describe-images --region $REGION --output json --owner self > .jsonimages.tmp
@@ -1373,11 +1377,9 @@ function ec2cli-list-subnets(){
 
     # print region identifier
     printf "\n${white}${BOLD}SUBNETS${UNBOLD}${reset} : $REGION\n\n" | indent18
-
     # print header 
     echo -ne "Name SubnetId Public CIDR-Block #IPs AvailZone Default\n \
     ------------- --------------- ------ --------------- ---- ---------- -------\n" > .ec2-qv.tmp
-
     # output from aws
     aws ec2 describe-subnets \
         --output text \
@@ -1390,20 +1392,15 @@ function ec2cli-list-subnets(){
             AvailableIpAddressCount, \
             AvailabilityZone, \
             DefaultForAz]" | sort -k +4n >> .ec2-qv.tmp
-
     # count total
     TOTAL=$(cat .ec2-qv.tmp | grep "subnet-" | wc -l)
-
     # print and format output
     awk  '{ printf "%-15s %-17s %-7s %-16s %-6s %-12s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7}' .ec2-qv.tmp | indent02
-
     # print footer
     printf "\nTotal Subnets, [$REGION]: ${white}${BOLD}$TOTAL${UNBOLD}${reset}\n\n" | indent15
-
     # clean up
     rm .ec2-qv.tmp
-    
     #
     # <-- end function ec2cli-list-subnets -->
     #
@@ -1414,16 +1411,10 @@ function ec2cli-list-tags(){
     local RESOURCEID
 
     ### FIXME - add ability to display tags for specified resource id ###
-
-    # print header
+    ### aws ec2 describe-tags --filters="Name=resource-id,Values=$RESOURCEID" --output table
     echo " "
-
-    # output from aws
     aws ec2 describe-tags --output table
-
-    # print footer
     echo " "
-
     #
     # <-- end function ec2cli-list-tags -->
     #
