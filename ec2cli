@@ -1410,11 +1410,26 @@ function ec2cli-list-tags(){
     # vars
     local RESOURCEID
 
-    ### FIXME - add ability to display tags for specified resource id ###
-    ### aws ec2 describe-tags --filters="Name=resource-id,Values=$RESOURCEID" --output table
-    echo " "
-    aws ec2 describe-tags --output table
-    echo " "
+    if [[ $# -eq 0 ]]; then
+        echo " "
+        aws ec2 describe-tags --output table
+        echo " "
+    else
+        # resource ID given by user
+        RESOURCEID=$1
+        tags=""
+        tags=$(aws ec2 describe-tags \
+                --filters="Name=resource-id,Values=$RESOURCEID" \
+                --output json | grep $RESOURCEID)
+        if [[ $tags = "" ]]; then
+            # no tags exist for resource
+            ec2cli-message "No tags found for resource [$RESOURCEID]." INFO
+        else
+            aws ec2 describe-tags \
+                --filters="Name=resource-id,Values=$RESOURCEID" \
+                --output table
+        fi
+    fi
     #
     # <-- end function ec2cli-list-tags -->
     #
@@ -1440,12 +1455,10 @@ function ec2cli-list-volumes(){
         # volumes found, print region identifier
         #
         printf "\n${white}${BOLD}EBS VOLUMES${UNBOLD}${reset} : $REGION\n\n" | indent18
-
         # print header 
         echo -ne "Volume-Id GB State Attached InstanceId VolType Avail-Zone Description\n \
                 ------------ -- -------- -------- ---------- -------- ---------- \
                 -----------------------------\n" > .ec2-qv-volumes.tmp
-        
         # output from aws
         aws ec2 describe-volumes \
             --output text \
@@ -1460,17 +1473,13 @@ function ec2cli-list-volumes(){
                 AvailabilityZone, \
                 Tags[0].Value]" \
         >> .ec2-qv-volumes.tmp
-
         # count total
         TOTAL=$(cat .ec2-qv-volumes.tmp | grep "vol-" | wc -l)
-
         # print and format output
         awk  '{ printf "%-13s %-3s %-9s %-9s %-11s %-9s %-11s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-volumes.tmp | indent02
-
         # print footer
         printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} volumes in region [$REGION], total "${white}${BOLD}$SUM${UNBOLD}${reset}" GB\n\n" | indent10
-
         # clean up
         rm .ec2-qv-volumes.tmp
     fi
@@ -1485,11 +1494,9 @@ function ec2cli-list-vpcs(){
 
     # print region identifier
     printf "\n${white}${BOLD}Virtual Private Clouds (VPC)${UNBOLD}${reset} : $REGION\n\n" | indent18
-
     # print header 
     echo -ne "VpcId State Tenancy CIDR-Block Default\n \
             ------------ --------- ------- ------------------ -------\n" > .ec2-qv-vpc.tmp
-
     # output from aws
     aws ec2 describe-vpcs \
         --output text \
@@ -1501,24 +1508,19 @@ function ec2cli-list-vpcs(){
             CidrBlock, \
             IsDefault]" | sort -k +4n \
     >> .ec2-qv-vpc.tmp 
-
     # count total
     TOTAL=$(cat .ec2-qv-vpc.tmp | grep "vpc-" | wc -l)
 
     # print and format output
-    #
     # Note: Since awk is looking for blank space as delimiter, we allow spaces
     #       in the description field by telling awk these are 2 char columns.
     #
     awk  '{ printf "%-14s %-10s %-9s %-20s %-9s \n", \
             $1, $2, $3, $4, $5}' .ec2-qv-vpc.tmp | indent02
-
     # print footer
     printf "\nTotal VPCs, $REGION: ${white}${BOLD}$TOTAL${UNBOLD}${reset}\n\n" | indent18
-
     # clean up
     rm .ec2-qv-vpc.tmp
-
     #
     # <-- end function ec2cli-list-vpcs -->
     #
@@ -1553,6 +1555,14 @@ function parse-command(){
         # user requests default (list)
         parse-regioncode $COMMAND
         COMMAND="list"    # set to default, no command given
+        return
+    elif [[ $COMMAND = i-* ]] || [[ $COMMAND = subnet-* ]] || [[ $COMMAND = vpc-* ]] \
+        || [[ $COMMAND = ami-* ]] || [[ $COMMAND = sg-* ]] || [[ $COMMAND = snap-* ]]  \
+        || [[ $COMMAND = vol-* ]]; then
+        # resource id given instead of a command
+        RESOURCEID=$COMMAND
+        COMMAND="list"    # set to default, resource-id given instead of command
+        return
     fi
     case $COMMAND in 
         attach | Attach | ATTACH | attch | atach)
@@ -1699,9 +1709,9 @@ if [[ $1 ]]; then
         			;;
                 -t | --tags)
                     #
-                    # display details of all EC2 tags for region
-                    #
-                    ec2cli-list-tags         # No region parameter, tags are global 
+                    # Display details of all EC2 tags for region
+                    # No region parameter, tags are global 
+                    ec2cli-list-tags $RESOURCEID    
                 	;;
                 -s | -snapshots | -snapshot | --snapshot | --snapshots)
                     #
