@@ -714,6 +714,51 @@ function ec2cli-create-snapshot(){
     #
 }
 
+function ec2cli-create-tag(){
+    local RESOURCEID
+    local KEY
+    local VALID
+    local VALUE
+    
+    # resource
+    echo -e "\n  Enter the resource ID to tag:"
+    read -p "${yellow}  ResourceId: ${reset}" RESOURCEID
+    echo ""
+    case $RESOURCEID in
+        *\ * )
+            echo "Resource ID cannot contain spaces or special characters."
+        ;;
+    esac
+    # tag components: 
+    VALID=0    # set loop break
+    while [[ $VALID -eq 0 ]]; do
+        # get user input [KEY] while checking contents
+        echo -e "\n  Enter the key name of the tag to create or update:"
+        read -p "${yellow}  Key: ${reset}" KEY
+        echo ""
+        if [[ "$KEY" =~ \ |\' ]]; then 
+            echo "Key cannot contain spaces or special characters."
+        else
+            # get user input [keyvalue]
+            echo -e "\n  Enter the tag value:"
+            read -p "${yellow}  Tag Value: ${reset}" VALUE
+            echo ""
+            VALID=1    # break
+        fi
+    done
+    
+    # TESTING STUB
+    echo "Key: "$KEY
+    echo "Value: "$VALUE
+    
+    aws ec2 create-tags \
+        --resources $RESOURCEID \
+        --tags Key="$KEY",Value="$VALUE"
+    #
+    # <-- end function ec2cli-cretae-tag -->
+    #
+}
+
 function ec2cli-list-instances(){
     # vars
     local TOTAL             # region EC2 instance count
@@ -991,7 +1036,6 @@ function ec2cli-rdp-login(){
 
 	# get user input while checking type and range
 	VALID=0    # set loop break
-
 	while [[ $VALID -eq 0 ]]; do
         	# read instance choice in from user
 	        echo ""

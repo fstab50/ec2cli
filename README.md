@@ -133,28 +133,15 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 	Default output format [None]: json
 ```
 
-* Alternatively, to configure awscli using environment variables, do the following:
+* Optionally, define a profile for a specific user:
 
 ```bash
-	$ export AWS_ACCESS_KEY_ID=<access_key>
-	$ export AWS_SECRET_ACCESS_KEY=<secret_key>
-```
-
-* A 3rd alternate, is to use a configuration file like this:
-
-```bash
-	[default]
-	aws_access_key_id=<default access key>
-	aws_secret_access_key=<default secret key>
-```
-
-* Optional, define a default region for a specific profile by placing the following in ~/.aws/config:
-
-```bash
-	[profile testing]
-	aws_access_key_id=<testing access key>
-	aws_secret_access_key=<testing secret key>
-	region=us-west-2
+   $ aws configure --profile testuser
+    
+    AWS Access Key ID: footestuser
+    AWS Secret Access Key: bartestuser
+    Default region name [us-west-2]: us-west-2
+    Default output format [None]: json
 ```
 
 * Command Completion 
