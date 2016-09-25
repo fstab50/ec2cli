@@ -497,18 +497,18 @@ function ec2cli-create-image(){
     ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' .jsonoutput.tmp) )
     ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' .jsonoutput.tmp) )
     # limit security grp name to 15 chars
-    ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' .jsonoutput.tmp | cut -c 1-15) )
-    # limit length of tag fields to 20 chars
-    ARR_TAG=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+    ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' \
+            .jsonoutput.tmp | cut -c 1-15) )
+    # limit length of tag fields to 20 chars. NOTE: ARRAY ASSIGNMENT NOT WORKING CORRECTLY
+    ARR_TAG=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' \
+            .jsonoutput.tmp | cut -c 1-20) )
 
     # > 0 instances in region, print region identifier
     printf "\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n" | indent18
 
-    #
     # output table of json array
-    #
     i=0
-    while (( i < $MAXCT )); do
+    for id in ${ARR_ID[*]}; do
         echo "($i): "${ARR_ID[$i]} ${ARR_TYPE[$i]} ${ARR_STATE[$i]} ${ARR_SG[$i]} \
               ${ARR_DEV[$i]} ${ARR_TAG[$i]} >> .arrayoutput.tmp
         # incr ct     
@@ -518,12 +518,10 @@ function ec2cli-create-image(){
     # display choices from array
     echo -e "     InstanceID    Type     State    SecurityGroup    Root-Volume   Description"
     echo -e "     ----------  ---------  -------  ---------------  ------------  -------------------------"
-
     # values
     awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-13s %-2s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .arrayoutput.tmp 
-
-    # print footer
+    # footer
     printf "\nTotal Instances in region [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n" | indent10
 
     # get user input while checking type and range
@@ -568,14 +566,15 @@ function ec2cli-create-image(){
     DESCRIPTION=""      # initialize
     i=0                 # counter
     for key in ${TAGS[*]}; do
-        # get Name 
+        # get Name, map to description
         if [ $key == "Name" ] || [ $key == "name" ]; then
-            NAME=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)"/AMI."$TIME
+            DESCRIPTION="$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)""($INSTANCEID)"
         fi        
         # get description
-        if [ $key == "Description" ] || [ $key == "description" ]; then
-            DESCRIPTION=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
-        fi
+        #if [ $key == "Description" ] || [ $key == "description" ]; then
+        #    #DESCRIPTION=$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)
+        #    DESCRIPTION="InstanceId_"$INSTANCEID  # STUB until issue 33 permanent fix    
+        #fi
         # increment
         i=$(( $i+1 ))
     done
@@ -590,12 +589,21 @@ function ec2cli-create-image(){
         DESCRIPTION="InstanceId_"$INSTANCEID
     fi
 
-    # label output
-    echo -e "\n${white}AMI Name :${reset} "$NAME
-    echo -e "${white}AMI Description :${reset} "$DESCRIPTION
-    echo ""
     # create image
-    #aws ec2 create-image --region $REGION --instance-id $INSTANCEID --name "$NAME" --description "$DESCRIPTION" --output table
+    aws ec2 create-image \
+        --region $REGION \
+        --instance-id $INSTANCEID \
+        --name "$NAME" \
+        --description "$DESCRIPTION" \
+        --output table
+
+    # user msg, locate after ec2 create-image called in case of failure
+    echo -e "\n** Amazon Machine Image creation start **\n" | indent02
+    echo -e "${white}AMI Name :${reset} "$NAME | indent02
+    echo -e "${white}AMI Description :${reset} "$DESCRIPTION | indent02
+    echo ""
+    # log 
+    ec2cli-logger "INFO:  AMI image [$NAME] creation start"
 
     # clean up
     rm .jsonoutput.tmp .arrayoutput.tmp .jsoninstance.tmp
@@ -912,8 +920,8 @@ function ec2cli-list-images(){
     ARR_VTYPE=( $(jq -r ".Images[].VirtualizationType" .jsonimages.tmp) )
     ARR_CREATEDATE=( $(jq -r ".Images[].CreationDate" .jsonimages.tmp) )
     ARR_SNAP=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" .jsonimages.tmp) )
-    ARR_NAME=( $(jq -r ".Images[].Name" .jsonimages.tmp | cut -c 1-25) )    # limit to 20 chars
-    ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp) )    # limit to 27 chars
+    ARR_NAME=( $(jq -r ".Images[].Name" .jsonimages.tmp | cut -c 1-25) )    # limit to 25 chars
+    ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp) )    
 
     # convert date-time format to %Y-%m-%d.T%H:%M
     i=0     # initialize counter
@@ -925,36 +933,32 @@ function ec2cli-list-images(){
     done
 
     # print header
-    echo -ne "AMI-id CreateDateTime Type vType SnapshotId Name\n \
+    echo -ne "AMI-id CreateDateTime Type vType SnapshotId Description\n \
             ------------ -----------------  ------- -----  ------------- \
             -------------------------\n" > .header.tmp
 
-    # output table of json array
+    # create table of json array
     i=0
-    #while (( i < $MAXCT )); do
     for image in ${ARR_IMAGEID[*]}}; do
         echo "${ARR_IMAGEID[$i]} ${ARR_CREATEDATE[$i]} ${ARR_TYPE[$i]} \
-            ${ARR_VTYPE[$i]} ${ARR_SNAP[$i]} ${ARR_NAME[$i]}" >> .body.tmp
+            ${ARR_VTYPE[$i]} ${ARR_SNAP[$i]}"" ${ARR_DESCR[$i]}" >> .body.tmp
         i=$(( $i+1 ))
     done
-
     # sort and combine results
     cat .header.tmp > .output.tmp
     cat .body.tmp | sort -k +2 >> .output.tmp
 
     ## print and format output ##
-    # region identifier
+    # header, region identifier
     printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n\n" | indent18
-
-    # print and format output
-    awk  '{ printf "%-13s %-18s %-8s %-6s %-14s %-10s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8}' .output.tmp | indent02
-
-    # print footer
+    # format output
+    awk  '{ printf "%-13s %-18s %-8s %-6s %-14s %-10s %-2s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .output.tmp | indent02
+    # footer
     printf "\nTotal AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n\n" | indent18
 
     # clean up
-    rm .body.tmp .jsonimages.tmp .output.tmp
+    rm .jsonimages.tmp .output.tmp .body.tmp
     #
     # <-- end function ec2cli-list-images -->
     #
