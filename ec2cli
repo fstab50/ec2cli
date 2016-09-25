@@ -1034,10 +1034,9 @@ function ec2cli-rdp-login(){
         	i=$(( $i+1 ))
 	done
 
-	# print choices
+	# print window size choices
 	echo -e "\n\n${BOLD}Select an RDP Session Window Size:${UNBOLD}\n"
 	awk -F "  " '{ printf "%-4s %-20s \n", $1, $2}' .type.tmp
-
 	# get user input while checking type and range
 	VALID=0    # set loop break
 	while [[ $VALID -eq 0 ]]; do
@@ -1054,18 +1053,24 @@ function ec2cli-rdp-login(){
                 VALID=1
         	fi
 	done
-
 	if [ -z "$CHOICE" ]
 	then
         	# CHOICE is blank, default chosen
 	        CHOICE=0
 	fi
-
-	# set type
+    # assign size
 	SIZE=${RDP_SIZE[$CHOICE]}
 
 	# log
 	ec2cli-message "Starting RDP Session with $SIZE RDP window size on instance ($TARGET)." INFO
+
+    # password
+    if [[ ! $(env | grep -i REMOTE_RDP_PASSWD) ]]; then
+            echo ""
+            read -p "${yellow}  Enter the $RDP_USER password to establish an RDP login to this windows instance: ${reset}" CHOICE
+            echo ""
+    fi
+    RDP_USER=$CHOICE
 
 	# Start rdp desktop session
 	rdesktop -u $RDP_USER -p $REMOTE_RDP_PASSWD -g $SIZE -a 24 $IPADDRESS & 
