@@ -1012,6 +1012,8 @@ function ec2cli-rdp-login(){
 	local i                          # loop counter
 	local IPADDRESS=$2               # public IP address of RDP windows instance
 	local MAXCT                      # array size
+    local USER                       # user entered userid
+    local PASSWD                     # user entered passwd 
 	local SIZE="90%"                 # RDP session win size relative to client resolution
 	local RDP_USER="Administrator"   # default rdp user, Win instance login
 	local TARGET=$1                  # target EC2 instance for starting/ log in
@@ -1067,10 +1069,11 @@ function ec2cli-rdp-login(){
     # password
     if [[ ! $(env | grep -i REMOTE_RDP_PASSWD) ]]; then
             echo ""
-            read -p "${yellow}  Enter the $RDP_USER password to establish an RDP login to this windows instance: ${reset}" CHOICE
+            read -p "${yellow}  Enter the RDP user required for login to this windows instance: ${reset}" RDP_USER
+            echo ""
+            read -p "${yellow}  Enter the $RDP_USER password to establish an RDP login to this windows instance: ${reset}" REMOTE_RDP_PASSWD
             echo ""
     fi
-    RDP_USER=$CHOICE
 
 	# Start rdp desktop session
 	rdesktop -u $RDP_USER -p $REMOTE_RDP_PASSWD -g $SIZE -a 24 $IPADDRESS & 
@@ -1079,8 +1082,7 @@ function ec2cli-rdp-login(){
 	### shell global env var (REMOTE_RDP_PASSWD) ###
     
     # clean up
-    rm .type.tmp
-    
+    rm .type.tmp    
     # log and exit
     ec2cli-logger "INFO: RDP Instance ($TARGET) started. RDP session size: $SIZE."
     exit 0
