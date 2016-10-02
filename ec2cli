@@ -614,108 +614,121 @@ function ec2cli-create-image(){
 
 function ec2cli-create-snapshot(){
     # vars
+    local i                 # counter
     local REGION=$1
     local NOW="$(date +"%Y-%m-%d")"
     local PROGRESSMSG="Snapshot creation started... "
-    local VALID    # loop break
+    local VALID             # loop break
+    local GVALID            # global valid for creating more than 1 snapshot
     
-    VALID=0
-    while [ $VALID -eq 0 ]; do
+    GVALID=0
+    while [ $GVALID -eq 0 ]; do
         #
-        # choose volume ----------------------
+        ### choose volume ###
         #
-        # display volumes associated with default zone for user's AWS account
-        ec2cli-list-volumes $REGION   # includes header
-
-        # collect list of all current AWS Regions globally:
-        aws ec2 describe-volumes \
-                --region $REGION \
-                --output text \
-                --query 'Volumes[*].[VolumeId]' \
-        >> .create-snapshot.tmp
-
-        # check for non-zero ebs volumes in region
-        if [[ ! "$(grep "vol-" .create-snapshot.tmp)" ]]; then
+        # json object of all ebs volumes in region
+        aws ec2 describe-volumes --region $REGION --output json > .jsonoutput.tmp
+        ARR_ID=( $(jq -r .Volumes[].VolumeId .jsonoutput.tmp) )
+        MAXCT=${#ARR_ID[*]}
+        if [[ $MAXCT -eq 0 ]]; then
             # no ebs volumes to snapshot, exit
-            rm .create-snapshot.tmp
+            rm .jsonoutput.tmp
             ec2cli-error-exit "No EBS volumes in region $REGION. Exiting." $E_DEPENDENCY
         fi
-
-        # Use built-in IFS to read in all lines in tmp file
-        IFS=$'\n' read -d '' -r -a VOLUMES < .create-snapshot.tmp
-
-        # array max length
-        MAXCT=${#VOLUMES[*]} # keep in mind, IFS starts array index at 0
-
-        # load output choice array
-        i=0  
-        while (( i < $MAXCT )); do
-                echo "($i): ""${VOLUMES[$i]}" >> .arrayoutput.tmp
-                i=$(( $i+1 ))
-        done
-
-        # display choices from array
-        echo -e "\nEnter the # of the volume of which you wish to take a snapshot."
-        cat .arrayoutput.tmp
-        # clean up
-        rm .create-snapshot.tmp .arrayoutput.tmp
-
-        # read volume choice in from user
-        echo ""
-        read -p "${yellow}  Enter # of choice or hit return quit [quit]: ${reset}" CHOICE
-        echo ""
-
-        # assign volume to choice
-        if [ -z "$CHOICE" ]; then
-                # CHOICE is blank, assign default
-                CHOICE=0
-                VALID=1
-                return
-        fi
-
-        VOLID=${VOLUMES[$CHOICE]}
-        ec2cli-message "Creating snapshot of $VOLID in region $REGION." INFO
         
-        #
-        # create snapshot ----------------------------------------------------
-        #
+        # volumes exist in region, process remainder of json object
+        ARR_SIZE=( $(jq -r .Volumes[].Size .jsonoutput.tmp) )
+        ARR_STATE=( $(jq -r .Volumes[].State .jsonoutput.tmp) )
+        ARR_INSTANCE=( $(jq -r .Volumes[].Attachments[].InstanceId .jsonoutput.tmp) )
+        ARR_TYPE=( $(jq -r .Volumes[].VolumeType .jsonoutput.tmp) )
+        ARR_ENCRYPT=( $(jq -r .Volumes[].Encrypted .jsonoutput.tmp) )
+        ARR_AZ=( $(jq -r .Volumes[].AvailabilityZone .jsonoutput.tmp) )
+        ARR_TAG=( $(jq -r .Volumes[].Tags[0].Value .jsonoutput.tmp | cut -c 1-20) )
+
+        # display choices
+        printf "\n${white}${BOLD}EBS Volumes${UNBOLD}${reset} : $REGION\n\n" | indent18
+        # create table of json array
+        i=0
+        for id in ${ARR_ID[*]}; do
+            echo "($i): "${ARR_ID[$i]} ${ARR_SIZE[$i]} ${ARR_STATE[$i]} ${ARR_INSTANCE[$i]} \
+                  ${ARR_TYPE[$i]} ${ARR_AZ[$i]} ${ARR_TAG[$i]} >> .arrayoutput.tmp
+            # incr ct     
+            i=$(( $i+1 ))
+        done
+        # display choices from array
+        echo -e "     VolumeID      GB  State     InstanceId  VolType   Avail-Zone  Tag"
+        echo -e "     ------------  --  --------  ----------  --------  ----------  --------------------"
+        # values
+        awk  '{ printf "%-4s %-13s %-3s %-9s %-11s %-9s %-11s %-2s %-2s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .arrayoutput.tmp 
+        # footer
+        printf "\nTotal Volumes in region [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n" | indent10
+        # clean up
+        rm .jsonoutput.tmp .arrayoutput.tmp
+
+        # get user input while checking type and range
+        VALID=0    # set loop break
+        while [ $VALID -eq 0 ]; do
+                # read choice in from user
+                echo ""
+                read -p "${yellow}  Enter choice for hit return to quit [quit]: ${reset}" CHOICE 
+                echo ""
+
+                # assign instance to choice
+                if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+                        # invalid user entry
+                        echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+                        ### FIXME:  Fails if enter integer with 2 digits ###
+                else
+                        if [[ -z "$CHOICE" ]]; then
+                                # CHOICE is blank, assign default [quit]
+                                return
+                        else
+                                # valid user entry, exit loop
+                                VALID=1
+                        fi
+                fi
+        done
+        # assign vol ID to be snapshotted
+        VOLID=${ARR_ID[$CHOICE]}        
+        
+        ### create snapshot ###
         # description = concatenate volume date + Name tag
         NAMETAG=$(aws ec2 describe-volumes \
                 --region $REGION \
                 --volume-id  $VOLID \
                 --query 'Volumes[*].[Tags[0].Value]' \
                 --output text)
-
         DESCRIPTION=$NOW", ""$NAMETAG"
-
-        # start snapshot
+        # start snapshot, output msg
         aws ec2 create-snapshot \
-                --output json \
+                --output table \
                 --region $REGION \
                 --volume-id $VOLID \
-                --description "$DESCRIPTION" | jq . 
-
-        # progress meter while wait, inspect snapshot for VOLID
-        aws ec2 wait snapshot-completed \
-                --region $REGION \
-                --filters Name="volume-id",Values=$VOLID &
-
-        # call function to show on screen while wait
-        ec2cli-spinner $PROGRESSMSG
-
-        # log and exit
-        ec2cli-message "Snapshot [$VOLID] created $NOW in region $REGION." INFO
+                --description "$DESCRIPTION" 
+        # log, user msg
+        ec2cli-message "Creating snapshot of volume [$VOLID] in region $REGION." INFO
         
-        # create more snapshots
+        # option to create more snapshots
         echo ""
         read -p "${yellow}  Create another snapshot? [quit]: ${reset}" CHOICE
         echo ""
-        if [ -z "$CHOICE" ]; then
+        if [[ -z "$CHOICE" ]]; then
                 # CHOICE is blank, assign default (quit)
-                VALID=1
+                GVALID=1
                 return
+        else 
+            case $CHOICE in
+            y | Y | yes | Yes)
+                GVALID=0
+                ;;
+            *)
+                GVALID=1
+                return
+                ;;
+            esac
         fi
-    # end while loop
+    # end global while loop
     done
     #
     # <-- end function ec2cli-create-snapshot -->
@@ -809,14 +822,15 @@ function ec2cli-list-instances(){
     # print region identifier
     printf "\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n" | indent18
 
-    if [ "$(printf '%s\n' "${ARR_STATE[@]}" | grep "running")" ]; then
+    if [[ "$(printf '%s\n' "${ARR_STATE[@]}" | grep "running")" ]] || \
+        [[ "$(printf '%s\n' "${ARR_STATE[@]}" | grep "stopping")" ]]; then
         #
         # at least 1 running instance found, calc runtime
         i=0     # counter
         r=0     # running instance count
 
         while (( i < $MAXCT )); do
-            if [ "${ARR_STATE[$i]}" == "running" ]; then
+            if [[ "${ARR_STATE[$i]}" == "running" ]] || [[ "${ARR_STATE[$i]}" == "stopping" ]]; then
                 # calc now in UTC epoch seconds
                 NOW=$(date -u +%s)
 
