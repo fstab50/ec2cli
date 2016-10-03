@@ -616,7 +616,7 @@ function ec2cli-create-snapshot(){
     # vars
     local i                 # counter
     local REGION=$1
-    local NOW="$(date +"%Y-%m-%d")"
+    local NOW="$(date +"%Y-%m-%d.T%H:%M")"  
     local PROGRESSMSG="Snapshot creation started... "
     local VALID             # loop break
     local GVALID            # global valid for creating more than 1 snapshot
@@ -677,7 +677,7 @@ function ec2cli-create-snapshot(){
                 # assign instance to choice
                 if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
                         # invalid user entry
-                        echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+                        echo "You must enter an integer number between 0 and $(( $MAXCT-1 )) or quit."
                         ### FIXME:  Fails if enter integer with 2 digits ###
                 else
                         if [[ -z "$CHOICE" ]]; then
