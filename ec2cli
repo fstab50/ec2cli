@@ -101,7 +101,8 @@ function ec2cli-help(){
      eu-central-1       Europe (Frankfurt, Germany)       
      eu-west-1          Europe (Ireland)          
      sa-east-1          South America (Sao Paulo, Brazil)
-     us-east-1          United States (N. Virgina)   
+     us-east-1          United States (N. Virgina)
+     us-east-2          United States (Ohio)   
      us-west-1          United States (N. California)    
      us-west-2          United States (Oregon)  
 

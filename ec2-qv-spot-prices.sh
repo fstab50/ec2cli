@@ -86,115 +86,103 @@ fi
 #
 
 # collect list of all current AWS Regions globally:
-aws ec2 describe-regions --output text --query 'Regions[*].[RegionName]' > .rawoutput.tmp
-
-# Use built-in IFS to read in all lines in tmp file
-IFS=$'\n' read -d '' -r -a REGIONS < .rawoutput.tmp
-
-# array max length
-MAXCT=${#REGIONS[*]} # keep in mind, IFS starts array index at 0
+aws ec2 describe-regions --output json > .regions.json
+ARR_REGIONS=( $(jq -r .Regions[].RegionName .regions.json) )
+MAXCT=${#ARR_REGIONS[*]}    # array max length
 
 # output choices
-i=0  
-while (( i < $MAXCT ))
-do
-        # set region location description
-        case "${REGIONS[$i]}" in
-                eu-west-1)
-                  LOCATION="Europe (Ireland)"
-                  ;;
-                eu-central-1)
-                  LOCATION="Europe (Frankfurt, Germany)"
-                  ;;
-                sa-east-1)
-                  LOCATION="South America (Sao Paulo, Brazil)"
-                  ;;
-                us-east-1)
-                  LOCATION="United States (N. Virgina)"
-                  ;;
-                us-west-1)
-                  LOCATION="United States (N. California)"
-                  ;;
-                us-west-2)
-                  LOCATION="United States (Oregon)"
-                  ;;
-                ap-northeast-1)
-                  LOCATION="Asia Pacific (Tokyo, Japan)"
-		  ;;
-		ap-northeast-2)
-		  LOCATION="Asia Pacific (Seoul, Korea)"
-                  ;;
-		ap-south-1)
-		  LOCATION="Asia Pacific (Mumbai, India)"
-		  ;;
-                ap-southeast-1)
-                  LOCATION="Asia Pacific (Singapore)"
-                  ;;
-                ap-southeast-2)
-                  LOCATION="Asia Pacific (Sydney, Austrailia)"
-                  ;;
-                *)
-                  LOCATION="New Region"
-                  ;;
-        esac
-
-        echo "($i): ""${REGIONS[$i]}"" ""$LOCATION" >> .arrayoutput.tmp
-        i=$(( $i+1 ))
+i=0
+for region in ${ARR_REGIONS[@]}; do
+    # set region location description
+    case "${ARR_REGIONS[$i]}" in
+        eu-west-1)
+            LOCATION="Europe (Ireland)"
+            ;;
+        eu-central-1)
+            LOCATION="Europe (Frankfurt, Germany)"
+            ;;
+        sa-east-1)
+            LOCATION="South America (Sao Paulo, Brazil)"
+            ;;
+        us-east-1)
+            LOCATION="United States (N. Virgina)"
+            ;;
+        us-east-2)
+            LOCATION="United States (Ohio)"
+            ;;
+        us-west-1)
+            LOCATION="United States (N. California)"
+            ;;
+        us-west-2)
+            LOCATION="United States (Oregon)"
+            ;;
+        ap-northeast-1)
+            LOCATION="Asia Pacific (Tokyo, Japan)"
+		        ;;
+		    ap-northeast-2)
+		        LOCATION="Asia Pacific (Seoul, Korea)"
+            ;;
+		    ap-south-1)
+		        LOCATION="Asia Pacific (Mumbai, India)"
+		        ;;
+        ap-southeast-1)
+            LOCATION="Asia Pacific (Singapore)"
+            ;;
+        ap-southeast-2)
+            LOCATION="Asia Pacific (Sydney, Austrailia)"
+            ;;
+        *)
+            LOCATION="New Region"
+            ;;
+    esac
+    echo "($i): ""${ARR_REGIONS[$i]}"" ""$LOCATION" >> .arrayoutput.tmp
+    i=$(( i+1 ))
 done
 
 # print header
 echo ""
-echo -ne ""    "RegionCode Location\n \
-        ------------------- --------------------------------\n" > .header.tmp
-
+echo -ne ""    "     RegionCode Location\n \
+    -------------------- --------------------------------\n" > .header.tmp
 # print choices
 echo -e "${BOLD}Current AWS Regions Worldwide:${UNBOLD}\n" | indent02
-awk '{ printf "%-22s %-2s %-30s \n", $1, $2, $3}' .header.tmp | indent02
-awk '{ printf "%-4s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
+awk '{ printf "%-23s %-2s %-30s \n", $1, $2, $3}' .header.tmp | indent02
+awk '{ printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
 
 # enter loop to validate range and type of user entry
-VALID=0 # set loop break
-
-while [ $VALID -eq 0 ]
-do
-	# read instance choice in from user
-	echo ""
-	read -p "  Select Region [$AWS_DEFAULT_REGION]: " CHOICE
-	echo ""
-
-	if [ -z "$CHOICE" ]
-	then
-        	# CHOICE is blank, default region chosen
+VALID=0
+while [ $VALID -eq 0 ]; do
+	   # read instance choice in from user
+	   echo ""
+	   read -p "  Select Region [$AWS_DEFAULT_REGION]: " CHOICE
+	   echo ""
+	   if [ -z "$CHOICE" ]; then
+      	  # CHOICE is blank, default region chosen
 	        # use the aws_default_region env variable
-        	echo -e "  You Selected: "$AWS_DEFAULT_REGION"\n"
-		VALID=1   # exit loop
-	else
-		# CHOICE is a value, check type and range
-		if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))))]/} ]]
-        	then
-                       # contains chars
-                       echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
-		else
-		       # user data is integers, check range
-	               if [ "$CHOICE" -ge 0 -a "$CHOICE" -le $(( $MAXCT-1 )) ]
-        	       then
-                	       # valid range, reset the aws default region to user choice momentarily
-		               AWS_DEFAULT_REGION=${REGIONS[$CHOICE]}
-	                       echo -e "  You Selected: "$AWS_DEFAULT_REGION"\n"
-        	               VALID=1   # exit loop
-		       else
-	                       # out of range 
-        	               echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
-
-		       fi
-	        fi
-	fi
+          REGION=$AWS_DEFAULT_REGION
+      	  echo -e "  You Selected: "$REGION"\n"
+		      VALID=1   # exit loop
+	   else
+		     # CHOICE is a value, check type and range
+		     #if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+         if [[ ! "$CHOICE" =~ ^[0-9]+$ ]]; then
+             # contains chars
+             echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
+		     else
+             if [[ $CHOICE -ge 0 ]] && [[ $CHOICE -lt $(( $MAXCT )) ]]; then
+                 # valid range, reset the aws default region to user choice momentarily
+		             REGION=${ARR_REGIONS[$CHOICE]}
+	               echo -e "  You Selected: "$REGION"\n"
+        	       VALID=1   # exit loop
+             else
+                 # out of range
+                 echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
+             fi 
+	       fi
+	   fi
 done
 
 # clean up
-rm ./.rawoutput.tmp
-rm ./.arrayoutput.tmp
-rm ./.header.tmp
+rm ./.regions.json ./.arrayoutput.tmp ./.header.tmp
 
 #
 ###  choose Operating System ##############################################
@@ -348,7 +336,7 @@ then
 		
 		# Amazon Linux OS Formatting
 		"Linux/UNIX")
-        	case "$AWS_DEFAULT_REGION" in
+        	case "$REGION" in
 	                eu-central-1)
         	        # special formatting for long RegionCodes
 			#
@@ -358,6 +346,7 @@ then
 			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                 	aws ec2 describe-spot-price-history  \
+                          --region $REGION \
                         	--start-time "$NOW" \
 	                        --product-description "$TYPE" \
         	                --output text | \
@@ -374,6 +363,7 @@ then
                         awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -390,6 +380,7 @@ then
 		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
 			aws ec2 describe-spot-price-history  \
+                          --region $REGION \
                 	        --start-time "$NOW" \
                         	--product-description "$TYPE" \
 	                        --output text | \
@@ -401,7 +392,7 @@ then
 		
 		# SUSE Linux OS Formatting
 		"SUSE Linux")
-                case "$AWS_DEFAULT_REGION" in       # output formatting by RegionCode
+                case "$REGION" in       # output formatting by RegionCode
                         eu-central-1)
                         # output formatting Frankfurt, Germany
                         #
@@ -411,6 +402,7 @@ then
                         awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -427,6 +419,7 @@ then
 			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -443,6 +436,7 @@ then
 		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -455,7 +449,7 @@ then
 		# Windows OS Formatting
 		"Windows")
 		
-                case "$AWS_DEFAULT_REGION" in
+                case "$REGION" in
                         eu-central-1)
                         # print column header
                         echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
@@ -464,6 +458,7 @@ then
 
                         # special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -479,6 +474,7 @@ then
 
 			# special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -495,6 +491,7 @@ then
 
                         # special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -512,6 +509,7 @@ then
 
                         # special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -528,6 +526,7 @@ then
                         echo -e "----------  ""----------  ""-------  ""--------   " >> .header.tmp
                         awk -F " " '{ printf "%-15s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
                         aws ec2 describe-spot-price-history  \
+                                --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
                                 --output text | \
@@ -546,6 +545,7 @@ then
 else
 	# display current spot prices only for specific instance type in region chosen
 	aws ec2 describe-spot-price-history  \
+    --region $REGION \
 		--start-time "$NOW" \
 		--product-description "$TYPE" \
 		--instance- ${SIZE[$CHOICE]} \
