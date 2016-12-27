@@ -52,6 +52,9 @@ purple=$(tput setaf 5)
 red=$(tput setaf 1)
 white=$(tput setaf 7)
 yellow=$(tput setaf 3)
+gray=$(tput setaf 008)
+lgray='\033[0;37m'      # light gray
+dgray='\033[1;30m'       # dark gray
 reset=$(tput sgr0)
 #   
 BOLD=`tput bold`              
@@ -98,8 +101,10 @@ function ec2cli-help(){
      ap-south-1         Asia Pacific (Mumbai, India)
      ap-southeast-1     Asia Pacific (Singapore)       
      ap-southeast-2     Asia Pacific (Sydney, Austrailia) 
+     ca-central-1       Canada (Montreal, CA)
      eu-central-1       Europe (Frankfurt, Germany)       
-     eu-west-1          Europe (Ireland)          
+     eu-west-1          Europe (Ireland)
+     eu-west-2          Europe (London, UK)       
      sa-east-1          South America (Sao Paulo, Brazil)
      us-east-1          United States (N. Virgina)
      us-east-2          United States (Ohio)   
@@ -1371,7 +1376,10 @@ function ec2cli-list-snapshots(){
     local TOTAL
 
     # Sum size of all snapshots (footer)
-    SUM=$(aws ec2 describe-snapshots --region $REGION --owner self | jq -r '.Snapshots | map(.VolumeSize) | add') 
+    SUM=$(aws ec2 describe-snapshots \
+            --region $REGION \
+            --output json \
+            --owner self | jq -r '.Snapshots | map(.VolumeSize) | add') 
 
     if [ $SUM == "null" ] || [ $SUM -eq 0 ]
     then
@@ -1383,8 +1391,8 @@ function ec2cli-list-snapshots(){
 
         # print header 
         echo -ne "SnapId Vo1. State Prog VolumeId Description\n \
-                ------------- ----  --------- ---- ------------ \
-                ----------------------------------------\n" > .ec2-qv-snapshots.tmp
+                ---------------------- ----  --------- ---- ------------ \
+                -------------------------------\n" > .ec2-qv-snapshots.tmp
         
         # output from aws
         aws ec2 describe-snapshots \
@@ -1404,8 +1412,8 @@ function ec2cli-list-snapshots(){
         TOTAL=$(cat .ec2-qv-snapshots.tmp | grep "snap-" | wc -l)
 
         # print and format output
-        awk  '{ printf "%-14s %-5s %-10s %-5s %-13s %-2s %-2s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9}' .ec2-qv-snapshots.tmp | indent02
+        awk  '{ printf "%-23s %-5s %-10s %-5s %-13s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8}' .ec2-qv-snapshots.tmp | indent02
 
         # print footer
         printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} GB (est)\n\n" | indent10
