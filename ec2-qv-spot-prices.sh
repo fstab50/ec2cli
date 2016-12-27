@@ -31,6 +31,29 @@
 #	  of region code
 #     
 
+# set vars
+NOW=$(date)
+E_BADSHELL=7              # exit code if incorrect shell detected
+E_BADARG=8                    # exit code if bad input parameter    
+REGION=$AWS_DEFAULT_REGION    # set region from global env var
+#
+# Formatting
+# 
+blue=$(tput setaf 4)
+cyan=$(tput setaf 6)
+green=$(tput setaf 2)
+purple=$(tput setaf 5)
+red=$(tput setaf 1)
+white=$(tput setaf 7)
+yellow=$(tput setaf 3)
+gray=$(tput setaf 008)
+lgray='\033[0;37m'      # light gray
+dgray='\033[1;30m'       # dark gray
+reset=$(tput sgr0)
+#   
+BOLD=`tput bold`              
+UNBOLD=`tput sgr0`  
+
 # < -- Start -->
 
 echo -e "\n"
@@ -43,14 +66,6 @@ echo -e "\n"
 # TYPE :: Operating System selected by user from OS[] array choices
 # SIZE[] :: InstanceTypes, Array
 # CHOICE :: tmp var holding choice selected by user
-
-# set vars
-NOW=$(date)
-BOLD=`tput bold`
-UNBOLD=`tput sgr0`
-E_BADSHELL=7              # exit code if incorrect shell detected
-E_BADARG=8                    # exit code if bad input parameter    
-REGION=$AWS_DEFAULT_REGION    # set region from global env var
 
 # set fs pointer to writeable temp location in memory
 if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]
@@ -98,6 +113,9 @@ for region in ${ARR_REGIONS[@]}; do
         eu-west-1)
             LOCATION="Europe (Ireland)"
             ;;
+        eu-west-2)
+            LOCATION="Europe (London)"
+            ;;            
         eu-central-1)
             LOCATION="Europe (Frankfurt, Germany)"
             ;;
@@ -118,19 +136,22 @@ for region in ${ARR_REGIONS[@]}; do
             ;;
         ap-northeast-1)
             LOCATION="Asia Pacific (Tokyo, Japan)"
-		        ;;
-		    ap-northeast-2)
-		        LOCATION="Asia Pacific (Seoul, Korea)"
+	        ;;
+		ap-northeast-2)
+	        LOCATION="Asia Pacific (Seoul, Korea)"
             ;;
-		    ap-south-1)
-		        LOCATION="Asia Pacific (Mumbai, India)"
-		        ;;
+	    ap-south-1)
+	        LOCATION="Asia Pacific (Mumbai, India)"
+	        ;;
         ap-southeast-1)
             LOCATION="Asia Pacific (Singapore)"
             ;;
         ap-southeast-2)
             LOCATION="Asia Pacific (Sydney, Austrailia)"
             ;;
+        ca-central-1)
+            LOCATION="Canada (Central)"
+            ;;            
         *)
             LOCATION="New Region"
             ;;
@@ -144,7 +165,7 @@ echo ""
 echo -ne ""    "     RegionCode Location\n \
     -------------------- --------------------------------\n" > .header.tmp
 # print choices
-echo -e "${BOLD}Current AWS Regions Worldwide:${UNBOLD}\n" | indent02
+echo -e "${white}${BOLD}Current AWS Regions Worldwide:${UNBOLD}${reset}\n" | indent02
 awk '{ printf "%-23s %-2s %-30s \n", $1, $2, $3}' .header.tmp | indent02
 awk '{ printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
 
