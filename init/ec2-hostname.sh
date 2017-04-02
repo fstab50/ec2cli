@@ -21,7 +21,7 @@
 #
 #  Note:
 #  This must be called upon startup by the init process.  This can be 
-#  done multiple ways; however, suggestion calling in rc.local
+#  done multiple ways; however, suggest call in rc.local
 #
 
 # <-- start -->
