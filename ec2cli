@@ -1200,10 +1200,9 @@ function ec2cli-run-instances(){
 	done
     # msg instance to start/ login | CONVERT TO JSON
 	tmpID=${INSTANCES[$CHOICE]}
-	TARGET=$(echo $tmpID | cut -c 1-19)
+	TARGET=$(echo $tmpID | awk '{print $1}')
     # msg out
 	ec2cli-message "Instance ($TARGET) selected." INFO
-
 	#
 	# network access check ------------
 	#
