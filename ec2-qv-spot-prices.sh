@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #_________________________________________________________________________
-#                                                                         | 
+#                                                                         |
 #                                                                         |
 #  Author:   Blake Huber                                                  |
 #  Purpose:  QuickView of current EC2 spot prices on market               |
@@ -29,16 +29,16 @@
 #	- Error handling for user data when chosing instance type
 #	- After chosing region, display Human Readable region desc instead \
 #	  of region code
-#     
+#
 
 # set vars
 NOW=$(date)
 E_BADSHELL=7              # exit code if incorrect shell detected
-E_BADARG=8                    # exit code if bad input parameter    
+E_BADARG=8                    # exit code if bad input parameter
 REGION=$AWS_DEFAULT_REGION    # set region from global env var
 #
 # Formatting
-# 
+#
 blue=$(tput setaf 4)
 cyan=$(tput setaf 6)
 green=$(tput setaf 2)
@@ -50,9 +50,9 @@ gray=$(tput setaf 008)
 lgray='\033[0;37m'      # light gray
 dgray='\033[1;30m'       # dark gray
 reset=$(tput sgr0)
-#   
-BOLD=`tput bold`              
-UNBOLD=`tput sgr0`  
+#
+BOLD=`tput bold`
+UNBOLD=`tput sgr0`
 
 # < -- Start -->
 
@@ -71,10 +71,10 @@ echo -e "\n"
 if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]
 then
         TMPDIR="/dev/shm"
-        cd $TMPDIR     
+        cd $TMPDIR
 else
         TMPDIR="/tmp"
-        cd $TMPDIR 
+        cd $TMPDIR
 fi
 
 #
@@ -90,7 +90,7 @@ indent02() { sed 's/^/  /'; }
 # test default shell, fail if not bash
 if [ ! -n "$BASH" ]
   then
-        # shell other than bash 
+        # shell other than bash
         echo "\nDefault shell appears to be something other than bash. \
 		Please rerun with bash. Exiting. Code $E_BADSHELL\n"
         exit $E_BADSHELL
@@ -115,7 +115,7 @@ for region in ${ARR_REGIONS[@]}; do
             ;;
         eu-west-2)
             LOCATION="Europe (London)"
-            ;;            
+            ;;
         eu-central-1)
             LOCATION="Europe (Frankfurt, Germany)"
             ;;
@@ -151,7 +151,7 @@ for region in ${ARR_REGIONS[@]}; do
             ;;
         ca-central-1)
             LOCATION="Canada (Central)"
-            ;;            
+            ;;
         *)
             LOCATION="New Region"
             ;;
@@ -168,6 +168,15 @@ echo -ne ""    "     RegionCode Location\n \
 echo -e "${white}${BOLD}Current AWS Regions Worldwide:${UNBOLD}${reset}\n" | indent02
 awk '{ printf "%-23s %-2s %-30s \n", $1, $2, $3}' .header.tmp | indent02
 awk '{ printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
+
+# clean up
+rm ./.regions.json ./.arrayoutput.tmp ./.header.tmp
+
+# exit if just regions requested (-r switch)
+if [ $1 == "-r" ] || [ $1 == "--regions" ]; then
+    echo -e "\n"
+    exit 0
+fi
 
 # enter loop to validate range and type of user entry
 VALID=0
@@ -197,13 +206,11 @@ while [ $VALID -eq 0 ]; do
              else
                  # out of range
                  echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
-             fi 
+             fi
 	       fi
 	   fi
 done
 
-# clean up
-rm ./.regions.json ./.arrayoutput.tmp ./.header.tmp
 
 #
 ###  choose Operating System ##############################################
@@ -218,7 +225,7 @@ MAXCT=${#OS[*]}
 i=0
 while (( i < $MAXCT ))
 do
-        echo "($i): ""${OS[$i]}"  >> .type.tmp 
+        echo "($i): ""${OS[$i]}"  >> .type.tmp
         i=$(( $i+1 ))
 done
 
@@ -235,7 +242,7 @@ do
 	echo ""
 	read -p "  Enter OS type [Linux/UNIX]: " CHOICE
 	echo ""
-	
+
 	if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]
 	then
 		echo "  You must enter an integer number between 0 and $(( $MAXCT-1 ))."
@@ -248,8 +255,8 @@ if [ -z "$CHOICE" ]
 then
         # CHOICE is blank, default chosen
 	CHOICE=0
-fi    
-    
+fi
+
 # set type
 TYPE=${OS[$CHOICE]}
 echo -e "  You Selected: "$TYPE"\n"
@@ -262,7 +269,7 @@ rm ./.type.tmp
 ###  choose Instance size #################################################
 #
 
-# build InstanceType array 
+# build InstanceType array
 
 # general purpose
 SIZE[0]='m3.medium'
@@ -312,7 +319,7 @@ m=$(( $i+20 ))  # 4th gen compute optimized
 while (( i < $MAXCT ))
 do
         echo "($i): ""${SIZE[$i]}" "($j): ""${SIZE[$j]}" "($k): ""${SIZE[$k]}" "($l): ""${SIZE[$l]}" \
-        "($m): ""${SIZE[$m]}" >> data.output 
+        "($m): ""${SIZE[$m]}" >> data.output
         i=$(( $i+1 ))
         j=$(( $j+1 ))
         k=$(( $k+1 ))
@@ -324,7 +331,7 @@ done
 echo -e "${BOLD}Choose from the following $TYPE EC2 instance types:\n${UNBOLD}" | indent02
 echo -e "General Purpose  ""Compute Opt(Gen3)  ""Memory Optimized  ""Storage Optimized  " "Compute Opt(Gen4)" > .header.tmp
 echo -e "---------------  ""----------------  ""----------------  ""-----------------   ""-----------------" >> .header.tmp
-awk -F "  " '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' .header.tmp | indent02 
+awk -F "  " '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' .header.tmp | indent02
 awk '{ printf "%-4s %-15s %-4s %-15s %-4s %-14s %-4s %-15s %-4s %-15s \n", \
 	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' data.output | indent02
 echo ""
@@ -342,9 +349,9 @@ echo ""
 
 if [ -z "$CHOICE" ]
 then
-        # CHOICE is blank, default chosen. Show all spot prices 
+        # CHOICE is blank, default chosen. Show all spot prices
 	# for instance types avail in region chosen
-	
+
 	# print title header
 	echo -e "\n"
         echo -e "  ${BOLD}Spot pricing for all EC2 instance types${UNBOLD} : $AWS_DEFAULT_REGION:\n"
@@ -354,7 +361,7 @@ then
 
 	# Format prices in ascending order based on RegionCode & OS Type:
 	case "$TYPE" in
-		
+
 		# Amazon Linux OS Formatting
 		"Linux/UNIX")
         	case "$REGION" in
@@ -363,7 +370,7 @@ then
 			#
 			# print column header
 			echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-			echo -e "-------------  ""----------  ""----------  ""--------   " >> .header.tmp 
+			echo -e "-------------  ""----------  ""----------  ""--------   " >> .header.tmp
 			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
 
                 	aws ec2 describe-spot-price-history  \
@@ -374,7 +381,7 @@ then
                 	        sort -k +5n > .body.tmp     # Cut 1st col, sort by 5th col
 			awk -F " " '{printf "%-20s %-20s %-15s %-15s %-10s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
 	                  ;;
-        	        
+
                         ap-*)
 			# output formatting ap-northeast-1, ap-southeast-1, or ap-southeast-2
                         #
@@ -391,7 +398,7 @@ then
                                 sort -k +5n > .body.tmp      # Cut 1st col, sort by 5th col
                         awk -F " " '{printf "%-20s %-20s %-15s %-15s %-10s \n", $1, $2, $3, $4, $5}' .body.tmp | cut -c 22-84 | indent02
                           ;;
-  
+
                 	*)
 	                # all other RegionCodes, use std default formatting
 			#
@@ -410,7 +417,7 @@ then
 			;;
 		esac
 		;;
-		
+
 		# SUSE Linux OS Formatting
 		"SUSE Linux")
                 case "$REGION" in       # output formatting by RegionCode
@@ -430,7 +437,7 @@ then
                                 sort -k +6n > .body.tmp      # Cut 1st col, sort by 4th col
                         awk -F " " '{printf "%-20s %-20s %-15s %-3s %-10s %-15s \n", $1, $2, $3, $4, $5, $6}' .body.tmp | cut -c 22-84 | indent02
                           ;;
-                        
+
 			ap-*)
 			# output formatting ap-northeast-1&2, ap-southeast-1&2
 			#
@@ -465,11 +472,11 @@ then
 			awk -F " " '{printf "%-20s %-15s %-15s %-3s %-10s %-15s \n", $1, $2, $3, $4, $5, $6}' .body.tmp | cut -c 22-84 | indent02
                         ;;
                 esac
-		;;	
-		
+		;;
+
 		# Windows OS Formatting
 		"Windows")
-		
+
                 case "$REGION" in
                         eu-central-1)
                         # print column header
@@ -559,9 +566,9 @@ then
 
 	esac
 
-        # clean up, display all section complete      
+        # clean up, display all section complete
         rm ./.header.tmp
-	rm ./.body.tmp    
+	rm ./.body.tmp
 
 else
 	# display current spot prices only for specific instance type in region chosen
@@ -570,7 +577,7 @@ else
 		--start-time "$NOW" \
 		--product-description "$TYPE" \
 		--instance- ${SIZE[$CHOICE]} \
-		--output table 
+		--output table
 fi
 
 # <-- end -->
