@@ -1047,6 +1047,7 @@ function ec2cli-rdp-login(){
 	RDP_SIZE[1]="1366x768"
 	RDP_SIZE[2]="1400x860"
 	RDP_SIZE[3]="1900x1000"
+    RDP_SIZE[4]="2540x1360"
 	# size of array
 	MAXCT=${#RDP_SIZE[*]}
 
@@ -1096,7 +1097,7 @@ function ec2cli-rdp-login(){
     fi
 
 	# Start rdp desktop session
-	rdesktop -u $RDP_USER -p $REMOTE_RDP_PASSWD -g $SIZE -a 24 $IPADDRESS &
+	rdesktop -u $RDP_USER -p "$REMOTE_RDP_PASSWD" -g $SIZE -a "24" $IPADDRESS &
 
 	### FIXME: Support multiple passwds. Solicit passwd from user or default to \
 	### shell global env var (REMOTE_RDP_PASSWD) ###
