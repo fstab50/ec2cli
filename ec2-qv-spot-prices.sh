@@ -173,7 +173,7 @@ awk '{ printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, 
 rm ./.regions.json ./.arrayoutput.tmp ./.header.tmp
 
 # exit if just regions requested (-r switch)
-if [ $1 == "-r" ] || [ $1 == "--regions" ]; then
+if [ "$1" == "-r" ] || [ "$1" == "--regions" ]; then
     echo -e "\n"
     exit 0
 fi
