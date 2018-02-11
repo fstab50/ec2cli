@@ -34,7 +34,7 @@ host=$(hostname)
 system=$(uname)
 
 # source lib deps
-source lib/version.lib        # package VERSION global var
+source $EC2_REPO/lib/version.lib        # package VERSION global var
 
 # error codes
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
