@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+# help function library
+
+function help_submenu(){
+    ## displayes appropriate submenu ##
+    local command="$1"
+    #
+    case $command in
+        attach)
+            ec2cli_help_command_attach
+            ;;
+        list)
+            ec2cli_help_command_list
+            ;;
+        create)
+            ec2cli_help_command_create
+            ;;
+        run)
+            ec2cli_help_command_run
+            ;;
+    esac
+    exit 0
+}
+
+function ec2cli_help_command_attach(){
+    cat <<EOM
+
+    COMMAND : ${BOLD}${white}attach${UNBOLD}${reset}
+
+    SYNTAX  : $ ec2cli OPTION attach [REGION]
+
+        The ${BOLD}${white}attach${UNBOLD}${reset} command can be used with the following options:
+            -v, --volumes      Attach (Detach) EBS Volume to (from) an existing instance
+
+EOM
+}
+
+function ec2cli_help_command_create(){
+    cat <<EOM
+
+    COMMAND : ${BOLD}${white}create${UNBOLD}${reset}
+
+    SYNTAX  : $ ec2cli OPTION create [REGION]
+
+        The ${BOLD}${white}create${UNBOLD}${reset} command can be used with the following options:
+            -a, --images       Create an Amazon Machine Image (AMI) from an EC2 instance
+            -s, --snapshots    Create a snapshot from an EBS Volume
+            -v, --volumes      Create an EBS Volume from a snapshot
+
+EOM
+}
+
+function ec2cli_help_command_list(){
+    cat <<EOM
+
+    COMMAND : ${BOLD}${white}list${UNBOLD}${reset}
+
+    SYNTAX  : $ ec2cli OPTION list [REGION]
+
+        The ${BOLD}${white}list${UNBOLD}${reset} command can be used with the following OPTIONS:
+            -a, --images       List an Amazon Machine Image (AMI) from an EC2 instance
+            -i, --instances    List instances in region
+            -s, --snapshots    List snapshots in region REGION
+            -b, --subnets      List subnets in region REGION
+            -n, --vpc          List vpcs in region REGION
+            -t, --tags         List tags (globally, all regions)
+            -v, --volumes      Create an EBS Volume from a snapshot
+
+
+EOM
+}
+
+
+function ec2cli_help_command_run(){
+    cat <<EOM
+
+    COMMAND : ${BOLD}${white}run${UNBOLD}${reset}
+
+    SYNTAX  : $ ec2cli OPTION run [REGION]
+
+        The ${BOLD}${white}run${UNBOLD}${reset} command can be used with the following options:
+            -i, --instances    Run/ Login to EC2 instances in specified region
+
+EOM
+}
