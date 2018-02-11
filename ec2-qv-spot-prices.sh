@@ -114,8 +114,11 @@ for region in ${ARR_REGIONS[@]}; do
             LOCATION="Europe (Ireland)"
             ;;
         eu-west-2)
-            LOCATION="Europe (London)"
+            LOCATION="Europe (London, UK)"
             ;;
+        eu-west-3)
+                LOCATION="Europe (Paris, France)"
+                ;;
         eu-central-1)
             LOCATION="Europe (Frankfurt, Germany)"
             ;;
@@ -170,7 +173,7 @@ awk '{ printf "%-23s %-2s %-30s \n", $1, $2, $3}' .header.tmp | indent02
 awk '{ printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
 
 # clean up
-rm ./.regions.json ./.arrayoutput.tmp ./.header.tmp
+rm ./.regions.json ./.header.tmp ./.arrayoutput.tmp
 
 # exit if just regions requested (-r switch)
 if [ "$1" == "-r" ] || [ "$1" == "--regions" ]; then
