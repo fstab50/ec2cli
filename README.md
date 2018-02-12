@@ -66,7 +66,7 @@ shells; however, your mileage may vary.
 
 ### Notes: ###
 
-* **OPTION** is required. Since an option represents a disparate AWS resource, only 1 option (resource) at a time is supported.
+* **RESOURCE** is required. Represents a disparate AWS resource. Only 1 resource at a time is supported.
 
 * **COMMAND** is optional. If omitted, ec2cli defaults to the `list` command and lists details of the EC2 resource specified  
 by the OPTION parameter.
