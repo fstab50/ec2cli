@@ -957,10 +957,10 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # header
-        printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION  |  run time sorted\n" | indent18
+        printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION  |  * sorted\n" | indent18
         printf '%*s\n\n' "145" '' | tr ' ' _ | indent02
         # print header
-        echo -ne "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime Tag\n" > .body.tmp
+        echo -ne "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag\n" > .body.tmp
         printf '%*s\n' "145" '' | tr ' ' _ | indent02 >> .body.tmp
 
         #
@@ -1490,39 +1490,63 @@ function ec2cli_list_snapshots(){
     if [ $SUM == "null" ] || [ $SUM -eq 0 ]
     then
         # print footer if no snapshots found
-        printf "\n** ${white}${BOLD}0${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}0${UNBOLD}${reset} GB (est) **\n\n" | indent10
+        std_message "${white}${BOLD}0${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}0${UNBOLD}${reset} GB" "INFO"  | indent10
     else
         # snapshots found, print region identifier
-        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION\n\n" | indent18
+        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION\n" | indent18
 
         # print header
-        echo -ne "SnapId Vo1. State Prog VolumeId Description\n \
-                ---------------------- ----  --------- ---- --------------------- \
-                -------------------------------\n" > .ec2-qv-snapshots.tmp
+        printf '%*s\n' "145" '' | tr ' ' _ | indent02 > .ec2-qv-snapshots.tmp
+        echo -ne "SnapId Vo1. CreateTime State Prog VolumeId Description\n" >> .ec2-qv-snapshots.tmp
+        printf '%*s\n' "145" '' | tr ' ' _ | indent02 >> .ec2-qv-snapshots.tmp
 
         # output from aws
-        aws ec2 --profile $PROFILE describe-snapshots \
-            --owner self \
-            --output text \
-            --region $REGION \
-            --query "Snapshots[*]. \
-                [SnapshotId, \
-                VolumeSize, \
-                State, \
-                Progress,\
-                VolumeId,\
-                Description]" | \
+        aws ec2 --profile $PROFILE describe-snapshots --owner self --output json --region $REGION > list_snapshots.json
+
         sort -k +6  >> .ec2-qv-snapshots.tmp
+
+        # parse json
+        ARR_IP=( $(jq -r '.Reservations[].Instances[].PublicIpAddress' .jsonoutput.tmp) )
+        ARR_LT=( $(jq -r '.Reservations[].Instances[].LaunchTime' .jsonoutput.tmp) )
+        ARR_ID=( $(jq -r '.Reservations[].Instances[].InstanceId' .jsonoutput.tmp) )
+        ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' .jsonoutput.tmp) )
+        ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' .jsonoutput.tmp) )
+        # limit security grp name to 15 chars
+        ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' .jsonoutput.tmp | cut -c 1-15) )
+        # limit length of tag fields to 20 chars
+        ARR_TAG=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+
+        MAXCT=${#ARR_ID[*]}    # count snapshots found
+
+        # output table of json array
+        i=0
+        while (( i < $MAXCT )); do
+            echo "${ARR_ID[$i]} ${ARR_SIZE[$i]} $(date --date=${ARR_TIME[$i]} +"%Y-%m-%d") ${ARR_SG[$i]} \
+                  ${ARR_DEV[$i]} ${ARR_TAG[$i]}" >> .body.tmp
+            # incr ct
+            i=$(( $i+1 ))
+        done
 
         # count total
         TOTAL=$(cat .ec2-qv-snapshots.tmp | grep "snap-" | wc -l)
 
+        if [ $SUM -gt 1024 ]; then
+            SUM=$(( $SUM / 1024 ))
+            UNIT="TB"
+        else
+            UNIT="GB"
+        fi
+
+        # Convert datetime format
+
         # print and format output
-        awk  '{ printf "%-23s %-5s %-10s %-5s %-22s %-2s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8}' .ec2-qv-snapshots.tmp | indent02
+        awk  '{ printf "%-23s %-5s %-25s %-10s %-5s %-22s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9}' .ec2-qv-snapshots.tmp | indent02
 
         # print footer
-        printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} GB (est)\n\n" | indent10
+        printf '%*s\n' "145" '' | tr ' ' _ | indent02
+        printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT (est)\n" | indent10
+        printf '%*s\n\n' "145" '' | tr ' ' _ | indent02
 
         # clean up
         rm .ec2-qv-snapshots.tmp
