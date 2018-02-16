@@ -1524,7 +1524,7 @@ function ec2cli_list_snapshots(){
         echo -e "${frame}" > .ec2-qv-snapshots.tmp
         printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
         echo -e "${reset}" >> .ec2-qv-snapshots.tmp
-        echo -ne "SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description" >> .ec2-qv-snapshots.tmp
+        echo -ne "$sp SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description" >> .ec2-qv-snapshots.tmp
         #echo -ne "SnapId | Size | CreateTime | State | Prog | Encrypted | VolumeId | Description\n" >> .ec2-qv-snapshots.tmp
         echo -e "${frame}" >> .ec2-qv-snapshots.tmp
         printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
@@ -1556,7 +1556,7 @@ function ec2cli_list_snapshots(){
         #done
 
         while (( i < $MAXCT )); do
-            echo "${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
+            echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
                   ${ARR_STATE[$i]} $sp ${ARR_PROG[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encrypted"; else echo "-"; fi ) $sp \
                   ${ARR_VID[$i]} $sp ${ARR_DESC[$i]}" >> .body.tmp
             # incr ct
@@ -1573,15 +1573,17 @@ function ec2cli_list_snapshots(){
         RETURN=$(adjust_size $ESTIMATE)
         ESUM="${BOLD}$(echo $RETURN | awk '{print $1}')${UNBOLD}"
         EUNIT=$(echo $RETURN | awk '{print $2}')
-
-        awk  '{ printf "%-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-25s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-snapshots.tmp | indent02
+        awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-25s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18}' .ec2-qv-snapshots.tmp | indent02
 
         # print footer
+        #printf '%-1s%*s\n' "$total_width" '' '' | "$(echo ${frame}) tr ' ' _" | indent02
         printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
-        printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$ASUM${UNBOLD}${reset} $UNIT | $ESUM $EUNIT on disk (est)\n" | indent10
-        printf '%*s\n\n' "$total_width" '' | tr ' ' _ | indent02
-
+        echo -e "${reset}"
+        printf "${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$ASUM${UNBOLD}${reset} $UNIT | $ESUM $EUNIT on disk (est)" | indent10
+        echo -e "${frame}"
+        printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
+        echo -e "${reset}"
         # clean up
         rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
     fi
