@@ -1558,13 +1558,6 @@ function ec2cli_list_snapshots(){
 
         # output table of json array
         i=0
-        #while (( i < $MAXCT )); do
-        #    echo "${ARR_ID[$i]} ${ARR_SIZE[$i]} $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") \
-        #          ${ARR_STATE[$i]} ${ARR_PROG[$i]} $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encrypted"; else echo "-"; fi ) \
-        #          ${ARR_VID[$i]} ${ARR_DESC[$i]}" >> .body.tmp
-        #    # incr ct
-        #    i=$(( $i+1 ))
-        #done
         if [ $FULL_CLI ]; then
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
