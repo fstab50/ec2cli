@@ -1481,11 +1481,11 @@ function ec2cli_list_snapshots(){
     local SUM
     local TOTAL
 
+    # output from aws
+    aws ec2 --profile $PROFILE describe-snapshots --owner self --output json --region $REGION > .jsonoutput.tmp
+
     # Sum size of all snapshots (footer)
-    SUM=$(aws ec2 --profile $PROFILE describe-snapshots \
-            --region $REGION \
-            --output json \
-            --owner self | jq -r '.Snapshots | map(.VolumeSize) | add')
+    SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' .jsonoutput.tmp)
 
     if [ $SUM == "null" ] || [ $SUM -eq 0 ]
     then
@@ -1500,8 +1500,6 @@ function ec2cli_list_snapshots(){
         echo -ne "SnapId Size CreateTime State Prog Encrypted VolumeId Description\n" >> .ec2-qv-snapshots.tmp
         printf '%*s\n' "145" '' | tr ' ' _ | indent02 >> .ec2-qv-snapshots.tmp
 
-        # output from aws
-        aws ec2 --profile $PROFILE describe-snapshots --owner self --output json --region $REGION > .jsonoutput.tmp
 
         # parse json
         ARR_ID=( $(jq -r '.Snapshots[].SnapshotId' .jsonoutput.tmp) )
@@ -1515,13 +1513,14 @@ function ec2cli_list_snapshots(){
         ARR_DESC=( $(jq -r '.Snapshots[].Description' .jsonoutput.tmp | cut -c 1-25) )
         # limit length of tag fields to 20 chars
 
+
         MAXCT=${#ARR_ID[*]}    # count snapshots found
 
         # output table of json array
         i=0
         while (( i < $MAXCT )); do
             echo "${ARR_ID[$i]} ${ARR_SIZE[$i]} $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d")  \
-                  ${ARR_STATE[$i]} ${ARR_PROG[$i]} $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Yes"; else echo "-"; fi ) \
+                  ${ARR_STATE[$i]} ${ARR_PROG[$i]} $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encrypted"; else echo "-"; fi ) \
                   ${ARR_VID[$i]} ${ARR_TAG[$i]} ${ARR_DESC[$i]}" >> .body.tmp
             # incr ct
             i=$(( $i+1 ))
@@ -1536,15 +1535,15 @@ function ec2cli_list_snapshots(){
             UNIT="GB"
         fi
 
-        # Convert datetime format
+        ESTIMATE="${BOLD}$(( $SUM / 5 ))${UNBOLD}"    # 20% estimated real size on disk
 
         # print and format output
-        awk  '{ printf "%-23s %-5s %-12s %-10s %-5s %-10s %-22s %-2s %-2s %-2s \n", \
+        awk  '{ printf "%-23s %-5s %-12s %-10s %-5s %-10s %-32s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-snapshots.tmp | indent02
 
         # print footer
         printf '%*s\n' "$(( $(tput cols) - 4 ))" '' | tr ' ' _ | indent02
-        printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT (est)\n" | indent10
+        printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT | $ESTIMATE $UNIT estimate on disk\n" | indent10
         printf '%*s\n\n' "$(( $(tput cols) - 4 ))" '' | tr ' ' _ | indent02
 
         # clean up
