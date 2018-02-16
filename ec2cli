@@ -27,7 +27,7 @@
 # global variables
 #
 pkg=$(basename $0)
-version="2.0"
+version="2.1"
 pkg_path=$(cd $(dirname $0); pwd -P)
 ec2cli_log="$pkg_path/logs/ec2cli.log"
 host=$(hostname)
@@ -1501,34 +1501,31 @@ function ec2cli_list_snapshots(){
         printf '%*s\n' "145" '' | tr ' ' _ | indent02 >> .ec2-qv-snapshots.tmp
 
         # output from aws
-        aws ec2 --profile $PROFILE describe-snapshots --owner self --output json --region $REGION > list_snapshots.json
-
-        sort -k +6  >> .ec2-qv-snapshots.tmp
+        aws ec2 --profile $PROFILE describe-snapshots --owner self --output json --region $REGION > .jsonoutput.tmp
 
         # parse json
-        ARR_IP=( $(jq -r '.Reservations[].Instances[].PublicIpAddress' .jsonoutput.tmp) )
-        ARR_LT=( $(jq -r '.Reservations[].Instances[].LaunchTime' .jsonoutput.tmp) )
-        ARR_ID=( $(jq -r '.Reservations[].Instances[].InstanceId' .jsonoutput.tmp) )
-        ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' .jsonoutput.tmp) )
-        ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' .jsonoutput.tmp) )
-        # limit security grp name to 15 chars
-        ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' .jsonoutput.tmp | cut -c 1-15) )
+        ARR_ID=( $(jq -r '.Snapshots[].SnapshotId' .jsonoutput.tmp) )
+        ARR_SIZE=( $(jq -r '.Snapshots[].VolumeSize' .jsonoutput.tmp) )
+        ARR_CTIME=( $(jq -r '.Snapshots[].StartTime' .jsonoutput.tmp) )
+        ARR_ENCRYPT=( $(jq -r '.Snapshots[].Encrypted' .jsonoutput.tmp) )
+        ARR_STATE=( $(jq -r '.Snapshots[].State' .jsonoutput.tmp) )
+        ARR_PROG=( $(jq -r '.Snapshots[].Progress' .jsonoutput.tmp) )
+        ARR_DESCR=( $(jq -r '.Snapshots[].Description' .jsonoutput.tmp | cut -c 1-25) )
         # limit length of tag fields to 20 chars
-        ARR_TAG=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+        ARR_TAG=( $(jq -r '.Snapshots[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
 
         MAXCT=${#ARR_ID[*]}    # count snapshots found
 
         # output table of json array
         i=0
         while (( i < $MAXCT )); do
-            echo "${ARR_ID[$i]} ${ARR_SIZE[$i]} $(date --date=${ARR_TIME[$i]} +"%Y-%m-%d") ${ARR_SG[$i]} \
-                  ${ARR_DEV[$i]} ${ARR_TAG[$i]}" >> .body.tmp
+            echo "${ARR_ID[$i]} ${ARR_SIZE[$i]} $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") ${ARR_ENCRYPT[$i]} \
+                  ${ARR_STATE[$i]} ${ARR_PROD[$i]} ${ARR_TAG[$i]}" >> .body.tmp
             # incr ct
             i=$(( $i+1 ))
         done
 
-        # count total
-        TOTAL=$(cat .ec2-qv-snapshots.tmp | grep "snap-" | wc -l)
+        cat .body.tmp | sort -k 3  >> .ec2-qv-snapshots.tmp
 
         if [ $SUM -gt 1024 ]; then
             SUM=$(( $SUM / 1024 ))
@@ -1540,16 +1537,16 @@ function ec2cli_list_snapshots(){
         # Convert datetime format
 
         # print and format output
-        awk  '{ printf "%-23s %-5s %-25s %-10s %-5s %-22s %-2s %-2s %-2s \n", \
+        awk  '{ printf "%-23s %-5s %-15s %-10s %-5s %-22s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9}' .ec2-qv-snapshots.tmp | indent02
 
         # print footer
-        printf '%*s\n' "145" '' | tr ' ' _ | indent02
-        printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT (est)\n" | indent10
-        printf '%*s\n\n' "145" '' | tr ' ' _ | indent02
+        printf '%*s\n' "$(tput cols)" '' | tr ' ' _ | indent02
+        printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT (est)\n" | indent10
+        printf '%*s\n' "$(tput cols)" '' | tr ' ' _ | indent02
 
         # clean up
-        rm .ec2-qv-snapshots.tmp
+        rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
     fi
     #
     # <-- end function ec2cli_list_snapshots -->
