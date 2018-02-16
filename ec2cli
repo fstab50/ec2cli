@@ -53,7 +53,7 @@ CONFIG_PATH_ALT="$HOME/.ec2cli"
 REGION_CONFIGFILE="regions.list"
 REFRESH_REGIONCODES="14"      # days
 FLOAT_DECIMAL="1"             # number of floating point decimal places to output
-
+PS1_ORIGINAL="$PS1"
 #
 # Formatting
 #
@@ -2255,6 +2255,18 @@ function parse_parameters(){
     # <-- end function ec2cli_parse_parameters -->
 }
 
+function xterm_reset(){
+    ## resets default xterm colors (temporary) ##
+    local set_colors="$1"
+    #
+    if [ $set_colors ]; then
+        PS1_ORIGINAL="$PS1"
+        export PS1="$PS1_ORIGINAL \$\[\${orange}\]"
+    else
+        # reset to orginal
+        export PS1=$PS1_ORIGINAL
+    fi
+}
 
 #
 # START (MAIN) ----------------------------------------------------------------
@@ -2263,6 +2275,10 @@ function parse_parameters(){
 # validate pre-run conditions
 ec2cli_precheck
 
+# reset default colors
+xterm_reset true
+
+# parse all cli parameters
 parse_parameters $@
 
 # execute
@@ -2290,6 +2306,8 @@ else
     $FUNCTION_CALL $REGION
 fi
 
+# reset terminal colors to original
+xterm_reset
 
 #
 # END (MAIN) ------------------------------------------------------------------
