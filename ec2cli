@@ -52,6 +52,7 @@ CONFIG_PATH="$CONFIG_ROOT/$CONFIG_DIR"
 CONFIG_PATH_ALT="$HOME/.ec2cli"
 REGION_CONFIGFILE="regions.list"
 REFRESH_REGIONCODES="14"      # days
+FLOAT_DECIMAL="1"             # number of floating point decimal places to output
 
 #
 # Formatting
@@ -293,7 +294,7 @@ function ec2cli_precheck(){
     fi
 
     ## check for required cli tools ##
-    for prog in aws ssh dig awk sed; do
+    for prog in aws ssh dig awk sed bc; do
         if ! type "$prog" > /dev/null 2>&1; then
             std_error_exit "$prog is required and not found in the PATH. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
         fi
@@ -1483,10 +1484,10 @@ function adjust_size(){
     local unit
     #
     if [ $sum -gt 1048576 ]; then
-        adj_sum=$(echo "scale=1; $sum/1024/1024" | bc)
+        adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024/1024" | bc)
         unit="PetaBytes"
     elif [ $sum -gt 1024 ]; then
-        adj_sum=$(echo "scale=1; $sum/1024" | bc)
+        adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024" | bc)
         unit="TB"
     else
         adj_sum=$sum
@@ -1516,7 +1517,13 @@ function ec2cli_list_snapshots(){
         total_width=$(( $(tput cols) - 4 ))
         sp="${frame}|${reset}"    # separator
         hz="_"
-
+        if (( $(tput cols) >= "150" )); then
+            FULL_CLI="True"
+            std_logger "[INFO]: FULL_CLI set to True, Full width output"
+            total_width="155"
+        else
+            total_width="132"
+        fi
         # snapshots found, print region identifier
         printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION" | indent18
 
@@ -1524,7 +1531,12 @@ function ec2cli_list_snapshots(){
         echo -e "${frame}" > .ec2-qv-snapshots.tmp
         printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
         echo -e "${reset}" >> .ec2-qv-snapshots.tmp
-        echo -ne "$sp SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description" >> .ec2-qv-snapshots.tmp
+        # adjust width based on cli width
+        if [ $FULL_CLI ]; then
+            echo -ne "$sp SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" >> .ec2-qv-snapshots.tmp
+        else
+            echo -ne "$sp SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" >> .ec2-qv-snapshots.tmp
+        fi
         #echo -ne "SnapId | Size | CreateTime | State | Prog | Encrypted | VolumeId | Description\n" >> .ec2-qv-snapshots.tmp
         echo -e "${frame}" >> .ec2-qv-snapshots.tmp
         printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
@@ -1538,8 +1550,8 @@ function ec2cli_list_snapshots(){
         ARR_STATE=( $(jq -r '.Snapshots[].State' .jsonoutput.tmp) )
         ARR_PROG=( $(jq -r '.Snapshots[].Progress' .jsonoutput.tmp) )
         ARR_ENCRYPT=( $(jq -r '.Snapshots[].Encrypted' .jsonoutput.tmp) )
-        #ARR_TAG=( $(jq -r '.Snapshots[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
-        ARR_DESC=( $(jq -r '.Snapshots[].Description' .jsonoutput.tmp | cut -c 1-25) )
+        ARR_TAG=( $(jq -r '.Snapshots[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+        ARR_DESC=( $(jq -r '.Snapshots[].Description' .jsonoutput.tmp | cut -c 1-20) )
         # limit length of tag fields to 20 chars
 
 
@@ -1554,15 +1566,24 @@ function ec2cli_list_snapshots(){
         #    # incr ct
         #    i=$(( $i+1 ))
         #done
-
-        while (( i < $MAXCT )); do
-            echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                  ${ARR_STATE[$i]} $sp ${ARR_PROG[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encrypted"; else echo "-"; fi ) $sp \
-                  ${ARR_VID[$i]} $sp ${ARR_DESC[$i]}" >> .body.tmp
-            # incr ct
-            i=$(( $i+1 ))
-        done
-        cat .body.tmp | sort -k5 -n -r >> .ec2-qv-snapshots.tmp
+        if [ $FULL_CLI ]; then
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
+                      ${ARR_STATE[$i]} $sp ${ARR_PROG[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encrypted"; else echo "-"; fi ) $sp \
+                      ${ARR_VID[$i]} $sp ${ARR_TAG[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+        else
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
+                      ${ARR_STATE[$i]} $sp ${ARR_PROG[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encrypted"; else echo "-"; fi ) $sp \
+                      ${ARR_VID[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+        fi
+        cat .body.tmp | sort -k5 -r >> .ec2-qv-snapshots.tmp
 
         # size, unit calcs of raw volumes snapshotted
         RETURN=$(adjust_size $SUM)
@@ -1573,9 +1594,13 @@ function ec2cli_list_snapshots(){
         RETURN=$(adjust_size $ESTIMATE)
         ESUM="${BOLD}$(echo $RETURN | awk '{print $1}')${UNBOLD}"
         EUNIT=$(echo $RETURN | awk '{print $2}')
-        awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-25s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18}' .ec2-qv-snapshots.tmp | indent02
-
+        if [ $FULL_CLI ]; then
+            awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-20s %-2s %-20s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19}' .ec2-qv-snapshots.tmp | indent02
+        else
+            awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-20s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-snapshots.tmp | indent02
+        fi
         # print footer
         #printf '%-1s%*s\n' "$total_width" '' '' | "$(echo ${frame}) tr ' ' _" | indent02
         printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
