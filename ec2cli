@@ -1525,17 +1525,16 @@ function ec2cli_list_snapshots(){
             total_width="132"
         fi
         # snapshots found, print region identifier
-        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION" | indent18
+        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION\n" | indent18
 
         # print header
-        echo -e "${frame}" > .ec2-qv-snapshots.tmp
-        printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
+        printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > .ec2-qv-snapshots.tmp
         echo -e "${reset}" >> .ec2-qv-snapshots.tmp
         # adjust width based on cli width
         if [ $FULL_CLI ]; then
-            echo -ne "$sp SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" >> .ec2-qv-snapshots.tmp
+            echo -ne "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" >> .ec2-qv-snapshots.tmp
         else
-            echo -ne "$sp SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" >> .ec2-qv-snapshots.tmp
+            echo -ne "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" >> .ec2-qv-snapshots.tmp
         fi
         #echo -ne "SnapId | Size | CreateTime | State | Prog | Encrypted | VolumeId | Description\n" >> .ec2-qv-snapshots.tmp
         echo -e "${frame}" >> .ec2-qv-snapshots.tmp
@@ -1603,7 +1602,7 @@ function ec2cli_list_snapshots(){
         fi
         # print footer
         #printf '%-1s%*s\n' "$total_width" '' '' | "$(echo ${frame}) tr ' ' _" | indent02
-        printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
+        printf "%-10s %*s\n" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02
         echo -e "${reset}"
         printf "${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$ASUM${UNBOLD}${reset} $UNIT | $ESUM $EUNIT on disk (est)" | indent10
         echo -e "${frame}"
