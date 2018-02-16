@@ -1476,6 +1476,25 @@ function ec2cli_list_securitygroups(){
     #
 }
 
+function adjust_size(){
+    ## adjusts size and units of disk based on inc of 1024 ##
+    local sum="$1"      # raw sum
+    local adj_sum
+    local unit
+    #
+    if [ $sum -gt 1048576 ]; then
+        adj_sum=$(( $sum / 1024 / 1024 ))
+        unit="PetaBytes"
+    elif [ $sum -gt 1024 ]; then
+        adj_sum=$(( $sum / 1024 ))
+        unit="TB"
+    else
+        adj_sum=$sum
+        unit="GB"
+    fi
+    echo "$adj_sum $unit"
+}
+
 function ec2cli_list_snapshots(){
     # vars
     local REGION=$1
@@ -1502,10 +1521,10 @@ function ec2cli_list_snapshots(){
         printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION\n" | indent18
 
         # print header
-        printf '%*s\n' "$total_width" '' | tr ' ' $hz | indent02 > .ec2-qv-snapshots.tmp
+        printf '%*s\n' "$total_width" '' | tr ' ' $hz  > .ec2-qv-snapshots.tmp
         echo -ne "SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description\n" >> .ec2-qv-snapshots.tmp
         #echo -ne "SnapId | Size | CreateTime | State | Prog | Encrypted | VolumeId | Description\n" >> .ec2-qv-snapshots.tmp
-        printf '%*s\n' "$total_width" '' | tr ' ' $hz | indent02 >> .ec2-qv-snapshots.tmp
+        printf '%*s\n' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
 
 
         # parse json
@@ -1542,21 +1561,22 @@ function ec2cli_list_snapshots(){
         done
         cat .body.tmp | sort -k5 -n -r >> .ec2-qv-snapshots.tmp
 
-        if [ $SUM -gt 1024 ]; then
-            SUM=$(( $SUM / 1024 ))
-            UNIT="TB"
-        else
-            UNIT="GB"
-        fi
-
+        # size, unit calcs of raw volumes snapshotted
+        RETURN=$(adjust_size $SUM)
+        ASUM=$(echo $RETURN | awk '{print $1}')
+        UNIT=$(echo $RETURN | awk '{print $2}')
+        # estimated actual size, units on disk
         ESTIMATE="${BOLD}$(( $SUM / 5 ))${UNBOLD}"    # 20% estimated real size on disk
+        RETURN=$(adjust_size $ESTIMATE)
+        ESUM=$(echo $RETURN | awk '{print $1}')
+        EUNIT=$(echo $RETURN | awk '{print $2}')
 
         awk  '{ printf "%-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-25s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-snapshots.tmp | indent02
 
         # print footer
         printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
-        printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT | $ESTIMATE $UNIT actual disk estimate\n" | indent10
+        printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$ASUM${UNBOLD}${reset} $UNIT | $ESUM $EUNIT on disk (est) | $SUM raw\n" | indent10
         printf '%*s\n\n' "$total_width" '' | tr ' ' _ | indent02
 
         # clean up
