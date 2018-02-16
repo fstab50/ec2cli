@@ -1518,14 +1518,17 @@ function ec2cli_list_snapshots(){
         hz="_"
 
         # snapshots found, print region identifier
-        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION\n" | indent18
+        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION" | indent18
 
         # print header
-        printf '%*s\n' "$total_width" '' | tr ' ' $hz  > .ec2-qv-snapshots.tmp
-        echo -ne "SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description\n" >> .ec2-qv-snapshots.tmp
+        echo -e "${frame}" > .ec2-qv-snapshots.tmp
+        printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
+        echo -e "${reset}" >> .ec2-qv-snapshots.tmp
+        echo -ne "SnapId $sp Size $sp CreateTime $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description" >> .ec2-qv-snapshots.tmp
         #echo -ne "SnapId | Size | CreateTime | State | Prog | Encrypted | VolumeId | Description\n" >> .ec2-qv-snapshots.tmp
-        printf '%*s\n' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
-
+        echo -e "${frame}" >> .ec2-qv-snapshots.tmp
+        printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
+        echo -e "${reset}" >> .ec2-qv-snapshots.tmp
 
         # parse json
         ARR_ID=( $(jq -r '.Snapshots[].SnapshotId' .jsonoutput.tmp) )
