@@ -1541,9 +1541,9 @@ function ec2cli_list_snapshots(){
             $1, $2, $3, $4, $5, $6, $7, $8, $9}' .ec2-qv-snapshots.tmp | indent02
 
         # print footer
-        printf '%*s\n' "$(( $(tput cols) - 2 ))" '' | tr ' ' _ | indent02
+        printf '%*s\n' "$(( $(tput cols) - 4 ))" '' | tr ' ' _ | indent02
         printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT (est)\n" | indent10
-        printf '%*s\n' "$(( $(tput cols) - 2 ))" '' | tr ' ' _ | indent02
+        printf '%*s\n' "$(( $(tput cols) - 4 ))" '' | tr ' ' _ | indent02
 
         # clean up
         rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
