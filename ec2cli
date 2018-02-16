@@ -1538,13 +1538,15 @@ function ec2cli_list_snapshots(){
         ESTIMATE="${BOLD}$(( $SUM / 5 ))${UNBOLD}"    # 20% estimated real size on disk
 
         # print and format output
-        awk  '{ printf "%-23s %-5s %-12s %-10s %-5s %-10s %-32s %-2s %-2s %-2s \n", \
+        total_width=$(( $(tput cols) - 4 ))
+
+        awk  '{ printf "%-23s %-5s %-12s %-10s %-5s %-10s %-22s %-25s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-snapshots.tmp | indent02
 
         # print footer
-        printf '%*s\n' "$(( $(tput cols) - 4 ))" '' | tr ' ' _ | indent02
-        printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT | $ESTIMATE $UNIT estimate on disk\n" | indent10
-        printf '%*s\n\n' "$(( $(tput cols) - 4 ))" '' | tr ' ' _ | indent02
+        printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
+        printf "\n${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$SUM${UNBOLD}${reset} $UNIT | $ESTIMATE $UNIT actual disk estimate\n" | indent10
+        printf '%*s\n\n' "$total_width" '' | tr ' ' _ | indent02
 
         # clean up
         rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
