@@ -53,7 +53,7 @@ CONFIG_PATH_ALT="$HOME/.ec2cli"
 REGION_CONFIGFILE="regions.list"
 REFRESH_REGIONCODES="14"      # days
 FLOAT_DECIMAL="1"             # number of floating point decimal places to output
-PS1_ORIGINAL="$PS1"
+
 #
 # Formatting
 #
@@ -65,14 +65,15 @@ red=$(tput setaf 1)
 white=$(tput setaf 7)
 yellow=$(tput setaf 3)
 orange='\033[38;5;95;38;5;214m'
+brightgreen='\033[38;5;95;38;5;46m'
 gray=$(tput setaf 008)
-lgray='\033[38;5;95;38;5;245m'    # light gray
+lgray='\033[38;5;95;38;5;253m'    # light gray
 dgray='\033[38;5;95;38;5;8m'      # dark gray
 
 # bright colors
 brightblue='\033[38;5;51m'
 brightcyan='\033[0;36m'
-brightgreen='\033[38;5;46m'
+#brightgreen='\033[38;5;46m'
 brightyellow='\033[38;5;11m'
 brightyellow2='\033[38;5;95;38;5;226m'
 brightwhite='\033[38;5;15m'
@@ -89,13 +90,14 @@ BOLD=`tput bold`
 UNBOLD=`tput sgr0`
 
 # Initialize ansi colors
-title=$(echo -e ${underline})
+title=$(echo -e ${underline}${white})
 options=$(echo -e ${white})
 resources=${yellow}
 commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
 regions=$(echo -e ${bluepurple})
 url=$(echo -e ${underline}${brightblue})
-frame=$(echo -e ${orange})
+frame=$(echo -e ${brightgreen})
+body=$(echo -e ${reset})
 backcolor=$(echo -e ${brightgreen})
 backcolor=${reset}
 
@@ -1515,7 +1517,7 @@ function ec2cli_list_snapshots(){
     else
         # print and format output
         total_width=$(( $(tput cols) - 4 ))
-        sp="${frame}|${reset}"    # separator
+        sp="${frame}|${body}"    # separator
         hz="_"
         if (( $(tput cols) >= "150" )); then
             FULL_CLI="True"
@@ -1534,7 +1536,7 @@ function ec2cli_list_snapshots(){
         if [ $FULL_CLI ]; then
             echo -ne "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" >> .ec2-qv-snapshots.tmp
         else
-            echo -ne "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" >> .ec2-qv-snapshots.tmp
+            echo -ne "$(echo -e${orange})$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" >> .ec2-qv-snapshots.tmp
         fi
         #echo -ne "SnapId | Size | CreateTime | State | Prog | Encrypted | VolumeId | Description\n" >> .ec2-qv-snapshots.tmp
         echo -e "${frame}" >> .ec2-qv-snapshots.tmp
