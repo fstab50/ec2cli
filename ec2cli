@@ -293,8 +293,9 @@ function ec2cli_precheck(){
             TMPDIR="/dev/shm"
             cd $TMPDIR
     else
-            TMPDIR="/tmp"
-            cd $TMPDIR
+        std_logger "[INFO]: Failed to find tempfs ram disk.  Using /tmp as alternate"
+        TMPDIR="/tmp"
+        cd $TMPDIR
     fi
 
     ## check for required cli tools ##
@@ -407,6 +408,50 @@ function ec2cli_convert-time(){
     #
     # <-- end function ec2cli_convert-time -->
     #
+}
+
+function adjust_size(){
+    ## adjusts size and units of disk based on inc of 1024 ##
+    local sum="$1"      # raw sum
+    local adj_sum
+    local unit
+    #
+    if [ $sum -gt 1048576 ]; then
+        adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024/1024" | bc)
+        unit="PB"
+    elif [ $sum -gt 1024 ]; then
+        adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024" | bc)
+        unit="TB"
+    else
+        adj_sum=$sum
+        unit="GB"
+    fi
+    echo "$adj_sum $unit"
+}
+
+function print_header(){
+    ## print formatted report header ##
+    local title="$1"
+    local reportfile="$2"
+    #
+    printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > $reportfile
+    echo -e "${reset}" >> $reportfile
+    echo -ne $title >> $reportfile
+    echo -e "${frame}" >> $reportfile
+    printf '%*s' "$total_width" '' | tr ' ' _  | indent02 >> $reportfile
+    echo -e "${reset}" >> $reportfile
+}
+
+function print_footer(){
+    ## print formatted report footer ##
+    local footer="$1"
+    #
+    printf "%-10s %*s\n" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02
+    echo -e "${reset}"
+    echo -ne $footer | indent10
+    echo -e "${frame}"
+    printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
+    echo -e "${reset}"
 }
 
 function ec2cli_attach-volume(){
@@ -1481,49 +1526,6 @@ function ec2cli_list_securitygroups(){
     #
 }
 
-function adjust_size(){
-    ## adjusts size and units of disk based on inc of 1024 ##
-    local sum="$1"      # raw sum
-    local adj_sum
-    local unit
-    #
-    if [ $sum -gt 1048576 ]; then
-        adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024/1024" | bc)
-        unit="PB"
-    elif [ $sum -gt 1024 ]; then
-        adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024" | bc)
-        unit="TB"
-    else
-        adj_sum=$sum
-        unit="GB"
-    fi
-    echo "$adj_sum $unit"
-}
-
-function print_header(){
-    ## print formatted report header ##
-    local title="$1"
-    local reportfile="$2"
-    #
-    printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > $reportfile
-    echo -e "${reset}" >> $reportfile
-    echo -ne $title >> $reportfile
-    echo -e "${frame}" >> $reportfile
-    printf '%*s' "$total_width" '' | tr ' ' _  | indent02 >> $reportfile
-    echo -e "${reset}" >> $reportfile
-}
-
-function print_footer(){
-    ## print formatted report footer ##
-    local footer="$1"
-    #
-    printf "%-10s %*s\n" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02
-    echo -e "${reset}"
-    echo -ne $footer | indent10
-    echo -e "${frame}"
-    printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
-    echo -e "${reset}"
-}
 
 function ec2cli_list_snapshots(){
     # vars
