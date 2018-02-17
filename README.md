@@ -48,7 +48,7 @@ their particular use cases.
 _Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other  
 shells; however, your mileage may vary.
 
-![](./images/running-instances.png)
+![](./images/ec2cli-list-instances.png)
 
 (See [Screenshots](#screenshots) section below)
 
