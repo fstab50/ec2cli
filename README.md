@@ -114,7 +114,8 @@ additional resource types as additional types are added.
 
 * **Python Package Manager**. If you do not currently have it, install [pip](http://www.pip-installer.org/en/latest).  
 
-    You can install pip from your distribution's package repo:
+    You can install pip from your distribution's package repo via _one_ of the below  
+	commands according to your Linux distribution:
 
 Ubuntu, Ubuntu based distros:
 
@@ -122,7 +123,7 @@ Ubuntu, Ubuntu based distros:
 	$ sudo apt install python-pip    # ubuntu
 ```
 
-Redhat, Redhat-based distros (Fedora, AML, etc)
+Redhat, Redhat-based distros
 
 ```bash
     $ sudo yum install python-pip   # redhat-based distros
