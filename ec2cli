@@ -27,7 +27,6 @@
 # global variables
 #
 pkg=$(basename $0)
-version="2.1"
 pkg_path=$(cd $(dirname $0); pwd -P)
 ec2cli_log="$pkg_path/logs/ec2cli.log"
 host=$(hostname)
@@ -1008,11 +1007,13 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # header
+        total_width="145"
+        # print title
         printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION  |  * sorted\n" | indent18
-        printf '%*s\n\n' "145" '' | tr ' ' _ | indent02
+
         # print header
-        echo -ne "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag\n" > .body.tmp
-        printf '%*s\n' "145" '' | tr ' ' _ | indent02 >> .body.tmp
+        print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" .body.tmp
+
 
         #
         # output table of json array
@@ -1031,9 +1032,10 @@ function ec2cli_list_instances(){
         awk  '{ printf "%-22s %-13s %-10s %-18s %-24s %-16s %-15s %-2s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9}' .body.tmp | indent02
         # print footer
-        printf '%*s\n' "145" '' | tr ' ' _ | indent02
-        printf "\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}  |  $r running, $s stopped\n" | indent10
-        printf '%*s\n\n' "145" '' | tr ' ' _ | indent02
+        #printf '%*s\n' "145" '' | tr ' ' _ | indent02
+        #printf "\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}  |  $r running, $s stopped\n" | indent10
+        print_footer "Total Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}  |  $r running, $s stopped"
+        #printf '%*s\n\n' "145" '' | tr ' ' _ | indent02
     else
         ### -- no running instances -- ###
         printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION\n" | indent18
