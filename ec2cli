@@ -66,7 +66,7 @@ yellow=$(tput setaf 3)
 orange='\033[38;5;95;38;5;214m'
 brightgreen='\033[38;5;95;38;5;46m'
 gray=$(tput setaf 008)
-lgray='\033[38;5;95;38;5;252m'    # light gray
+lgray='\033[38;5;95;38;5;251m'    # light gray
 dgray='\033[38;5;95;38;5;8m'      # dark gray
 
 # bright colors
@@ -96,7 +96,8 @@ commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
 regions=$(echo -e ${bluepurple})
 url=$(echo -e ${underline}${brightblue})
 frame=$(echo -e ${brightgreen})
-body=$(echo -e ${reset}${lgray})            # report body text; set to reset for native xterm
+#body=$(echo -e ${reset}${lgray})            # report body text; set to reset for native xterm
+body=$(echo -e ${reset})            # report body text; set to reset for native xterm
 ast="$(echo -e ${brightyellow})"    # astrick
 backcolor=$(echo -e ${brightgreen})
 backcolor=${reset}
