@@ -122,11 +122,11 @@ additional resource types as additional types are added.
 
 <center>
 
-| DISTRIBUTION | INSTALLATION COMMAND |
-| ------------------------ | :-----------------------------------------: |
-| **Ubuntu** | ``` $ sudo apt install python-pip ``` |
-| **Redhat** | ```  $ sudo yum install python-pip  ``` |
-| **Fedora-based distros** | ``` $ sudo dnf install python-pip ``` |
+| DISTRIBUTION | INSTALLATION COMMAND |  PYTHON VERSION |
+| :------------------------------ | :-----------------------------------------: | :--------: |
+| **Ubuntu** | ``` $ sudo apt install python-pip ``` | python2.7 |
+| **Redhat** | ```  $ sudo yum install python-pip  ``` | python2.7 |
+| **Fedora-based distros** | ``` $ sudo dnf install python-pip ``` | python2.7 |
 
 </center>
 
