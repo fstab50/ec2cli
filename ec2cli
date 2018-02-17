@@ -480,7 +480,7 @@ function print_header(){
     #
     printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > $reportfile
     echo -e "${body}" >> $reportfile
-    echo -ne $title >> $reportfile
+    echo -ne ${title} >> $reportfile
     echo -e "${frame}" >> $reportfile
     printf '%*s' "$total_width" '' | tr ' ' _  | indent02 >> $reportfile
     echo -e "${body}" >> $reportfile
@@ -1768,11 +1768,13 @@ function ec2cli_list_volumes(){
     local SUM
     local TOTAL
     local total_width="150"
+    local sp="${frame}|${body}"       # separator
     #
     # sum total size of all volumes (display in footer)
-    SUM=$(aws ec2 --profile $PROFILE describe-volumes \
-        --region $REGION \
-        --output json | jq -r '.Volumes | map(.Size) | add')
+    aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > .jsonoutput.tmp
+
+    # determine size of all volumes returned
+    SUM=$(jq -r '.Volumes | map(.Size) | add' .jsonoutput.tmp)
 
     if [ $SUM == "null" ] || [ $SUM -eq 0 ]
     then
@@ -1784,36 +1786,55 @@ function ec2cli_list_volumes(){
         #
         printf "\n${title}EBS VOLUMES${body} : $REGION\n" | indent18
         # print header
-        print_header "Volume-Id GB CreateTime State Attached InstanceId VolType Avail-Zone Description" $total_width .ec2-qv-volumes.tmp
-        # output from aws
-        aws ec2 --profile $PROFILE describe-volumes \
-            --output text \
-            --region $REGION \
-            --query "Volumes[*]. \
-                [VolumeId, \
-                Size, \
-                CreateTime, \
-                State, \
-                Attachments[0].State,
-                Attachments[0].InstanceId, \
-                VolumeType, \
-                AvailabilityZone, \
-                Tags[0].Value]" \
-        >> .ec2-qv-volumes.tmp
-        # count total
-        TOTAL=$(cat .ec2-qv-volumes.tmp | grep "vol-" | wc -l)
+        print_header "$sp Volume-Id $sp Size $sp CreateTime* $sp State $sp Attached $sp InstanceId $sp VolType $sp Avail-Zone $sp Description $sp" $total_width .ec2-qv-volumes.tmp
+
+        # parse json
+        ARR_VID=( $(jq -r '.Volumes[].VolumeId' .jsonoutput.tmp) )
+        ARR_SIZE=( $(jq -r '.Volumes[].Size' .jsonoutput.tmp) )
+        ARR_CTIME=( $(jq -r '.Volumes[].CreateTime' .jsonoutput.tmp) )
+        ARR_STATE=( $(jq -r '.Volumes[].Attachments[0].State' .jsonoutput.tmp) )
+        ARR_ATTACH=( $(jq -r '.Volumes[].Attachments[0].InstanceId' .jsonoutput.tmp) )
+        ARR_IID=( $(jq -r '.Volumes[].VolumeId' .jsonoutput.tmp) )
+        ARR_VTYPE=( $(jq -r '.Volumes[].VolumeType' .jsonoutput.tmp) )
+        ARR_AZ=( $(jq -r '.Volumes[].AvailabilityZone' .jsonoutput.tmp | cut -c 1-20) )
+        # limit length of tag fields to 20 chars
+        ARR_TAG=( $(jq -r '.Volumes[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+
+        MAXCT=${#ARR_VID[*]}    # count snapshots found
+
+        # output table of json array
+        i=0
+        if [ $FULL_CLI ]; then
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
+                      ${ARR_STATE[$i]} $sp ${ARR_ATTACH[$i]} $sp ${ARR_IID[$i]} $sp \
+                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+        else
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
+                      ${ARR_STATE[$i]} $sp ${ARR_ATTACH[$i]} $sp ${ARR_IID[$i]} $sp \
+                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+        fi
+        # sort
+        cat .body.tmp | sort -k5 -r >> .ec2-qv-volumes.tmp
         # print and format output
-        awk  '{ printf "%-23s %-6s %-25s %-10s %-10s %-21s %-10s %-12s %-2s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .ec2-qv-volumes.tmp | indent02
+        awk  '{ printf "%-2s %-23s %-2s %-6s %-2s %-12s %-2s %-10s %-2s %-20s %-2s %-23s %-2s %-10s %-2s %-12s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-volumes.tmp | indent02
 
         # size, unit calcs of raw volumes
         RETURN=$(adjust_units $SUM)
         ASUM=$(echo $RETURN | awk '{print $1}')
         UNIT=$(echo $RETURN | awk '{print $2}')
         # print footer
-        print_footer "${title}$TOTAL${body} volumes in region [$REGION], total "${title}$ASUM${body}" $UNIT"
+        print_footer "${title}$TOTAL${body} volumes in region [$REGION], total "${title}$ASUM${body}" $UNIT  $(echo "*sorted" | indent25)"
         # clean up
-        rm .ec2-qv-volumes.tmp
+        rm .ec2-qv-volumes.tmp .body.tmp .jsonoutput.tmp
     fi
     #
     # <-- end function ec2cli_list_volumes -->
