@@ -1573,6 +1573,7 @@ function ec2cli_list_securitygroups(){
 function ec2cli_list_snapshots(){
     # vars
     local REGION=$1
+    local sort_column="$2"
     local SUM
     local TOTAL
     local total_width=$(( $(tput cols) - 4 ))
@@ -1641,7 +1642,15 @@ function ec2cli_list_snapshots(){
                 i=$(( $i+1 ))
             done
         fi
-        cat .body.tmp | sort -k5 -r >> .ec2-qv-snapshots.tmp
+
+        if [ $sort_column ]; then
+            case $sort_column in
+                id | Id | ID | SnapshotId)
+                      column=2; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
+                size | Size)  column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
+                *) column=5; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-snapshots.tmp;;
+            esac
+        fi
 
         # size, unit calcs of raw volumes snapshotted
         RETURN=$(adjust_units $SUM)
@@ -2328,6 +2337,13 @@ function parse_parameters(){
                     shift 1
                     exit 0
                     ;;
+                -S | --sort)
+                    # sort column
+                    if [ $2 ]; then
+                        SORT_COL="$2"
+                        shift 2
+                    fi
+                    ;;
                 help)    # invoke detailed help menu
                     source $pkg_path/lib/help_menus.lib
                     case $COMMAND in
@@ -2422,7 +2438,7 @@ elif [ "$FUNCTION_CALL" = "HELP" ]; then
     source $pkg_path/lib/help_menus.lib
     help_submenu $COMMAND
 else
-    $FUNCTION_CALL $REGION
+    $FUNCTION_CALL $REGION $SORT_COL
 fi
 
 # reset terminal colors to original
