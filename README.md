@@ -117,11 +117,13 @@ additional resource types as additional types are added.
     You can install pip from your distribution's package repo via _one_ of the below  
 	commands according to your Linux distribution:
 
+<html><p>
 | DISTRIBUTION | INSTALLATION COMMAND |
 | ------------------------ | ----------------------------------------- |
-| **Ubuntu** | ```bash	$ sudo apt install python-pip ``` |
-| **Redhat** | ```bash  $ sudo yum install python-pip  ``` |
-| **Fedora-based distros** | ```bash $ sudo dnf install python-pip ``` |
+| **Ubuntu** | ``` $ sudo apt install python-pip ``` |
+| **Redhat** | ```  $ sudo yum install python-pip  ``` |
+| **Fedora-based distros** | ``` $ sudo dnf install python-pip ``` |
+</p></html>
 
 * **Install the [awscli](https://github.com/aws/aws-cli/)**
 
