@@ -477,11 +477,11 @@ function print_header(){
     local reportfile="$3"
     #
     printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > $reportfile
-    echo -e "${reset}" >> $reportfile
+    echo -e "${body}" >> $reportfile
     echo -ne $title >> $reportfile
     echo -e "${frame}" >> $reportfile
     printf '%*s' "$total_width" '' | tr ' ' _  | indent02 >> $reportfile
-    echo -e "${reset}" >> $reportfile
+    echo -e "${body}" >> $reportfile
 }
 
 function print_footer(){
@@ -489,11 +489,11 @@ function print_footer(){
     local footer="$1"
     #
     printf "%-10s %*s\n" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02
-    echo -e "${reset}"
+    echo -e "${body}"
     echo -ne $footer | indent10
     echo -e "${frame}"
     printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
-    echo -e "${reset}"
+    echo -e "${body}"
 }
 
 function ec2cli_attach-volume(){
