@@ -67,7 +67,7 @@ yellow=$(tput setaf 3)
 orange='\033[38;5;95;38;5;214m'
 brightgreen='\033[38;5;95;38;5;46m'
 gray=$(tput setaf 008)
-lgray='\033[38;5;95;38;5;253m'    # light gray
+lgray='\033[38;5;95;38;5;251m'    # light gray
 dgray='\033[38;5;95;38;5;8m'      # dark gray
 
 # bright colors
@@ -97,7 +97,8 @@ commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
 regions=$(echo -e ${bluepurple})
 url=$(echo -e ${underline}${brightblue})
 frame=$(echo -e ${brightgreen})
-body=$(echo -e ${reset})
+body=$(echo -e ${lgray})
+ast="$(echo -e ${brightyellow})"    # astrick
 backcolor=$(echo -e ${brightgreen})
 backcolor=${reset}
 
@@ -1498,6 +1499,20 @@ function adjust_size(){
     echo "$adj_sum $unit"
 }
 
+function print_header(){
+    ## print formatted report header ##
+    local title="$1"
+    local container="$2"
+    #
+    printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > $container
+    echo -e "${reset}" >> $container
+    echo -ne $title >> $container
+    echo -e "${frame}" >> $container
+    printf '%*s' "$total_width" '' | tr ' ' $hz  >> $containeer
+    echo -e "${reset}" >> $container
+}
+
+
 function ec2cli_list_snapshots(){
     # vars
     local REGION=$1
@@ -1519,7 +1534,7 @@ function ec2cli_list_snapshots(){
         total_width=$(( $(tput cols) - 4 ))
         sp="${frame}|${body}"    # separator
         hz="_"
-        if (( $(tput cols) >= "150" )); then
+        if (( $(tput cols) >= "160" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
             total_width="154"
@@ -1527,7 +1542,7 @@ function ec2cli_list_snapshots(){
             total_width="132"
         fi
         # snapshots found, print region identifier
-        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION  |  *sorted\n" | indent18
+        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION  |  $ast*${reset} sorted\n" | indent18
 
         # print header
         printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > .ec2-qv-snapshots.tmp
@@ -1536,9 +1551,9 @@ function ec2cli_list_snapshots(){
         if [ $FULL_CLI ]; then
             echo -ne "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" >> .ec2-qv-snapshots.tmp
         else
-            echo -ne "$(echo -e${orange})$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" >> .ec2-qv-snapshots.tmp
+            echo -ne "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" >> .ec2-qv-snapshots.tmp
         fi
-        #echo -ne "SnapId | Size | CreateTime | State | Prog | Encrypted | VolumeId | Description\n" >> .ec2-qv-snapshots.tmp
+
         echo -e "${frame}" >> .ec2-qv-snapshots.tmp
         printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
         echo -e "${reset}" >> .ec2-qv-snapshots.tmp
