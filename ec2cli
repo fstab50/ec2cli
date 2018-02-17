@@ -89,14 +89,14 @@ BOLD=`tput bold`
 UNBOLD=`tput sgr0`
 
 # Initialize ansi colors
-title=$(echo -e ${underline}${white})
+title=$(echo -e ${bold}${white})
 options=$(echo -e ${white})
 resources=${yellow}
 commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
 regions=$(echo -e ${bluepurple})
 url=$(echo -e ${underline}${brightblue})
 frame=$(echo -e ${brightgreen})
-body=$(echo -e ${lgray})
+body=$(echo -e ${reset})            # report body text; set to reset for native xterm
 ast="$(echo -e ${brightyellow})"    # astrick
 backcolor=$(echo -e ${brightgreen})
 backcolor=${reset}
@@ -1582,7 +1582,7 @@ function ec2cli_list_snapshots(){
     if [ $SUM == "null" ] || [ $SUM -eq 0 ]
     then
         # print footer if no snapshots found
-        std_message "${white}${BOLD}0${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}0${UNBOLD}${reset} GB" "INFO"  | indent10
+        std_message "${title}0${reset} snapshots in region [$REGION], total ${title}0${reset} GB" "INFO"  | indent10
     else
         # print and format output
         total_width=$(( $(tput cols) - 4 ))
@@ -1596,7 +1596,7 @@ function ec2cli_list_snapshots(){
             total_width="132"
         fi
         # snapshots found, print region identifier
-        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION  |  $ast*${reset} sorted\n" | indent25
+        printf "\n${title}SNAPSHOTS${UNBOLD}${body} : $REGION  |  $ast*${body}sorted\n" | indent25
 
         if [ $FULL_CLI ]; then
             print_header "$sp  SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" $total_width  .ec2-qv-snapshots.tmp
@@ -1657,7 +1657,7 @@ function ec2cli_list_snapshots(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-snapshots.tmp | indent02
         fi
         # print footer
-        print_footer "${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$ASUM${UNBOLD}${reset} $UNIT | $ESUM $EUNIT on disk (est)"
+        print_footer "${title}$MAXCT${UNBOLD}${body} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${body} $UNIT | ${title}$ESUM${UNBOLD}${body} $EUNIT on disk (est)"
 
         rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
     fi
