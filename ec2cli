@@ -113,6 +113,7 @@ function indent04() { sed 's/^/    /'; }
 function indent10() { sed 's/^/          /'; }
 function indent15() { sed 's/^/               /'; }
 function indent18() { sed 's/^/                  /'; }
+function indent25() { sed 's/^/                         /'; }
 
 function ec2cli_help(){
   cat <<EOM
@@ -1488,7 +1489,7 @@ function adjust_size(){
     #
     if [ $sum -gt 1048576 ]; then
         adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024/1024" | bc)
-        unit="PetaBytes"
+        unit="PB"
     elif [ $sum -gt 1024 ]; then
         adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024" | bc)
         unit="TB"
@@ -1502,16 +1503,27 @@ function adjust_size(){
 function print_header(){
     ## print formatted report header ##
     local title="$1"
-    local container="$2"
+    local reportfile="$2"
     #
-    printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > $container
-    echo -e "${reset}" >> $container
-    echo -ne $title >> $container
-    echo -e "${frame}" >> $container
-    printf '%*s' "$total_width" '' | tr ' ' $hz  >> $containeer
-    echo -e "${reset}" >> $container
+    printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > $reportfile
+    echo -e "${reset}" >> $reportfile
+    echo -ne $title >> $reportfile
+    echo -e "${frame}" >> $reportfile
+    printf '%*s' "$total_width" '' | tr ' ' _  | indent02 >> $reportfile
+    echo -e "${reset}" >> $reportfile
 }
 
+function print_footer(){
+    ## print formatted report footer ##
+    local footer="$1"
+    #
+    printf "%-10s %*s\n" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02
+    echo -e "${reset}"
+    echo -ne $footer | indent10
+    echo -e "${frame}"
+    printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
+    echo -e "${reset}"
+}
 
 function ec2cli_list_snapshots(){
     # vars
@@ -1533,7 +1545,7 @@ function ec2cli_list_snapshots(){
         # print and format output
         total_width=$(( $(tput cols) - 4 ))
         sp="${frame}|${body}"    # separator
-        hz="_"
+
         if (( $(tput cols) >= "160" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
@@ -1542,21 +1554,13 @@ function ec2cli_list_snapshots(){
             total_width="132"
         fi
         # snapshots found, print region identifier
-        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION  |  $ast*${reset} sorted\n" | indent18
+        printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION  |  $ast*${reset} sorted\n" | indent25
 
-        # print header
-        printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > .ec2-qv-snapshots.tmp
-        echo -e "${reset}" >> .ec2-qv-snapshots.tmp
-        # adjust width based on cli width
         if [ $FULL_CLI ]; then
-            echo -ne "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" >> .ec2-qv-snapshots.tmp
+            print_header "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" .ec2-qv-snapshots.tmp
         else
-            echo -ne "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" >> .ec2-qv-snapshots.tmp
+            print_header "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" .ec2-qv-snapshots.tmp
         fi
-
-        echo -e "${frame}" >> .ec2-qv-snapshots.tmp
-        printf '%*s' "$total_width" '' | tr ' ' $hz  >> .ec2-qv-snapshots.tmp
-        echo -e "${reset}" >> .ec2-qv-snapshots.tmp
 
         # parse json
         ARR_ID=( $(jq -r '.Snapshots[].SnapshotId' .jsonoutput.tmp) )
@@ -1611,14 +1615,8 @@ function ec2cli_list_snapshots(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-snapshots.tmp | indent02
         fi
         # print footer
-        #printf '%-1s%*s\n' "$total_width" '' '' | "$(echo ${frame}) tr ' ' _" | indent02
-        printf "%-10s %*s\n" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02
-        echo -e "${reset}"
-        printf "${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$ASUM${UNBOLD}${reset} $UNIT | $ESUM $EUNIT on disk (est)" | indent10
-        echo -e "${frame}"
-        printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
-        echo -e "${reset}"
-        # clean up
+        print_footer "${white}${BOLD}$MAXCT${UNBOLD}${reset} snapshots in region [$REGION], total ${white}${BOLD}$ASUM${UNBOLD}${reset} $UNIT | $ESUM $EUNIT on disk (est)"
+
         rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
     fi
     #
