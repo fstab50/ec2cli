@@ -96,7 +96,7 @@ commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
 regions=$(echo -e ${bluepurple})
 url=$(echo -e ${underline}${brightblue})
 frame=$(echo -e ${brightgreen})
-body=$(echo -e ${reset})            # report body text; set to reset for native xterm
+body=$(echo -e ${reset}${orange})            # report body text; set to reset for native xterm
 ast="$(echo -e ${brightyellow})"    # astrick
 backcolor=$(echo -e ${brightgreen})
 backcolor=${reset}
@@ -1052,7 +1052,7 @@ function ec2cli_list_instances(){
         # header
         total_width="145"
         # print title
-        printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION  |  * sorted\n" | indent18
+        printf "\n${title}EC2 INSTANCES${body} : $REGION  |  * sorted\n" | indent18
 
         # print header
         print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
@@ -1075,7 +1075,7 @@ function ec2cli_list_instances(){
         awk  '{ printf "%-22s %-13s %-10s %-18s %-24s %-16s %-15s %-2s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9}' .body.tmp | indent02
         # print footer
-        print_footer "Total Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}  |  $r running, $s stopped"
+        print_footer "Total Instances [$REGION]: ${title}$MAXCT${body}  |  ${title}$r${body} running, ${title}$s${body} stopped"
 
     else
         ### -- no running instances -- ###
@@ -1097,7 +1097,7 @@ function ec2cli_list_instances(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .body.tmp | indent02
 
         # print footer
-        print_footer "Total Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}    *No running instances"
+        print_footer "Total Instances [$REGION]: ${title}$MAXCT${body}    *No running instances"
     fi
 
     # clean up
@@ -1582,7 +1582,7 @@ function ec2cli_list_snapshots(){
     if [ $SUM == "null" ] || [ $SUM -eq 0 ]
     then
         # print footer if no snapshots found
-        std_message "${title}0${reset} snapshots in region [$REGION], total ${title}0${reset} GB" "INFO"  | indent10
+        std_message "${title}0${body} snapshots in region [$REGION], total ${title}0${body} GB" "INFO"  | indent10
     else
         # print and format output
         total_width=$(( $(tput cols) - 4 ))
@@ -1596,7 +1596,7 @@ function ec2cli_list_snapshots(){
             total_width="132"
         fi
         # snapshots found, print region identifier
-        printf "\n${title}SNAPSHOTS${UNBOLD}${body} : $REGION  |  $ast*${body}sorted\n" | indent25
+        printf "\n${title}SNAPSHOTS${body} : $REGION  |  $ast*${body}sorted\n" | indent25
 
         if [ $FULL_CLI ]; then
             print_header "$sp  SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" $total_width  .ec2-qv-snapshots.tmp
