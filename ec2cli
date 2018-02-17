@@ -379,7 +379,7 @@ function ec2cli_precheck-windows(){
     #
 }
 
-function ec2cli_convert-time(){
+function convert_time(){
     # time format conversion (http://stackoverflow.com/users/1030675/choroba)
     num=$1
     min=0
@@ -405,7 +405,49 @@ function ec2cli_convert-time(){
     fi
     echo "$day"d,"$hour"h,"$min"m
     #
-    # <-- end function ec2cli_convert-time -->
+    # <-- end function convert_time -->
+    #
+}
+
+function convert_time_months(){
+    # time format conversion (http://stackoverflow.com/users/1030675/choroba)
+    num=$1
+    min=0
+    hour=0
+    day=0
+    mo=0
+    if((num>59));then
+        ((sec=num%60))
+        ((num=num/60))
+        if((num>59));then
+            ((min=num%60))
+            ((num=num/60))
+            if((num>23));then
+                ((hour=num%24))
+                ((day=num/24))
+                ((num=num/24))
+                if((num>30)); then
+                  ((day=num%31))
+                  ((mo=num/30))
+              else
+                  ((day=num))
+              fi
+            else
+                ((hour=num))
+            fi
+        else
+            ((min=num))
+        fi
+    else
+        ((sec=num))
+    fi
+    if (( $mo > 0 )); then
+        echo "$mo"m,"$day"d
+    else
+        echo "$day"d,"$hour"h,"$min"m
+    fi
+    #
+    # <-- end function convert_time -->
     #
 }
 
@@ -988,7 +1030,7 @@ function ec2cli_list_instances(){
                 LAUNCHTIME="${ARR_LT[$i]}"
                 EPOCHLT=$(date -d"$LAUNCHTIME" +%s)
                 RUNSECS=$(( $NOW-$EPOCHLT ))    # runtime (seconds)
-                RT[$i]=$(ec2cli_convert-time $RUNSECS)
+                RT[$i]=$(convert_time $RUNSECS)
                 # track # running instances
                 r=$(( $r+1 ))
             else
@@ -998,7 +1040,7 @@ function ec2cli_list_instances(){
             # convert public IP format
             if [ "${ARR_IP[$i]}" == "null" ]; then
                 # alter IP format
-                ARR_IP[$i]="None"
+                ARR_IP[$i]="-"
             fi
             i=$(( $i+1 ))    # incr counter
         done
