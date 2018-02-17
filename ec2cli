@@ -985,6 +985,7 @@ function ec2cli_list_instances(){
     local EPOCHLT           # LAUNCHTIME in epoch seconds
     local RUNSECS           # runtime in sec
     local MAXCT             # max length of array (json object)
+    local total_width       # max width of cli output
 
     # pull json info, all instances in region
     aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > .jsonoutput.tmp
@@ -1574,7 +1575,8 @@ function ec2cli_list_snapshots(){
     local REGION=$1
     local SUM
     local TOTAL
-
+    local total_width=$(( $(tput cols) - 4 ))
+    #
     # output from aws
     aws ec2 --profile $PROFILE describe-snapshots --owner self --output json --region $REGION > .jsonoutput.tmp
 
@@ -1587,7 +1589,6 @@ function ec2cli_list_snapshots(){
         std_message "${title}0${body} snapshots in region [$REGION], total ${title}0${body} GB" "INFO"  | indent10
     else
         # print and format output
-        total_width=$(( $(tput cols) - 4 ))
         sp="${frame}|${body}"       # separator
 
         if (( $(tput cols) >= "160" )); then
@@ -1766,7 +1767,8 @@ function ec2cli_list_volumes(){
     local REGION=$1
     local SUM
     local TOTAL
-
+    local total_width="150"
+    #
     # sum total size of all volumes (display in footer)
     SUM=$(aws ec2 --profile $PROFILE describe-volumes \
         --region $REGION \
@@ -1775,22 +1777,14 @@ function ec2cli_list_volumes(){
     if [ $SUM == "null" ] || [ $SUM -eq 0 ]
     then
         # print footer if no volumes found
-        std_message "${white}${BOLD}0${UNBOLD}${reset} volumes in region [$REGION], total ${white}${BOLD}0${UNBOLD}${reset} GB" "INFO"
+        std_message "${title}0${body} volumes in region [$REGION], total ${title}${BOLD}0${body} GB" "INFO"
     else
-        if [ $SUM -gt 1024 ]; then
-            SUM=$(( $SUM / 1024 ))
-            UNIT="TB"
-        else
-            UNIT="GB"
-        fi
         #
         # volumes found, print region identifier
         #
-        printf "\n${white}${BOLD}EBS VOLUMES${UNBOLD}${reset} : $REGION\n\n" | indent18
+        printf "\n${title}EBS VOLUMES${body} : $REGION\n" | indent18
         # print header
-        echo -ne "Volume-Id GB State Attached InstanceId VolType Avail-Zone Description\n \
-                --------------------- ---- -------- -------- ------------------- -------- \
-                ---------- -------------------\n" > .ec2-qv-volumes.tmp
+        print_header "Volume-Id GB CreateTime State Attached InstanceId VolType Avail-Zone Description" $total_width .ec2-qv-volumes.tmp
         # output from aws
         aws ec2 --profile $PROFILE describe-volumes \
             --output text \
@@ -1798,6 +1792,7 @@ function ec2cli_list_volumes(){
             --query "Volumes[*]. \
                 [VolumeId, \
                 Size, \
+                CreateTime, \
                 State, \
                 Attachments[0].State,
                 Attachments[0].InstanceId, \
@@ -1808,10 +1803,15 @@ function ec2cli_list_volumes(){
         # count total
         TOTAL=$(cat .ec2-qv-volumes.tmp | grep "vol-" | wc -l)
         # print and format output
-        awk  '{ printf "%-23s %-6s %-10s %-10s %-21s %-10s %-12s %-2s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .ec2-qv-volumes.tmp | indent02
+        awk  '{ printf "%-23s %-6s %-25s %-10s %-10s %-21s %-10s %-12s %-2s %-2s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .ec2-qv-volumes.tmp | indent02
+
+        # size, unit calcs of raw volumes
+        RETURN=$(adjust_units $SUM)
+        ASUM=$(echo $RETURN | awk '{print $1}')
+        UNIT=$(echo $RETURN | awk '{print $2}')
         # print footer
-        printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} volumes in region [$REGION], total "${white}${BOLD}$SUM${UNBOLD}${reset}" $UNIT\n\n" | indent10
+        print_footer "${title}$TOTAL${body} volumes in region [$REGION], total "${title}$ASUM${body}" $UNIT"
         # clean up
         rm .ec2-qv-volumes.tmp
     fi
