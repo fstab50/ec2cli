@@ -116,13 +116,22 @@ additional resource types as additional types are added.
 
     You can install pip from your distribution's package repo:
 
+Ubuntu, Ubuntu based distros:
+
 ```bash
 	$ sudo apt install python-pip    # ubuntu
+```
 
+Redhat, Redhat-based distros (Fedora, AML, etc)
+
+```bash
     $ sudo yum install python-pip   # redhat-based distros
+```
 
+Fedora-based distros:
+
+```bash
     $ sudo dnf install python-pip   # Fedora-based distros
-
 ```
 
 * **Install the [awscli](https://github.com/aws/aws-cli/)**
