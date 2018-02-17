@@ -63,7 +63,7 @@ shells; however, your mileage may vary.
 ```
 
 <p align="center">
-  <img src="./images/ec2cli-help.png?raw=true" alt="ec2cli help"/>
+  <img src="https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-help.png" alt="ec2cli help"/>
 </p>
 
 
