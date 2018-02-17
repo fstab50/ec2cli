@@ -61,13 +61,11 @@ shells; however, your mileage may vary.
 	$ ec2cli --help     
 
 ```
+
 <p align="center">
   <img src="./images/ec2cli-help.png?raw=true" alt="ec2cli help"/>
 </p>
 
-```
-# ![help-menu](./images/ec2cli-help.png)
-```
 
 ### Notes: ###
 
