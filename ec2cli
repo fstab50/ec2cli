@@ -33,7 +33,7 @@ host=$(hostname)
 system=$(uname)
 
 # source lib deps
-source $EC2_REPO/lib/version.lib        # package VERSION global var
+source $pkg_path/lib/version.lib        # package VERSION global var
 
 # error codes
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
@@ -145,6 +145,7 @@ function ec2cli_help(){
           ${resources}-n${backcolor},${resources} --vpc          ${backcolor}Virtual Private Cloud (VPC) Network details (regional)
           ${resources}-N${backcolor},${resources} --network      ${backcolor}All network details (regional)
           ${resources}-s${backcolor},${resources} --snapshots    ${backcolor}Snapshot details (regional)
+          ${resources}-P${backcolor},${resources} --spot         ${backcolor}Spot Market Pricing (all regions)
           ${resources}-t${backcolor},${resources} --tags         ${backcolor}Tags details for EC2 sub services (all regions)
           ${resources}-v${backcolor},${resources} --volumes      ${backcolor}Elastic Block Store (EBS) Volume details (regional)
 
@@ -2267,8 +2268,14 @@ function parse_parameters(){
                     RESOURCEID="$1"
                     shift 1
                     ;;
+                -P | --spot)
+                    std_message "${title}Spot Market Pricing Menu" INFO
+                    sh $pkg_path/lib/spot-prices.sh
+                    shift 1
+                    exit 0
+                    ;;
                 help)    # invoke detailed help menu
-                    source $EC2_REPO/lib/help_menus.lib
+                    source $pkg_path/lib/help_menus.lib
                     case $COMMAND in
                         attach)
                             ec2cli_help_command_attach
@@ -2358,7 +2365,7 @@ elif [ "$OPTION" = '-N' ] || [ "$OPTION" = '--network' ]; then
     ec2cli_list_subnets $REGION
     ec2cli_list_securitygroups $REGION
 elif [ "$FUNCTION_CALL" = "HELP" ]; then
-    source $EC2_REPO/lib/help_menus.lib
+    source $pkg_path/lib/help_menus.lib
     help_submenu $COMMAND
 else
     $FUNCTION_CALL $REGION

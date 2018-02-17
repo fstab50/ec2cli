@@ -184,34 +184,33 @@ fi
 # enter loop to validate range and type of user entry
 VALID=0
 while [ $VALID -eq 0 ]; do
-	   # read instance choice in from user
-	   echo ""
-	   read -p "  Select Region [$AWS_DEFAULT_REGION]: " CHOICE
-	   echo ""
-	   if [ -z "$CHOICE" ]; then
-      	  # CHOICE is blank, default region chosen
-	        # use the aws_default_region env variable
-          REGION=$AWS_DEFAULT_REGION
-      	  echo -e "  You Selected: "$REGION"\n"
-		      VALID=1   # exit loop
-	   else
-		     # CHOICE is a value, check type and range
-		     #if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
-         if [[ ! "$CHOICE" =~ ^[0-9]+$ ]]; then
-             # contains chars
-             echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
-		     else
-             if [[ $CHOICE -ge 0 ]] && [[ $CHOICE -lt $(( $MAXCT )) ]]; then
-                 # valid range, reset the aws default region to user choice momentarily
-		             REGION=${ARR_REGIONS[$CHOICE]}
-	               echo -e "  You Selected: "$REGION"\n"
-        	       VALID=1   # exit loop
-             else
-                 # out of range
-                 echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
-             fi
-	       fi
-	   fi
+	# read instance choice in from user
+	echo ""
+	read -p "  Select Region [$AWS_DEFAULT_REGION], or press q to quit: " CHOICE
+	echo ""
+	if [ -z "$CHOICE" ]; then
+        # CHOICE is blank, default region chosen
+	    # use the aws_default_region env variable
+        REGION=$AWS_DEFAULT_REGION
+      	echo -e "  You Selected: "$REGION"\n"
+		VALID=1   # exit loop
+	elif [ "$CHOICE" = "q" ]; then
+        exit 0
+    elif [[ ! "$CHOICE" =~ ^[0-9]+$ ]]; then
+        # CHOICE is a value, check type and range
+        # contains chars
+        echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
+	else
+        if [[ $CHOICE -ge 0 ]] && [[ $CHOICE -lt $(( $MAXCT )) ]]; then
+            # valid range, reset the aws default region to user choice momentarily
+	        REGION=${ARR_REGIONS[$CHOICE]}
+	        echo -e "  You Selected: "$REGION"\n"
+            VALID=1   # exit loop
+        else
+            # out of range
+            echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
+        fi
+	fi
 done
 
 
