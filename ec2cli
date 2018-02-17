@@ -66,7 +66,7 @@ yellow=$(tput setaf 3)
 orange='\033[38;5;95;38;5;214m'
 brightgreen='\033[38;5;95;38;5;46m'
 gray=$(tput setaf 008)
-lgray='\033[38;5;95;38;5;251m'    # light gray
+lgray='\033[38;5;95;38;5;252m'    # light gray
 dgray='\033[38;5;95;38;5;8m'      # dark gray
 
 # bright colors
@@ -451,13 +451,13 @@ function convert_time_months(){
     #
 }
 
-function adjust_size(){
+function adjust_units(){
     ## adjusts size and units of disk based on inc of 1024 ##
     local sum="$1"      # raw sum
     local adj_sum
     local unit
-    #
-    if [ $sum -gt 1048576 ]; then
+    #1048576
+    if [ $sum -gt $((1024*1024)) ]; then
         adj_sum=$(echo "scale=$FLOAT_DECIMAL; $sum/1024/1024" | bc)
         unit="PB"
     elif [ $sum -gt 1024 ]; then
@@ -473,7 +473,8 @@ function adjust_size(){
 function print_header(){
     ## print formatted report header ##
     local title="$1"
-    local reportfile="$2"
+    local width="$2"
+    local reportfile="$3"
     #
     printf "%-10s %*s" $(echo -e ${frame}) "$(($total_width - 1))" '' | tr ' ' _ | indent02 > $reportfile
     echo -e "${reset}" >> $reportfile
@@ -1054,7 +1055,7 @@ function ec2cli_list_instances(){
         printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION  |  * sorted\n" | indent18
 
         # print header
-        print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" .body.tmp
+        print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
 
 
         #
@@ -1080,7 +1081,7 @@ function ec2cli_list_instances(){
         ### -- no running instances -- ###
         total_width="110"
         printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION\n" | indent18
-        print_header "InstanceId* Type State SecurityGroup Root-Volume Tag"  .body.tmp
+        print_header "InstanceId* Type State SecurityGroup Root-Volume Tag" $total_width .body.tmp
         #
         # output table of json array
         #
@@ -1585,7 +1586,7 @@ function ec2cli_list_snapshots(){
     else
         # print and format output
         total_width=$(( $(tput cols) - 4 ))
-        sp="${frame}|${body}"    # separator
+        sp="${frame}|${body}"       # separator
 
         if (( $(tput cols) >= "160" )); then
             FULL_CLI="True"
@@ -1598,9 +1599,9 @@ function ec2cli_list_snapshots(){
         printf "\n${white}${BOLD}SNAPSHOTS${UNBOLD}${reset} : $REGION  |  $ast*${reset} sorted\n" | indent25
 
         if [ $FULL_CLI ]; then
-            print_header "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" .ec2-qv-snapshots.tmp
+            print_header "$sp  SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" $total_width  .ec2-qv-snapshots.tmp
         else
-            print_header "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" .ec2-qv-snapshots.tmp
+            print_header "$sp SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Description $sp" $total_width .ec2-qv-snapshots.tmp
         fi
 
         # parse json
@@ -1640,12 +1641,12 @@ function ec2cli_list_snapshots(){
         cat .body.tmp | sort -k5 -r >> .ec2-qv-snapshots.tmp
 
         # size, unit calcs of raw volumes snapshotted
-        RETURN=$(adjust_size $SUM)
+        RETURN=$(adjust_units $SUM)
         ASUM=$(echo $RETURN | awk '{print $1}')
         UNIT=$(echo $RETURN | awk '{print $2}')
         # estimated actual size, units on disk
         ESTIMATE="$(( $SUM / 5 ))"    # 20% estimated real size on disk
-        RETURN=$(adjust_size $ESTIMATE)
+        RETURN=$(adjust_units $ESTIMATE)
         ESUM="${BOLD}$(echo $RETURN | awk '{print $1}')${UNBOLD}"
         EUNIT=$(echo $RETURN | awk '{print $2}')
         if [ $FULL_CLI ]; then
