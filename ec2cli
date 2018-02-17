@@ -1032,16 +1032,13 @@ function ec2cli_list_instances(){
         awk  '{ printf "%-22s %-13s %-10s %-18s %-24s %-16s %-15s %-2s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9}' .body.tmp | indent02
         # print footer
-        #printf '%*s\n' "145" '' | tr ' ' _ | indent02
-        #printf "\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}  |  $r running, $s stopped\n" | indent10
         print_footer "Total Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}  |  $r running, $s stopped"
-        #printf '%*s\n\n' "145" '' | tr ' ' _ | indent02
+
     else
         ### -- no running instances -- ###
+        total_width="110"
         printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION\n" | indent18
-        printf '%*s\n\n' "110" '' | tr ' ' _ | indent02
-        echo -ne "InstanceId* Type State SecurityGroup Root-Volume Tag\n" > .body.tmp
-        printf '%*s\n' "110" '' | tr ' ' _ | indent02 >> .body.tmp
+        print_header "InstanceId* Type State SecurityGroup Root-Volume Tag"  .body.tmp
         #
         # output table of json array
         #
@@ -1057,9 +1054,7 @@ function ec2cli_list_instances(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .body.tmp | indent02
 
         # print footer
-        printf '%*s\n' "110" '' | tr ' ' _ | indent02
-        printf "\nTotal Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}    *No running instances.\n" | indent10
-        printf '%*s\n\n' "110" '' | tr ' ' _ | indent02
+        print_footer "Total Instances [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}    *No running instances"
     fi
 
     # clean up
