@@ -28,6 +28,8 @@
 * All utilities contained herein are copyrighted and made available under GPLv2
 * See [LICENSE](./LICENSE)
 
+[back to the top](#ec2cli---amazon-ec2-utilities)
+
 * * *
 
 ## Introduction
@@ -52,6 +54,8 @@ shells; however, your mileage may vary.
 [![instances](./images/ec2cli-list-instances.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-instances.png)
 
 (See [Screenshots](#screenshots) section below)
+
+[back to the top](#ec2cli---amazon-ec2-utilities)
 
 * * *
 
@@ -78,6 +82,8 @@ variable (if present); or alternately, the awscli config file.
 
 * `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable  
 additional resource types as additional types are added.
+
+[back to the top](#ec2cli---amazon-ec2-utilities)
 
 * * *
 
@@ -154,6 +160,7 @@ additional resource types as additional types are added.
     export PATH=$PATH:$EC2_REPO
 ```
 
+[back to the top](#ec2cli---amazon-ec2-utilities)
 
 * * *
 
@@ -191,6 +198,8 @@ additional resource types as additional types are added.
 	# .bashrc
 	complete -C aws_completer aws
 ```
+
+[back to the top](#ec2cli---amazon-ec2-utilities)
 
 * * *
 
@@ -251,6 +260,8 @@ You'll need appropriate IAM permissions to execute ec2cli.
 
 You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
 
+[back to the top](#ec2cli---amazon-ec2-utilities)
+
 * * *
 
 ## Screenshots ##
@@ -310,6 +321,8 @@ $ ec2cli -g us-east-1    # list security group details, alt region (us-east-1)
 ```
 ![](./images/ec2sg_altregion.png)
 
+[back to the top](#ec2cli---amazon-ec2-utilities)
+
 * * *
 
 ## Screenshots ##
@@ -348,6 +361,8 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 ![](./images/start-instance_05.png)
 
+[back to the top](#ec2cli---amazon-ec2-utilities)
+
 * * *
 
 ## Screenshots ##
@@ -356,16 +371,16 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 [Screenshots (continued)](./README_spot.md)
 
+[back to the top](#ec2cli---amazon-ec2-utilities)
+
 * * *
 
 ## Contribution Guidelines ##
 
-   In header of most utilities, there is a FUTURE section
-   containing feature enhancements so these utilities can stand
-   alone.
-
    If you'd like to contribute, please fork and then send me
    a pull request.
+
+[back to the top](#ec2cli---amazon-ec2-utilities)
 
 * * *
 
