@@ -24,8 +24,14 @@ brightyellow2='\033[38;5;95;38;5;226m'
 brightwhite='\033[38;5;15m'
 bluepurple='\033[38;5;68m'
 
+# font format
+bold='\u001b[1m'                        # ansi format
+underline='\u001b[4m'                   # ansi format
+BOLD=`tput bold`
+UNBOLD=`tput sgr0`
+
 # Initialize ansi colors
-title=$(echo -e ${underline})
+title=$(echo -e ${bold}${white})
 url=$(echo -e ${underline}${brightblue})
 options=$(echo -e ${white})
 commands=$(echo -e ${brightcyan})       # use for ansi escape color codes
@@ -35,12 +41,6 @@ bodytext=$(echo -e ${reset}${wgray})    # main body text; set to reset for nativ
 # initialize default color scheme
 accent=$(tput setaf 008)                # ansi format
 ansi_orange=$(echo -e ${orange})        # use for ansi escape color codes
-
-# accent
-bold='\u001b[1m'                        # ansi format
-underline='\u001b[4m'                   # ansi format
-BOLD=`tput bold`
-UNBOLD=`tput sgr0`
 
 
 # --- declarations  ------------------------------------------------------------

@@ -33,6 +33,7 @@
 
 # set vars
 NOW=$(date)
+pkg_path=$(cd $(dirname $0); pwd -P)
 E_BADSHELL=7              # exit code if incorrect shell detected
 E_BADARG=8                    # exit code if bad input parameter
 REGION=$AWS_DEFAULT_REGION    # set region from global env var
@@ -81,7 +82,11 @@ fi
 # functions  ------------------------------------------------------------------
 #
 
-indent02() { sed 's/^/  /'; }
+# source colors library
+source $pkg_path/colors.sh
+
+# source standard functions
+source $pkg_path/std_functions.sh
 
 #
 # Validate Shell  ------------------------------------------------------------
@@ -164,14 +169,15 @@ for region in ${ARR_REGIONS[@]}; do
 done
 
 # print header
+total_width="60"
 echo ""
-echo -ne ""    "     RegionCode Location\n \
-    -------------------- --------------------------------\n" > .header.tmp
+echo -e "${title}EC2 SPOT MARKET\n" | indent15
+echo -e "${title}Current AWS Regions Worldwide${bodytext}\n" | indent10
+print_header "\nRegionCode Location" $total_width .header.tmp
 # print choices
-echo -e "${white}${BOLD}Current AWS Regions Worldwide:${UNBOLD}${reset}\n" | indent02
-awk '{ printf "%-23s %-2s %-30s \n", $1, $2, $3}' .header.tmp | indent02
-awk '{ printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
-
+awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' .header.tmp | indent02
+awk '{printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
+print_separator $total_width
 # clean up
 rm ./.regions.json ./.header.tmp ./.arrayoutput.tmp
 
@@ -186,7 +192,7 @@ VALID=0
 while [ $VALID -eq 0 ]; do
 	# read instance choice in from user
 	echo ""
-	read -p "  Select Region [$AWS_DEFAULT_REGION], or press q to quit: " CHOICE
+	read -p "  Select Region [$AWS_DEFAULT_REGION], or press q to quit > " CHOICE
 	echo ""
 	if [ -z "$CHOICE" ]; then
         # CHOICE is blank, default region chosen
