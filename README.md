@@ -48,7 +48,7 @@ their particular use cases.
 _Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other  
 shells; however, your mileage may vary.
 
-![](./images/ec2cli-list-instances.png)
+[![](./images/ec2cli-list-instances.png)](./images/ec2cli-help.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-instances.png)
 
 (See [Screenshots](#screenshots) section below)
 
@@ -62,12 +62,7 @@ shells; however, your mileage may vary.
 
 ```
 
-
-
-<p align="center">
-  <img src="https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-help.png" alt="ec2cli help"/>
-</p>
-
+[![help](./images/ec2cli-help.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-help.png)
 
 
 ### Notes: ###
