@@ -39,6 +39,7 @@ source $pkg_path/lib/version.lib        # package VERSION global var
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
 E_NOLOG=2                     # exit code if failure to create log dir, log file
 E_BADSHELL=3                  # exit code if incorrect shell detected
+E_AUTH=4                      # exit code if authentication fails to aws
 E_USER_CANCEL=7               # exit code if user cancel
 E_BADARG=8                    # exit code if bad input parameter
 E_NETWORK_ACCESS=9            # exit code if no network access from current location
@@ -271,6 +272,26 @@ function environment_info(){
     fi
     #
     #<-- end function environment_info -->
+}
+
+function authenticated(){
+    ## validates authentication using iam user or role ##
+    local profilename="$1"
+    local response
+    #
+    response=$(aws sts get-caller-identity --profile $profilename 2>&1)
+    if [ "$(echo $response | grep Invalid)" ]; then
+        std_message "The IAM profile provided ($profilename) failed to authenticate to AWS. Exit (Code $E_AUTH)"
+        return 1
+    elif [ "$(echo $response | grep found)" ]; then
+        std_message "The IAM user or role ($profilename) cannot be found in your local awscli config. Exit (Code $E_BADARG)"
+        return 1
+    elif [ "$(echo $response | grep Expired)" ]; then
+        std_message "The sts temporary credentials for the role provided ($profilename) have expired. Exit (Code $E_AUTH)"
+        return 1
+    else
+        return 0
+    fi
 }
 
 function ec2cli_precheck(){
@@ -2414,7 +2435,7 @@ function xterm_reset(){
 ec2cli_precheck
 
 # reset default colors
-xterm_reset true
+#xterm_reset true
 
 # parse all cli parameters
 parse_parameters $@
@@ -2429,23 +2450,26 @@ if [ $DBUGMODE ]; then
     fi
 fi
 
-if { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "list" ]; then
-    $FUNCTION_CALL $REGION $RESOURCEID
-elif { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "create" ]; then
-    $FUNCTION_CALL $REGION $RESOURCEID
-elif [ "$OPTION" = '-N' ] || [ "$OPTION" = '--network' ]; then
-    ec2cli_list_vpcs $REGION
-    ec2cli_list_subnets $REGION
-    ec2cli_list_securitygroups $REGION
-elif [ "$FUNCTION_CALL" = "HELP" ]; then
-    source $pkg_path/lib/help_menus.lib
-    help_submenu $COMMAND
-else
-    $FUNCTION_CALL $REGION $SORT_COL
+if authenticated $PROFILE; then
+    # authenicated to aws successful
+    if { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "list" ]; then
+        $FUNCTION_CALL $REGION $RESOURCEID
+    elif { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "create" ]; then
+        $FUNCTION_CALL $REGION $RESOURCEID
+    elif [ "$OPTION" = '-N' ] || [ "$OPTION" = '--network' ]; then
+        ec2cli_list_vpcs $REGION
+        ec2cli_list_subnets $REGION
+        ec2cli_list_securitygroups $REGION
+    elif [ "$FUNCTION_CALL" = "HELP" ]; then
+        source $pkg_path/lib/help_menus.lib
+        help_submenu $COMMAND
+    else
+        $FUNCTION_CALL $REGION $SORT_COL
+    fi
 fi
 
 # reset terminal colors to original
-xterm_reset
+#xterm_reset
 
 #
 # END (MAIN) ------------------------------------------------------------------
