@@ -1643,14 +1643,15 @@ function ec2cli_list_snapshots(){
             done
         fi
 
-        if [ $sort_column ]; then
-            case $sort_column in
-                id | Id | ID | SnapshotId)
-                      column=2; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
-                size | Size)  column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
-                *) column=5; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-snapshots.tmp;;
-            esac
+        if [ ! $sort_column ]; then
+            sort_column="date"
         fi
+        case $sort_column in
+            id | Id | ID | SnapshotId)
+                  column=2; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
+            size | Size)  column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
+            date) column=5; cat .body.tmp | sort -k5 -nr >> .ec2-qv-snapshots.tmp;;
+        esac        
 
         # size, unit calcs of raw volumes snapshotted
         RETURN=$(adjust_units $SUM)
