@@ -1,4 +1,4 @@
-# EC2cli - Utilities for working with Amazon EC2
+# EC2cli - Amazon EC2 Utilities
 
 
 * [About](#about-this-repository)
@@ -9,8 +9,8 @@
 * [Permissions](#iam-permissions)
 * [Usage](#usage)
 * [Screenshots](#screenshots)
-* [Contribution Guidelines](#markdown-header-contribution-guidelines)
-* [Contact](#markdown-header-contact)
+* [Contribution Guidelines](#contribution-guidelines)
+* [Contact](#contact)
 
 * * *
 
@@ -367,10 +367,10 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
    If you'd like to contribute, please fork and then send me
    a pull request.
 
-back to the [top](#top)
-
 * * *
-<a name="contact"></a>
+
 ## Contact ##
 
 * Repo owner:  Blake Huber // @B1akeHuber
+
+[back to the top](#ec2cli---amazon-ec2-utilities)
