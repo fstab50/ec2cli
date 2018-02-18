@@ -30,7 +30,7 @@ url=$(echo -e ${underline}${brightblue})
 options=$(echo -e ${white})
 commands=$(echo -e ${brightcyan})       # use for ansi escape color codes
 frame=$(echo -e ${brightgreen})         # use for tables; border faming
-bodytext=$(echo -e ${reset${wgray}})    # main body text; set to reset for native xterm
+bodytext=$(echo -e ${reset}${wgray})    # main body text; set to reset for native xterm
 
 # initialize default color scheme
 accent=$(tput setaf 008)                # ansi format
