@@ -2356,7 +2356,7 @@ function parse_parameters(){
                     shift 1
                     ;;
                 -P | --spot)
-                    std_message "${title}Spot Market Pricing Menu" INFO
+                    std_logger "[INFO]: entering Spot Market Pricing Menu"
                     sh $pkg_path/lib/spot-prices.sh
                     shift 1
                     exit 0
