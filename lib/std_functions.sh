@@ -33,6 +33,6 @@ function print_separator(){
     echo -e "${frame}"
     #printf '%*s\n' "$total_width" '' | tr ' ' _ | indent02
     printf "%-10s %*s" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02
-    echo -e "${bodytext}"
+    echo -e "${bodytext}\n"
 
 }
