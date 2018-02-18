@@ -498,7 +498,7 @@ function print_footer(){
     echo -e "${body}"
 }
 
-function ec2cli_attach-volume(){
+function ec2cli_attach_volume(){
     # vars
     local CHOICE              # user selection
     local DEFAULTDEV          # default device
@@ -652,7 +652,7 @@ function ec2cli_attach-volume(){
         std_message "Volume $VOLID attached to instance $INSTANCEID in region $REGION." INFO
     fi
     #
-    # <-- end function ec2cli_attach-volume -->
+    # <-- end function ec2cli_attach_volume -->
     #
 }
 
@@ -1529,14 +1529,12 @@ function ec2cli_list_securitygroups(){
     # vars
     local REGION=$1
     local TOTAL
-
+    local total_width="130"
     # print region identifier
-    printf "\n${white}${BOLD}SECURITY GROUPS${UNBOLD}${reset} : $REGION\n\n" | indent18
+    printf "\n${title}SECURITY GROUPS${body} : $REGION\n\n" | indent18
 
     # print header
-    echo -ne "GroupName Group-Id Ports Ports CidrIp VpcId Description\n \
-            ---------------- ----------- ----- ----- ----------------- ------------ \
-            ---------------------------\n" > .ec2-qv-securitygroups.tmp
+    print_header "GroupName Group-Id Ports Ports CidrIp VpcId Tag Description" $total_width .ec2-qv-securitygroups.tmp
 
     # output from aws
     aws ec2 --profile $PROFILE describe-security-groups \
@@ -1549,18 +1547,19 @@ function ec2cli_list_securitygroups(){
             IpPermissions[0].ToPort, \
             IpPermissions[0].IpRanges[0].CidrIp, \
             VpcId, \
-            Tags[0].Value]" \
+            Tags[0].Value, \
+            Description]" \
     >> .ec2-qv-securitygroups.tmp
 
     # count total
     TOTAL=$(cat .ec2-qv-securitygroups.tmp | grep "sg-" | wc -l)
 
     # print and format output
-    awk  '{ printf "%-18s %-13s %-6s %-7s %-19s %-14s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7}' .ec2-qv-securitygroups.tmp | indent02
+    awk  '{ printf "%-20s %-13s %-6s %-7s %-19s %-14s %-20s %-20s\n", \
+            $1, $2, $3, $4, $5, $6, $7, $8}' .ec2-qv-securitygroups.tmp | indent02
 
     # print footer
-    printf "\n${white}${BOLD}$TOTAL${UNBOLD}${reset} Security Groups in region [$REGION]\n\n" | indent15
+    print_footer "${white}${BOLD}$TOTAL${UNBOLD}${reset} Security Groups in region [$REGION]"
 
     # clean up
     rm .ec2-qv-securitygroups.tmp
@@ -1651,7 +1650,7 @@ function ec2cli_list_snapshots(){
                   column=2; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
             size | Size)  column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
             date) column=5; cat .body.tmp | sort -k5 -nr >> .ec2-qv-snapshots.tmp;;
-        esac        
+        esac
 
         # size, unit calcs of raw volumes snapshotted
         RETURN=$(adjust_units $SUM)
@@ -2312,6 +2311,9 @@ function parse_parameters(){
                         FUNCTION_CALL="HELP"
                     else
                         case $COMMAND in
+                            attach)
+                                FUNCTION_CALL="ec2cli_attach_volume"
+                                ;;
                             list)
                                 FUNCTION_CALL="ec2cli_list_volumes"
                                 ;;
