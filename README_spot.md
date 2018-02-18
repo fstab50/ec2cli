@@ -1,10 +1,13 @@
 ## Screenshots (continued) ##
 
 #### Quickview Spot Price Utility ###
+
 ```bash
-$ sh ec2-qv-spot-prices.sh
+
+$ ec2cli --spot
+
 ```
-1.Select region for which you wish to view spot prices (default region auto selected via environment variables): 
+1.Select region for which you wish to view spot prices (default region auto selected via environment variables):
 
 ![](./images/spotprice_region.png)
 
@@ -27,7 +30,3 @@ $ sh ec2-qv-spot-prices.sh
 ( [Back to README](./README.md) )
 
 * * *
-
-
-
-
