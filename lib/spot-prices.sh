@@ -171,8 +171,8 @@ done
 # print header
 total_width="60"
 echo ""
-echo -e "${title}EC2 SPOT MARKET\n" | indent15
-echo -e "${title}Current AWS Regions Worldwide${bodytext}\n" | indent10
+echo -e "${title}     EC2 SPOT MARKET\n" | indent15
+echo -e "${bold}${orange}Amazon Web Services ${white}Regions Worldwide${bodytext}\n" | indent10
 print_header "\nRegionCode Location" $total_width .header.tmp
 # print choices
 awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' .header.tmp | indent02
