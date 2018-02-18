@@ -1,5 +1,7 @@
 # EC2cli - Utilities for working with Amazon EC2
 
+<a name="top"></a>
+
 * [About](#about-this-repository)
 * [License](#license)
 * [Introduction](#introduction)
@@ -365,6 +367,8 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
    If you'd like to contribute, please fork and then send me
    a pull request.
+
+back to the [top](#top)
 
 * * *
 
