@@ -2357,9 +2357,8 @@ function parse_parameters(){
                     ;;
                 -P | --spot)
                     std_logger "[INFO]: entering Spot Market Pricing Menu"
-                    sh $pkg_path/lib/spot-prices.sh
+                    FUNCTION_CALL="SPOT_MARKET"
                     shift 1
-                    exit 0
                     ;;
                 -S | --sort)
                     # sort column
@@ -2460,6 +2459,8 @@ if authenticated $PROFILE; then
         ec2cli_list_vpcs $REGION
         ec2cli_list_subnets $REGION
         ec2cli_list_securitygroups $REGION
+    elif [ "$FUNCTION_CALL" = "SPOT_MARKET" ]; then
+        sh $pkg_path/lib/spot-prices.sh
     elif [ "$FUNCTION_CALL" = "HELP" ]; then
         source $pkg_path/lib/help_menus.lib
         help_submenu $COMMAND
