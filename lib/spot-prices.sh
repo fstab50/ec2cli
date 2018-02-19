@@ -176,7 +176,8 @@ echo -e "${bold}${orange}Amazon Web Services ${white}Regions Worldwide${bodytext
 print_header "\nRegionCode Location" $total_width .header.tmp
 # print choices
 awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' .header.tmp | indent02
-awk '{printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
+echo -e "\n"
+awk '{printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n\n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
 print_separator $total_width
 # clean up
 rm ./.regions.json ./.header.tmp ./.arrayoutput.tmp
@@ -192,7 +193,7 @@ VALID=0
 while [ $VALID -eq 0 ]; do
 	# read instance choice in from user
 	echo ""
-	read -p "  Select Region [$AWS_DEFAULT_REGION], or press q to quit > " CHOICE
+	read -p "  ${title}Select Region${bodytext} [$AWS_DEFAULT_REGION], or press q to quit > " CHOICE
 	echo ""
 	if [ -z "$CHOICE" ]; then
         # CHOICE is blank, default region chosen
