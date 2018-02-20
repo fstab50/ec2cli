@@ -197,7 +197,11 @@ additional resource types as additional types are added.
 	complete -C aws_completer aws
 ```
 
-**Verify Configuration**:  
+[back to the top](#ec2cli---amazon-ec2-utilities)
+
+* * *
+
+## Verifying Your Configuration  
 
 After completing the above Installation and Configuration sections, verify your configuration:
 
