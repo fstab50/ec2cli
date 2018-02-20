@@ -62,9 +62,7 @@ shells; however, your mileage may vary.
 ## Usage ##
 
 ```bash
-
 	$ ec2cli --help     
-
 ```
 
 [![help](./images/ec2cli-help.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-help.png)
@@ -198,6 +196,16 @@ additional resource types as additional types are added.
 	# .bashrc
 	complete -C aws_completer aws
 ```
+
+**Verify Configuration**:  after completing the above Installation and Configuration sections, verify your configuration:
+
+```bash
+	$ ec2cli --version
+```
+
+[![version](./images/ec2cli-version.png)]((https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-version.png))
+
+**Note**: Python and Kernel versions will depend upon your system parameters
 
 [back to the top](#ec2cli---amazon-ec2-utilities)
 
