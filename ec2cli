@@ -1667,9 +1667,11 @@ function ec2cli_list_snapshots(){
         fi
         case $sort_column in
             id | Id | ID | SnapshotId)
-                  column=2; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
-            size | Size)  column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
-            date) column=5; cat .body.tmp | sort -k5 -nr >> .ec2-qv-snapshots.tmp;;
+                column=2; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
+            size | Size)
+                column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
+            date)
+                column=5; cat .body.tmp | sort -k6 -r >> .ec2-qv-snapshots.tmp;;
         esac
 
         # size, unit calcs of raw volumes snapshotted
