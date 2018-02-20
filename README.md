@@ -280,7 +280,7 @@ You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-q
 
 ## Screenshots ##
 
-### ec2cli `list` command ####
+#### ec2cli `list` command ####
 
 List command displays AWS resource details for your AWS default region if no region specified. If an alternate region given as a parameter, displays resource details for the specified region.
 
@@ -341,7 +341,7 @@ $ ec2cli -g us-east-1    # list security group details, alt region (us-east-1)
 
 ## Screenshots ##
 
-### ec2cli `run` command ###
+#### ec2cli `run` command ###
 
 *Note: this utility may also be used to automate login to a running EC2 instance*
 *as well as starting a stopped instance. See step 2. (below)*
