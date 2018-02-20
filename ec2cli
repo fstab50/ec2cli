@@ -2397,7 +2397,7 @@ function parse_parameters(){
                     ;;
                 -V | --version)
                     echo -e "\n${body}Package Info${body}:" | indent04
-                    std_message "${yellow}${BOLD}ec2cli${body}, version ${title}$VERSION${body}" INFO | indent04
+                    std_message "${orange}ec2cli${body}, version ${title}$VERSION${body}" INFO | indent04
                     echo -e "\n${body}Amazon command line interface (awscli)${body}:\n" | indent04
                     environment_info "INFO" "awscli"
                     echo -e "\n${body}Installed Json Parser:${body}" | indent04
@@ -2462,20 +2462,21 @@ if [ $DBUGMODE ]; then
     echo -e "PROFILE: $PROFILE"
     echo -e "COMMAND: $COMMAND"
     echo -e "REGION: $REGION"
+    echo -e "FUNCTION_CALL: $FUNCTION_CALL"
     if [ $RESOURCEID ]; then
         echo -e "RESOURCEID: $RESOURCEID"
     fi
 fi
 
+
 if [ "$FUNCTION_CALL" = "HELP" ]; then
     source $pkg_path/lib/help_menus.lib
     help_submenu $COMMAND
-
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_snapshots" ]; then
     source $pkg_path/lib/help_menus.lib
     ec2cli_help_command_list_snapshots
-
 else
+    # execute operations which require authentication to AWS
     if authenticated $PROFILE; then
         # authenicated to aws successful
         if { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "list" ]; then
