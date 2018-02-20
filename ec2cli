@@ -264,9 +264,13 @@ function environment_info(){
         std_message "boto library detected: ${accent}${BOLD}$boto_ver${UNBOLD}${reset}" $msg_header "pprint" | indent04
         std_message "Python runtime detected: ${accent}${BOLD}$python_ver${UNBOLD}${reset}" $msg_header "pprint" | indent04
 
+    elif [[ $dep == "os" ]]; then
+        std_message "Kernel detected: ${title}$(echo $version_info | awk '{print $3}')${reset}" $msg_header | indent04
+
     elif [[ $dep == "jq" ]]; then
         version_info=$(jq --version 2>&1)
-        std_logger "[$msg_header]: json parser detected: $(echo $version_info)"
+        std_message "JSON parser detected: ${title}$(echo $version_info)${reset}" $msg_header | indent04
+
     else
         std_logger "[$msg_header]: detected: $($prog --version | head -1)"
     fi
@@ -281,13 +285,13 @@ function authenticated(){
     #
     response=$(aws sts get-caller-identity --profile $profilename 2>&1)
     if [ "$(echo $response | grep Invalid)" ]; then
-        std_message "The IAM profile provided ($profilename) failed to authenticate to AWS. Exit (Code $E_AUTH)"
+        std_message "The IAM profile provided ($profilename) failed to authenticate to AWS. Exit (Code $E_AUTH)" "AUTH"
         return 1
     elif [ "$(echo $response | grep found)" ]; then
-        std_message "The IAM user or role ($profilename) cannot be found in your local awscli config. Exit (Code $E_BADARG)"
+        std_message "The IAM user or role ($profilename) cannot be found in your local awscli config. Exit (Code $E_BADARG)" "AUTH"
         return 1
     elif [ "$(echo $response | grep Expired)" ]; then
-        std_message "The sts temporary credentials for the role provided ($profilename) have expired. Exit (Code $E_AUTH)"
+        std_message "The sts temporary credentials for the role provided ($profilename) have expired. Exit (Code $E_AUTH)" "INFO"
         return 1
     else
         return 0
@@ -2388,6 +2392,17 @@ function parse_parameters(){
                             exit 0
                             ;;
                     esac
+                    ;;
+                -V | --version)
+                    echo -e "\n${underline}Package${body}:" | indent04
+                    std_message "${yellow}ec2cli${body}, version ${title}$VERSION${body}" INFO | indent04
+                    echo -e "\n${title}Amazon command line interace${body}:\n" | indent04
+                    environment_info "INFO" "awscli"
+                    echo -e "\n${title}Json Parser Installed:${body}" | indent04
+                    environment_info "INFO" "jq"
+                    echo -e "\n${title}Operating System:${body}" | indent04
+                    environment_info "INFO" "os"
+                    exit 0
                     ;;
                 *)
                     std_error "Option [ $1 ] unknown. Invalid option specified. (code $E_BADARG)" $E_BADARG
