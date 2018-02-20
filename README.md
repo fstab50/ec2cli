@@ -197,7 +197,9 @@ additional resource types as additional types are added.
 	complete -C aws_completer aws
 ```
 
-**Verify Configuration**:  after completing the above Installation and Configuration sections, verify your configuration:
+**Verify Configuration**:  
+
+After completing the above Installation and Configuration sections, verify your configuration:
 
 ```bash
 	$ ec2cli --version
