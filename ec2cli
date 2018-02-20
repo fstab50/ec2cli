@@ -1912,14 +1912,15 @@ function ec2cli_list_volumes(){
 
 function ec2cli_list_vpcs(){
     # vars
-    local TOTAL
-
+    local region="$1"
+    local total_width="118"
+    local sp="${frame}|${body}"       # separator
     # print region identifier
     printf "\n${white}${BOLD}Virtual Private Clouds (VPC)${UNBOLD}${reset} : $REGION\n\n" | indent18
     # print header
-    echo -ne "VpcId State Tenancy CIDR-Block Default\n \
-            ------------ --------- ------- ------------------ -------\n" > .ec2-qv-vpc.tmp
+    print_header "VpcId State Tenancy CIDR-Block Default" $total_width .report.tmp
     # output from aws
+    aws ec2 --profile $PROFILE describe-vpcs --output json --region $REGION > .jsonoutput.json
     aws ec2 --profile $PROFILE describe-vpcs \
         --output text \
         --region $REGION \
@@ -1930,19 +1931,37 @@ function ec2cli_list_vpcs(){
             CidrBlock, \
             IsDefault]" | sort -k +4n \
     >> .ec2-qv-vpc.tmp
-    # count total
-    TOTAL=$(cat .ec2-qv-vpc.tmp | grep "vpc-" | wc -l)
 
+    # parse json
+    ARR_ID=( $(jq -r '.Vpcs[].VpcId' .jsonoutput.json) )
+    ARR_DEFAULT=( $(jq -r '.Vpcs[].IsDefault' .jsonoutput.json) )
+    ARR_STATE=( $(jq -r '.Vpcs[].State' .jsonoutput.json) )
+    ARR_TENANCY=( $(jq -r '.Vpcs[].InstanceTenancy' .jsonoutput.json) )
+    ARR_CIDR=( $(jq -r '.Vpcs[].CidrBlock' .jsonoutput.json) )
+    ARR_DHCP=( $(jq -r '.Vpcs[].DhcpOptionsId' .jsonoutput.json) )
+    ARR_TAG=( $(jq -r '.Vpcs[].Tags[0].Value' .jsonoutput.json | cut -c 1-20) )
+
+    MAXCT=${#ARR_ID[*]}    # count snapshots found
+    # output table of json array
+    i=0
+    while (( i < $MAXCT )); do
+        echo "$sp ${ARR_ID[$i]} $sp $(if [ "${ARR_DEFAULT[$i]}" = "true" ]; then echo "yes"; else echo "-"; fi) $sp ${ARR_STATE[$i]} $sp \
+              ${ARR_TENANCY[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_DHCP[$i]} $sp \
+              ${ARR_TAG[$i]} $sp" >> .body.tmp
+        # incr ct
+        i=$(( $i+1 ))
+    done
+    # print header
+    print_header "$sp VpcId $sp Default? $sp State $sp Tenancy $sp CIDR $sp DHCP-Options $sp Tag $sp" $total_width .report.tmp
+    # sort body text
+    cat .body.tmp | sort -k +10n  >> .report.tmp
     # print and format output
-    # Note: Since awk is looking for blank space as delimiter, we allow spaces
-    #       in the description field by telling awk these are 2 char columns.
-    #
-    awk  '{ printf "%-14s %-10s %-9s %-20s %-9s \n", \
-            $1, $2, $3, $4, $5}' .ec2-qv-vpc.tmp | indent02
+    awk  '{ printf "%-2s %-14s %-2s %-10s %-2s %-12s %-2s %-10s %-2s %-15s %-2s %-15s %-2s %-20s %-2s\n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .report.tmp | indent02
     # print footer
-    printf "\nTotal VPCs, $REGION: ${white}${BOLD}$TOTAL${UNBOLD}${reset}\n\n" | indent18
+    print_footer "Total VPCs, $REGION: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
     # clean up
-    rm .ec2-qv-vpc.tmp
+    rm .jsonoutput.json .body.tmp .report.tmp
     #
     # <-- end function ec2cli_list_vpcs -->
     #
