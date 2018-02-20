@@ -201,7 +201,7 @@ additional resource types as additional types are added.
 
 * * *
 
-## Verifying Your Configuration  
+### Verifying Your Configuration  
 
 After completing the above Installation and Configuration sections, verify your configuration:
 
