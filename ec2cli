@@ -128,17 +128,18 @@ function ec2cli_help(){
               $ ec2cli  [${options}OPTION${reset}]  ${resources}RESOURCE${reset}${backcolor}  [${cyan}COMMAND${reset}${backcolor}]  [${regions}REGIONCODE${reset}${backcolor}]
 
                     [-p | --profile <PROFILENAME> ]
+                    [-V | --version ]
                     [-d | ---debug  ]
                     [-h | --help    ]
-
 
       ${white}${BOLD}OPTIONS${UNBOLD}${backcolor}:
           ${options}-p${backcolor},${options} --profile${backcolor} (str) Profile name of an IAM user from the local awscli
                               config for which you want to rotate access keys
+          ${options}-V${backcolor},${options} --version${backcolor}:      Print package version, dependency versions
           ${options}-d${backcolor},${options} --debug${backcolor}:        Enable verbose log output, enhance stdout messaging
           ${options}-h${backcolor},${options} --help${backcolor}:         Display help
 
-      ${white}${BOLD}RESOURCE TYPES${UNBOLD}${backcolor}:
+      ${white}${BOLD}RESOURCES${UNBOLD}${backcolor}:
           ${resources}-a${backcolor},${resources} --images       ${backcolor}Amazon Machine Image (AMI) details (regional)
           ${resources}-b${backcolor},${resources} --subnets      ${backcolor}Virtual Private Cloud (VPC) Subnet details (regional)
           ${resources}-g${backcolor},${resources} --sgroups      ${backcolor}Security Group details (regional)
