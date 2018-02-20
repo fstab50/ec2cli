@@ -1921,16 +1921,6 @@ function ec2cli_list_vpcs(){
     print_header "VpcId State Tenancy CIDR-Block Default" $total_width .report.tmp
     # output from aws
     aws ec2 --profile $PROFILE describe-vpcs --output json --region $REGION > .jsonoutput.json
-    aws ec2 --profile $PROFILE describe-vpcs \
-        --output text \
-        --region $REGION \
-        --query "Vpcs[*]. \
-            [VpcId, \
-            State, \
-            InstanceTenancy, \
-            CidrBlock, \
-            IsDefault]" | sort -k +4n \
-    >> .ec2-qv-vpc.tmp
 
     # parse json
     ARR_ID=( $(jq -r '.Vpcs[].VpcId' .jsonoutput.json) )
