@@ -2305,7 +2305,8 @@ function parse_parameters(){
                     fi
                     # provision for help submenu
                     if [ "$1" = "help" ]; then
-                        FUNCTION_CALL="HELP"
+                        FUNCTION_CALL="ec2cli_help_command_list_snapshots"
+                        shift 1
                     else
                         case $COMMAND in
                             list)
@@ -2466,23 +2467,34 @@ if [ $DBUGMODE ]; then
     fi
 fi
 
-if authenticated $PROFILE; then
-    # authenicated to aws successful
-    if { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "list" ]; then
-        $FUNCTION_CALL $REGION $RESOURCEID
-    elif { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "create" ]; then
-        $FUNCTION_CALL $REGION $RESOURCEID
-    elif [ "$OPTION" = '-N' ] || [ "$OPTION" = '--network' ]; then
-        ec2cli_list_vpcs $REGION
-        ec2cli_list_subnets $REGION
-        ec2cli_list_securitygroups $REGION
-    elif [ "$FUNCTION_CALL" = "SPOT_MARKET" ]; then
-        sh $pkg_path/lib/spot-prices.sh
-    elif [ "$FUNCTION_CALL" = "HELP" ]; then
-        source $pkg_path/lib/help_menus.lib
-        help_submenu $COMMAND
-    else
-        $FUNCTION_CALL $REGION $SORT_COL
+if [ "$FUNCTION_CALL" = "HELP" ]; then
+    source $pkg_path/lib/help_menus.lib
+    help_submenu $COMMAND
+
+elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_snapshots" ]; then
+    source $pkg_path/lib/help_menus.lib
+    ec2cli_help_command_list_snapshots
+
+else
+    if authenticated $PROFILE; then
+        # authenicated to aws successful
+        if { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "list" ]; then
+            $FUNCTION_CALL $REGION $RESOURCEID
+
+        elif { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "create" ]; then
+            $FUNCTION_CALL $REGION $RESOURCEID
+
+        elif [ "$OPTION" = '-N' ] || [ "$OPTION" = '--network' ]; then
+            ec2cli_list_vpcs $REGION
+            ec2cli_list_subnets $REGION
+            ec2cli_list_securitygroups $REGION
+
+        elif [ "$FUNCTION_CALL" = "SPOT_MARKET" ]; then
+            sh $pkg_path/lib/spot-prices.sh
+
+        else
+            $FUNCTION_CALL $REGION $SORT_COL
+        fi
     fi
 fi
 

@@ -2,6 +2,13 @@
 
 # help function library
 
+# source color lib
+pkg_path=$(cd $(dirname $0); pwd -P)
+source $pkg_path/lib/colors.sh
+
+accent=$(echo -e ${bold}${white})
+
+
 function help_submenu(){
     ## displayes appropriate submenu ##
     local command="$1"
@@ -71,6 +78,27 @@ function ec2cli_help_command_list(){
 EOM
 }
 
+
+function ec2cli_help_command_list_snapshots(){
+    cat <<EOM
+
+    COMMAND:
+
+            $ ${yellow}ec2cli${accent} --snapshots list ${reset}[REGION] [${accent}--sort ${reset}<value>]
+
+
+        Sort parameter ${BOLD}${white}--sort${reset} can be used with one the following values:
+
+           VALUE                  Description                             Sort Order
+        -----------     -----------------------------------------   -----------------------
+            ${accent}date${reset}        Sort snapshot list by date [DEFAULT]        order newest to oldest
+            ${accent}size${reset}        Sort snapshot list by size of volume        smallest to largest
+                        from which snapshot taken
+            ${accent}id${reset}          Sort snapshot list by snapshot id           alphabetical
+
+
+EOM
+}
 
 function ec2cli_help_command_run(){
     cat <<EOM
