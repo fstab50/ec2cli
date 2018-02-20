@@ -86,10 +86,7 @@ function ec2cli_help_command_list_snapshots(){
 
             $ ${yellow}ec2cli${accent} --snapshots list ${reset}[REGION] [${accent}--sort ${reset}<value>]
 
-
-            Sort parameter ${BOLD}${white}--sort${reset} can be used as follows:
-
-                    --sort date | size | id
+            Sort parameter --sort can be used with one the following values:
 
             VALUE                         Description                        Sort Order
            ----------------    ------------------------------------     -----------------------
