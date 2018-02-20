@@ -2395,11 +2395,11 @@ function parse_parameters(){
                     esac
                     ;;
                 -V | --version)
-                    echo -e "\n${body}Package${body}:" | indent04
+                    echo -e "\n${body}Package Info${body}:" | indent04
                     std_message "${yellow}ec2cli${body}, version ${title}$VERSION${body}" INFO | indent04
-                    echo -e "\n${body}Amazon command line interace${body}:\n" | indent04
+                    echo -e "\n${body}Amazon command line interface (awscli)${body}:\n" | indent04
                     environment_info "INFO" "awscli"
-                    echo -e "\n${body}Json Parser Installed:${body}" | indent04
+                    echo -e "\n${body}Installed Json Parser:${body}" | indent04
                     environment_info "INFO" "jq"
                     echo -e "\n${body}Operating System:${body}" | indent04
                     environment_info "INFO" "os"
