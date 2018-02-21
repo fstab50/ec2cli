@@ -1913,10 +1913,10 @@ function ec2cli_list_volumes(){
 function ec2cli_list_vpcs(){
     # vars
     local region="$1"
-    local total_width="118"
+    local total_width="130"
     local sp="${frame}|${body}"       # separator
     # print region identifier
-    printf "\n${white}${BOLD}Virtual Private Clouds (VPC)${UNBOLD}${reset} : $REGION\n\n" | indent18
+    printf "\n${white}${BOLD}Virtual Private Clouds (VPC)${UNBOLD}${reset} : $REGION\n" | indent18
     # print header
     print_header "VpcId State Tenancy CIDR-Block Default" $total_width .report.tmp
     # output from aws
@@ -1929,15 +1929,15 @@ function ec2cli_list_vpcs(){
     ARR_TENANCY=( $(jq -r '.Vpcs[].InstanceTenancy' .jsonoutput.json) )
     ARR_CIDR=( $(jq -r '.Vpcs[].CidrBlock' .jsonoutput.json) )
     ARR_DHCP=( $(jq -r '.Vpcs[].DhcpOptionsId' .jsonoutput.json) )
-    ARR_TAGKEY=( $(jq -r '.Vpcs[].Tags[0].Key' .jsonoutput.json | cut -c 1-20) )
-    ARR_TAGVALUE=( $(jq -r '.Vpcs[].Tags[0].Value' .jsonoutput.json | cut -c 1-20) )
+    ARR_TAGKEY=( $(jq -r '.Vpcs[].Tags[0].Key' .jsonoutput.json | cut -c 1-18) )
+    ARR_TAGVALUE=( $(jq -r '.Vpcs[].Tags[0].Value' .jsonoutput.json | cut -c 1-18) )
     MAXCT=${#ARR_ID[*]}    # count snapshots found
     # output table of json array
     i=0
     while (( i < $MAXCT )); do
         echo "$sp ${ARR_ID[$i]} $sp $(if [ "${ARR_DEFAULT[$i]}" = "true" ]; then echo "yes"; else echo "-"; fi) $sp ${ARR_STATE[$i]} $sp \
               ${ARR_TENANCY[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_DHCP[$i]} $sp \
-              Key:${ARR_TAGKEY[$i]},Value:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
+              ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
         # incr ct
         i=$(( $i+1 ))
     done
@@ -1946,7 +1946,7 @@ function ec2cli_list_vpcs(){
     # sort body text
     cat .body.tmp | sort -k +10n  >> .report.tmp
     # print and format output
-    awk  '{ printf "%-2s %-14s %-2s %-8s %-2s %-10s %-2s %-9s %-2s %-14s %-2s %-15s %-2s %-26s %-2s\n", \
+    awk  '{ printf "%-2s %-14s %-2s %-8s %-2s %-10s %-2s %-9s %-2s %-16s %-2s %-15s %-2s %-36s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .report.tmp | indent02
     # print footer
     print_footer "${white}${BOLD}$MAXCT${UNBOLD}${reset} VPCs in region [$REGION]" $total_width
