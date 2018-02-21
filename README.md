@@ -26,7 +26,7 @@
 ## License
 
 * All utilities contained herein are copyrighted and made available under GPLv2
-* See [LICENSE](./LICENSE)
+* See [LICENSE](./LICENSE.txt)
 
 [back to the top](#ec2cli---amazon-ec2-utilities)
 
@@ -201,7 +201,7 @@ additional resource types as additional types are added.
 
 * * *
 
-### Verifying Your Configuration  
+### Verify Your Configuration  
 
 After completing the above Installation and Configuration sections, verify your configuration:
 
