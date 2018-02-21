@@ -95,6 +95,7 @@ ARR_REGIONS=( $(jq -r .Regions[].RegionName .regions.json) )
 MAXCT=${#ARR_REGIONS[*]}    # array max length
 
 # output choices
+i=1
 for region in ${ARR_REGIONS[@]}; do
     # set region location description
     case "$region" in
@@ -147,7 +148,7 @@ for region in ${ARR_REGIONS[@]}; do
             LOCATION="New Region"
             ;;
     esac
-    echo ""\($i\): "${ARR_REGIONS[$i]}" $LOCATION"" >> .arrayoutput.tmp
+    echo ""\($i\): "$region" $LOCATION"" >> .arrayoutput.tmp
     i=$(( i+1 ))
 done
 
@@ -167,11 +168,6 @@ print_separator $total_width
 # clean up
 rm ./.regions.json ./.header.tmp ./.arrayoutput.tmp
 
-# exit if just regions requested (-r switch)
-if [ "$1" == "-r" ] || [ "$1" == "--regions" ]; then
-    echo -e "\n"
-    exit 0
-fi
 
 # enter loop to validate range and type of user entry
 VALID=0
@@ -193,9 +189,10 @@ while [ $VALID -eq 0 ]; do
         # contains chars
         echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
 	else
-        if [[ $CHOICE -ge 0 ]] && [[ $CHOICE -lt $(( $MAXCT )) ]]; then
+        correct=$(( $CHOICE - 1))
+        if [[ $correct -ge 0 ]] && [[ $correct -lt $(( $MAXCT )) ]]; then
             # valid range, reset the aws default region to user choice momentarily
-	        REGION=${ARR_REGIONS[$CHOICE]}
+	        REGION=${ARR_REGIONS[$correct]}
 	        echo -e "  You Selected: "$REGION"\n"
             VALID=1   # exit loop
         else
