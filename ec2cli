@@ -1007,6 +1007,7 @@ function ec2cli_list_instances(){
     # vars
     local TOTAL             # region EC2 instance count
     local REGION=$1         # region identifier
+    local sort_column="$2"
     local NOW               # date, formatted
     local LAUNCHTIME        # date/time launched from json object
     local EPOCHLT           # LAUNCHTIME in epoch seconds
@@ -1095,7 +1096,17 @@ function ec2cli_list_instances(){
                 ${ARR_DEV[$i]}  ${ARR_IP[$i]}  ${RT[$i]}  ${ARR_TAG[$i]}" >> sort.tmp
             i=$(( $i+1 ))
         done
-        cat sort.tmp | sort -k7 -n >> .body.tmp
+        if [ ! $sort_column ]; then
+            sort_column="date"
+        fi
+        case $sort_column in
+            id | Id | ID | SnapshotId)
+                column=1; cat sort.tmp | sort -k"$column" -n >> .body.tmp;;
+            size | Size)
+                column=2; cat sort.tmp | sort -k"$column" -r >> .body.tmp;;
+            date)
+                column=7; cat sort.tmp | sort -k$column -n >> .body.tmp;;
+        esac
         rm sort.tmp    # clean up
         #
         # print and format output
