@@ -37,23 +37,7 @@ pkg_path=$(cd $(dirname $0); pwd -P)
 E_BADSHELL=7              # exit code if incorrect shell detected
 E_BADARG=8                    # exit code if bad input parameter
 REGION=$AWS_DEFAULT_REGION    # set region from global env var
-#
-# Formatting
-#
-blue=$(tput setaf 4)
-cyan=$(tput setaf 6)
-green=$(tput setaf 2)
-purple=$(tput setaf 5)
-red=$(tput setaf 1)
-white=$(tput setaf 7)
-yellow=$(tput setaf 3)
-gray=$(tput setaf 008)
-lgray='\033[0;37m'      # light gray
-dgray='\033[1;30m'       # dark gray
-reset=$(tput sgr0)
-#
-BOLD=`tput bold`
-UNBOLD=`tput sgr0`
+
 
 # < -- Start -->
 
@@ -111,10 +95,9 @@ ARR_REGIONS=( $(jq -r .Regions[].RegionName .regions.json) )
 MAXCT=${#ARR_REGIONS[*]}    # array max length
 
 # output choices
-i=0
 for region in ${ARR_REGIONS[@]}; do
     # set region location description
-    case "${ARR_REGIONS[$i]}" in
+    case "$region" in
         eu-west-1)
             LOCATION="Europe (Ireland)"
             ;;
@@ -164,7 +147,7 @@ for region in ${ARR_REGIONS[@]}; do
             LOCATION="New Region"
             ;;
     esac
-    echo "($i): ""${ARR_REGIONS[$i]}"" ""$LOCATION" >> .arrayoutput.tmp
+    echo ""\($i\): "${ARR_REGIONS[$i]}" $LOCATION"" >> .arrayoutput.tmp
     i=$(( i+1 ))
 done
 
@@ -173,11 +156,13 @@ total_width="60"
 echo ""
 echo -e "${title}     EC2 SPOT MARKET\n" | indent15
 echo -e "${bold}${orange}Amazon Web Services ${white}Regions Worldwide${bodytext}\n" | indent10
+
 print_header "\nRegionCode Location" $total_width .header.tmp
+
 # print choices
 awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' .header.tmp | indent02
 echo -e "\n"
-awk '{printf "%-5s %-17s %-2s %-2s %-2s %-2s %-2s \n\n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
+awk '{printf "%-5s %-19s %-2s %-2s %-2s %-2s %-2s \n\n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
 print_separator $total_width
 # clean up
 rm ./.regions.json ./.header.tmp ./.arrayoutput.tmp
