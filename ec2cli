@@ -1142,7 +1142,8 @@ function ec2cli_list_images(){
     local REGION=$1     # region passed from global identifier
     local NUMLIST       # boolean parameter, 1 = output numbered list
     local MAXCT         # array length
-
+    local total_width="110"
+    local sp="${frame}|${body}"       # separator
     # print out numbered list of instances?
     if [[ $2 ]] && [[ $2 -eq 1 ]]; then NUMLIST=1; fi
 
@@ -1164,7 +1165,8 @@ function ec2cli_list_images(){
     ARR_TYPE=( $(jq -r ".Images[].ImageType" .jsonimages.tmp) )
     ARR_VTYPE=( $(jq -r ".Images[].VirtualizationType" .jsonimages.tmp) )
     ARR_CREATEDATE=( $(jq -r ".Images[].CreationDate" .jsonimages.tmp) )
-    ARR_SNAP=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" .jsonimages.tmp) )
+    ARR_SNAP0=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" .jsonimages.tmp) )
+    ARR_SNAP1=( $(jq -r ".Images[].BlockDeviceMappings[1].Ebs.SnapshotId" .jsonimages.tmp) )
     ARR_NAME=( $(jq -r ".Images[].Name" .jsonimages.tmp | cut -c 1-25) )    # limit to 25 chars
     ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp) )
 
@@ -1178,15 +1180,13 @@ function ec2cli_list_images(){
     done
 
     # print header
-    echo -ne "AMI-id CreateDateTime Type vType SnapshotId Description\n \
-            ------------ -----------------  ------- -----  \
-            ---------------------- -------------------------\n" > .header.tmp
+    print_header "AMI-id CreateDateTime Type vType SnapshotId Description" $total_width .header.tmp
 
     # create table of json array
     i=0
     for image in ${ARR_IMAGEID[*]}}; do
         echo "${ARR_IMAGEID[$i]} ${ARR_CREATEDATE[$i]} ${ARR_TYPE[$i]} \
-            ${ARR_VTYPE[$i]} ${ARR_SNAP[$i]}"" ${ARR_DESCR[$i]}" >> .body.tmp
+            ${ARR_VTYPE[$i]} ${ARR_SNAP0[$i]}"" ${ARR_DESCR[$i]}" >> .body.tmp
         i=$(( $i+1 ))
     done
     # sort and combine results
@@ -1195,12 +1195,12 @@ function ec2cli_list_images(){
 
     ## print and format output ##
     # header, region identifier
-    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n\n" | indent18
+    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n" | indent18
     # format output
-    awk  '{ printf "%-13s %-18s %-8s %-6s %-23s %-10s %-2s %-2s %-2s %-2s \n", \
+    awk  '{ printf "%-13s %-18s %-8s %-12s %-23s %-10s %-2s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .output.tmp | indent02
     # footer
-    printf "\nTotal AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n\n" | indent18
+    print_footer "Total AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
 
     # clean up
     rm .jsonimages.tmp .output.tmp .body.tmp
@@ -1913,7 +1913,7 @@ function ec2cli_list_volumes(){
 function ec2cli_list_vpcs(){
     # vars
     local region="$1"
-    local total_width="130"
+    local total_width="133"
     local sp="${frame}|${body}"       # separator
     # print region identifier
     printf "\n${white}${BOLD}Virtual Private Clouds (VPC)${UNBOLD}${reset} : $REGION\n" | indent18
@@ -1942,11 +1942,11 @@ function ec2cli_list_vpcs(){
         i=$(( $i+1 ))
     done
     # print header
-    print_header "$sp VpcId $sp Default? $sp State $sp Tenancy $sp CIDR $sp DHCP-Options $sp Tag $sp" $total_width .report.tmp
+    print_header "$sp VpcId $sp Default? $sp State $sp Tenancy $sp CIDR $sp DHCP-OptionId $sp Tags $sp" $total_width .report.tmp
     # sort body text
     cat .body.tmp | sort -k +10n  >> .report.tmp
     # print and format output
-    awk  '{ printf "%-2s %-14s %-2s %-8s %-2s %-10s %-2s %-9s %-2s %-16s %-2s %-15s %-2s %-36s %-2s\n", \
+    awk  '{ printf "%-2s %-14s %-2s %-8s %-2s %-10s %-2s %-9s %-2s %-16s %-2s %-15s %-2s %-39s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .report.tmp | indent02
     # print footer
     print_footer "${white}${BOLD}$MAXCT${UNBOLD}${reset} VPCs in region [$REGION]" $total_width
