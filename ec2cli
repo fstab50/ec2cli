@@ -1214,7 +1214,7 @@ function ec2cli_list_images(){
     print_footer "Total AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
 
     # clean up
-    rm .jsonimages.tmp .output.tmp .body.tmp
+    rm .header.tmp .jsonimages.tmp .output.tmp .body.tmp
     #
     # <-- end function ec2cli_list_images -->
     #
