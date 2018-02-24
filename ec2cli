@@ -33,7 +33,7 @@ host=$(hostname)
 system=$(uname)
 
 # source lib deps
-source $pkg_path/lib/version.lib        # package VERSION global var
+source $pkg_path/lib/version.py        # package VERSION global var
 
 # error codes
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
