@@ -148,7 +148,7 @@ def debug_mode(header, data_object, debug=False, halt=False):
     return True
 
 
-def get_account_info(account_profile=None):
+def get_account_info(profile=None):
     """
     Summary:
         Queries AWS iam and sts services to discover account id information
@@ -164,8 +164,8 @@ def get_account_info(account_profile=None):
     103562488773 tooling-prod
 
     """
-    if account_profile:
-        session = boto3.Session(profile_name=account_profile)
+    if profile:
+        session = boto3.Session(profile_name=profile)
         sts_client = session.client('sts')
         iam_client = session.client('iam')
     else:
