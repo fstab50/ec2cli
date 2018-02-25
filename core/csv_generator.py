@@ -43,7 +43,6 @@ from _version import VERSION
 # globals
 logger = loggers.getLogger(VERSION)
 now = datetime.datetime.now().strftime('%Y-%m-%d')
-output_fname = now + '_test.csv'
 
 
 def boto3_session(service, region, profile=None):
@@ -115,12 +114,12 @@ def retrieve_json(account, profilename, r):
 
             container.append(
                 {
-                    'Description': snapshot_dict['Description'],
-                    'Encrypted': snapshot_dict['Encrypted'],
                     'AWS Account': snapshot_dict['OwnerId'],
-                    'Progress': snapshot_dict['Progress'],
                     'SnapshotId': snapshot_dict['SnapshotId'],
+                    'Description': snapshot_dict['Description'],
                     'StartTime': snapshot_dict['StartTime'].strftime('%Y-%m-%dT%H:%M'),
+                    'Encrypted': snapshot_dict['Encrypted'],
+                    'Progress': snapshot_dict['Progress'],
                     'State': snapshot_dict['State'],
                     'VolumeID': snapshot_dict['VolumeId'],
                     'VolumeSize': snapshot_dict['VolumeSize'],
@@ -133,13 +132,13 @@ def retrieve_json(account, profilename, r):
 def init_generator():
 
     # account info
-    region = 'us-east-2'
-    profile = 'default'
+    region = 'eu-west-1'
+    profile = 'gcreds-phht-gen-ra1-pr'
     account_id, account_name = get_account_info(profile=profile)
+    output_fname = now + '_snapshots-' + account_name + '.csv'
 
     # pull data from aws
     data_list = retrieve_json(account=account_id, profilename=profile, r=region)
-    print(json.dumps(data_list, indent=4))
 
     # pdb.set_trace()
     # column headers for each row of csv data
