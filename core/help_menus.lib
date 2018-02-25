@@ -4,7 +4,7 @@
 
 # source color lib
 pkg_path=$(cd $(dirname $0); pwd -P)
-source $pkg_path/lib/colors.sh
+source $pkg_path/core/colors.sh
 
 accent=$(echo -e ${bold}${white})
 

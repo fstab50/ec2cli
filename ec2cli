@@ -33,7 +33,7 @@ host=$(hostname)
 system=$(uname)
 
 # source lib deps
-source $pkg_path/lib/_version.py        # package VERSION global var
+source $pkg_path/core/_version.py        # package VERSION global var
 
 # error codes
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
@@ -2395,7 +2395,7 @@ function parse_parameters(){
                     fi
                     ;;
                 help)    # invoke detailed help menu
-                    source $pkg_path/lib/help_menus.lib
+                    source $pkg_path/core/help_menus.lib
                     case $COMMAND in
                         attach)
                             ec2cli_help_command_attach
@@ -2490,10 +2490,10 @@ fi
 
 
 if [ "$FUNCTION_CALL" = "HELP" ]; then
-    source $pkg_path/lib/help_menus.lib
+    source $pkg_path/core/help_menus.lib
     help_submenu $COMMAND
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_snapshots" ]; then
-    source $pkg_path/lib/help_menus.lib
+    source $pkg_path/core/help_menus.lib
     ec2cli_help_command_list_snapshots
 else
     # execute operations which require authentication to AWS
@@ -2511,7 +2511,7 @@ else
             ec2cli_list_securitygroups $REGION
 
         elif [ "$FUNCTION_CALL" = "SPOT_MARKET" ]; then
-            sh $pkg_path/lib/spot-prices.sh
+            sh $pkg_path/core/spot-prices.sh
 
         else
             $FUNCTION_CALL $REGION $SORT_COL
