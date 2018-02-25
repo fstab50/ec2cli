@@ -37,7 +37,7 @@ from botocore.exceptions import ClientError, ProfileNotFound
 # pkg
 from script_utils import stdout_message
 import loggers
-from version import VERSION
+from _version import VERSION
 
 
 
@@ -80,13 +80,13 @@ def boto3_session(service, region, profile=None):
     return client
 
 
-def flattenjson( b, delim ):
+def flattenjson(b, delim):
     val = {}
     for i in b.keys():
-        if isinstance( b[i], dict ):
-            get = flattenjson( b[i], delim )
+        if isinstance(b[i], dict):
+            get = flattenjson(b[i], delim)
             for j in get.keys():
-                val[ i + delim + j ] = get[j]
+                val[i + delim + j] = get[j]
         else:
             val[i] = b[i]
 
@@ -119,12 +119,11 @@ def retrieve_json(account, profilename, r):
 
 
 def init_generator():
-    data = retrieve_json()
+    data_list = retrieve_json()
 
     input = map( lambda x: flattenjson( x, "__" ), input )
 
-    columns = [ x for row in input for x in row.keys() ]
-    columns = list( set( columns ) )
+    columns = [x for x in data_list[0]]
 
 
     with open( output_fname, 'wb' ) as out_file:
