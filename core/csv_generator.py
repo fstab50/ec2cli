@@ -109,15 +109,15 @@ def retrieve_json(account, profilename, r):
         for snapshot_dict in page['Snapshots']:
             # preprocess tags
             if snapshot_dict.get('Tags'):
-                tags = snapshot_dict['Tags']
+                tags = {x['Key']:x['Value'] for x in snapshot_dict['Tags']}
             else:
-                tags = []
+                tags = 'None'
 
             container.append(
                 {
                     'Description': snapshot_dict['Description'],
                     'Encrypted': snapshot_dict['Encrypted'],
-                    'OwnerId': snapshot_dict['OwnerId'],
+                    'AWS Account': snapshot_dict['OwnerId'],
                     'Progress': snapshot_dict['Progress'],
                     'SnapshotId': snapshot_dict['SnapshotId'],
                     'StartTime': snapshot_dict['StartTime'].strftime('%Y-%m-%dT%H:%M'),
