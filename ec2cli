@@ -1616,7 +1616,7 @@ function ec2cli_list_snapshots(){
     local total_width=$(( $(tput cols) - 4 ))
 
     if [ $export == "true" ]; then
-        std_message "Exporting snapshot data to comma separated value (csv) file."
+        std_message "Exporting snapshot data to comma separated value (csv) file." "INFO"
         python3 $pkg_path/core/csv_generator.py --profile $PROFILE --region $REGION
         return
     fi
