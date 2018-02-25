@@ -194,7 +194,7 @@ function std_logger(){
         echo "$prefix: $pkg ($VERSION): failure to call std_logger, $ec2cli_log location undefined"
         exit $E_DIR
     fi
-    echo "$(date +'%b %d %T') $host $pkg - $VERSION: $msg" >> "$ec2cli_log"
+    echo "$(date +'%b %d %T') $host $pkg - $VERSION - $msg" >> "$ec2cli_log"
 }
 
 function std_message(){
