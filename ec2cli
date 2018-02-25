@@ -1610,9 +1610,15 @@ function ec2cli_list_snapshots(){
     # vars
     local REGION=$1
     local sort_column="$2"
+    local export="$3"
     local SUM
     local TOTAL
     local total_width=$(( $(tput cols) - 4 ))
+
+    if [ $export == "true" ]; then
+        python3 $pkg_path/core/csv_generate.py --profile $PROFILE --region $REGION
+        return
+    fi
     #
     # output from aws
     aws ec2 --profile $PROFILE describe-snapshots --owner self --output json --region $REGION > .jsonoutput.tmp
@@ -2383,6 +2389,10 @@ function parse_parameters(){
                     RESOURCEID="$1"
                     shift 1
                     ;;
+                -e | --export)
+                    EXPORT="true"
+                    shift 1
+                    ;;
                 -P | --spot)
                     std_logger "[INFO]: entering Spot Market Pricing Menu"
                     FUNCTION_CALL="SPOT_MARKET"
@@ -2514,6 +2524,9 @@ else
         elif [ "$FUNCTION_CALL" = "SPOT_MARKET" ]; then
             sh $pkg_path/core/spot-prices.sh
 
+        elif [ $EXPORT ]; then
+            SORT_COL="false"
+            $FUNCTION_CALL $REGION "$SORT_COL" $EXPORT
         else
             $FUNCTION_CALL $REGION $SORT_COL
         fi
