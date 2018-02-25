@@ -36,48 +36,14 @@ import boto3
 from botocore.exceptions import ClientError, ProfileNotFound
 
 # pkg
-from script_utils import stdout_message, get_account_info
+from script_utils import boto3_session, stdout_message, get_account_info
+from oscodes_unix import exit_codes
 import loggers
-from _version import VERSION
+from _version import __version__
 
 # globals
-logger = loggers.getLogger(VERSION)
+logger = loggers.getLogger(__version__)
 now = datetime.datetime.now().strftime('%Y-%m-%d')
-
-
-def boto3_session(service, region, profile=None):
-    """
-    Summary:
-        Establishes boto3 sessions, client
-    Args:
-        :service (str): boto3 service abbreviation ('ec2', 's3', etc)
-        :profile (str): profile_name of an iam user from local awscli config
-    Returns:
-        TYPE: boto3 client object
-    """
-    try:
-        if profile:
-            if profile == 'default':
-                client = boto3.client(service, region_name=region)
-            else:
-                session = boto3.Session(profile_name=profile)
-                client = session.client(service, region_name=region)
-        else:
-            client = boto3.client(service, region_name=region)
-    except ClientError as e:
-        logger.exception(
-            "%s: IAM user or role not found (Code: %s Message: %s)" %
-            (inspect.stack()[0][3], e.response['Error']['Code'],
-             e.response['Error']['Message']))
-        raise
-    except ProfileNotFound:
-        msg = (
-            '%s: The profile (%s) was not found in your local config. Exit.' %
-            (inspect.stack()[0][3], profile))
-        stdout_message(msg, 'FAIL')
-        logger.warning(msg)
-        sys.exit(exit_codes['EX_NOUSER']['Code'])
-    return client
 
 
 def flattenjson(b, delim):
@@ -129,37 +95,78 @@ def retrieve_json(account, profilename, r):
     return container
 
 
-def init_generator():
+def options(parser, help_menu=False):
+    """
+    Summary:
+        parse cli parameter options
+    Returns:
+        TYPE: argparse object, parser argument set
+    """
+    parser.add_argument("-p", "--profile", nargs='?', default="default",
+                              required=True, help="type (default: %(default)s)")
+    parser.add_argument("-r", "--region", nargs='?', required=True)
+    parser.add_argument("-f", "--filepath", nargs='?', required=False)
+    parser.add_argument("-d", "--debug", dest='debug', action='store_true', required=False)
+    return parser.parse_args()
+
+
+def init():
+
+    parser = argparse.ArgumentParser(add_help=True, description="csv_generator help:")
+
+    try:
+        args = options(parser)
+    except Exception as e:
+        stdout_message(str(e), 'ERROR')
+        sys.exit(exit_codes['EX_OK']['Code'])
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(exit_codes['EX_OK']['Code'])
 
     # account info
-    region = 'eu-west-1'
-    profile = 'gcreds-phht-gen-ra1-pr'
-    account_id, account_name = get_account_info(profile=profile)
+    account_id, account_name = get_account_info(profile=args.profile)
+
+    # file info
     output_fname = now + '_snapshots-' + account_name + '.csv'
+    if args.path:
+        if args.path.endswith('/'):
+            path = '/'.join(args.path.split('/')[:-1])
+        else:
+            path = args.path
+        output_filepath = path + '/' + output_fname
+    else:
+        output_filepath = os.environ['HOME'] + '/Downloads/' + output_fname
 
     # pull data from aws
-    data_list = retrieve_json(account=account_id, profilename=profile, r=region)
+    data_list = retrieve_json(account=account_id, profilename=args.profile, r=args.region)
 
     # pdb.set_trace()
     # column headers for each row of csv data
     columns = [x for x in data_list[0]]
+    try:
+        # create csv file
+        with open(output_filepath, 'w') as out_file:
+            # csv writer object
+            csv_w = csv.writer(out_file)
 
-    # create csv file
-    with open(output_fname, 'w') as out_file:
-        # csv writer object
-        csv_w = csv.writer(out_file)
+            # write columns in first row
+            csv_w.writerow(columns)
 
-        # write columns in first row
-        csv_w.writerow(columns)
-
-        # iterate thru dictionaries, writing 1 per row
-        for row in data_list:
-            csv_w.writerow(row.values())
-
-    return True
+            # iterate thru dictionaries, writing 1 per row
+            for row in data_list:
+                csv_w.writerow(row.values())
+    except OSError as e:
+        msg = 'Could not write to file or other OS-level error was encountered.'
+        logger.exception('%s: %s' % (inspect.stack()[0][3], msg, str(e)))
+    except Exception as e:
+        logger.exception(
+            '%s: Problem when creating csv file. (Code: %s)' %
+            (inspect.stack()[0][3], str(e)))
+    return output_filepath
 
 
 if __name__ == '__main__':
-    r = init_generator()
-    logger.info('Response is: %s' % r)
+    file_created = init()
+    logger.info('SUCCESS: Created csv file %s' % file_created)
     sys.exit(0)
