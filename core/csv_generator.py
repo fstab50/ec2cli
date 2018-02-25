@@ -25,7 +25,6 @@ Dependencies:
 import os
 import sys
 import datetime
-import json
 import csv
 import pdb
 import argparse
@@ -44,7 +43,7 @@ from _version import __version__
 # globals
 logger = loggers.getLogger(__version__)
 now = datetime.datetime.now().strftime('%Y-%m-%d')
-
+cur_dir = os.path.dirname(os.path.realpath(__file__))    # location of this script
 
 def flattenjson(b, delim):
     val = {}
@@ -129,7 +128,7 @@ def init():
 
     # file info
     output_fname = now + '_snapshots-' + account_name + '.csv'
-    if args.path:
+    if args.filepath:
         if args.path.endswith('/'):
             path = '/'.join(args.path.split('/')[:-1])
         else:
@@ -168,5 +167,6 @@ def init():
 
 if __name__ == '__main__':
     file_created = init()
+    stdout_message('SUCCESS: Created csv file %s' % file_created, 'INFO')
     logger.info('SUCCESS: Created csv file %s' % file_created)
     sys.exit(0)

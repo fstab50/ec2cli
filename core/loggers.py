@@ -11,7 +11,8 @@ import logging
 
 # globals
 pkg = 'ec2cli'
-pkg_root = '/'.join(os.getcwd().split('/')[:-1])
+cur_dir = os.path.dirname(os.path.realpath(__file__))
+pkg_root = '/'.join(cur_dir.split('/')[:-1])
 log_file = pkg + '.log'
 log_path = pkg_root + '/logs/' + log_file
 
