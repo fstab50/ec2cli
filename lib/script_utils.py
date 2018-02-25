@@ -24,11 +24,17 @@ import re
 import logging
 import inspect
 from pygments import highlight, lexers, formatters
-from keyup.colors import Colors
-from keyup import __version__
+
+# aws
+import boto3
+from botocore.exceptions import ClientError
+
+# project
+from colors import Colors
+from _version import VERSION
 
 
-logger = logging.getLogger(__version__)
+logger = logging.getLogger(VERSION)
 logger.setLevel(logging.INFO)
 
 
@@ -140,6 +146,47 @@ def debug_mode(header, data_object, debug=False, halt=False):
         if halt:
             sys.exit(0)
     return True
+
+
+def get_account_info(account_profile=None):
+    """
+    Summary:
+        Queries AWS iam and sts services to discover account id information
+        in the form of account name and account alias (if assigned)
+
+    Returns:
+        TYPE: tuple
+
+    Example usage:
+
+    >>> account_number, account_name = lambda_utils.get_account_info()
+    >>> print(account_number, account_name)
+    103562488773 tooling-prod
+
+    """
+    if account_profile:
+        session = boto3.Session(profile_name=account_profile)
+        sts_client = session.client('sts')
+        iam_client = session.client('iam')
+    else:
+        sts_client = boto3.client('sts')
+        iam_client = boto3.client('iam')
+
+    try:
+        number = sts_client.get_caller_identity()['Account']
+        name = iam_client.list_account_aliases()['AccountAliases'][0]
+
+    except IndexError as e:
+        name = '<no_alias_assigned>'
+        logger.info('Error: %s. No account alias defined. account_name set to %s' % (e, name))
+        return (number, name)
+    except ClientError as e:
+        logger.warning(
+            "%s: problem retrieving caller identity (Code: %s Message: %s)" %
+            (inspect.stack()[0][3], e.response['Error']['Code'], e.response['Error']['Message'])
+            )
+        raise e
+    return (number, name)
 
 
 def get_os(detailed=False):
