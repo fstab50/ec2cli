@@ -27,6 +27,7 @@ import sys
 import datetime
 import json
 import csv
+import pdb
 import argparse
 import inspect
 
@@ -35,14 +36,14 @@ import boto3
 from botocore.exceptions import ClientError, ProfileNotFound
 
 # pkg
-from script_utils import stdout_message
+from script_utils import stdout_message, get_account_info
 import loggers
 from _version import VERSION
 
-
-
+# globals
 logger = loggers.getLogger(VERSION)
-output_fname =
+now = datetime.datetime.now().strftime('%Y-%m-%d')
+output_fname = now + '_test.csv'
 
 
 def boto3_session(service, region, profile=None):
@@ -95,7 +96,7 @@ def flattenjson(b, delim):
 
 def retrieve_json(account, profilename, r):
     """ requests json data from aws """
-    client = boto3_session(service='ec2', region=r, profile=profile)
+    client = boto3_session(service='ec2', region=r, profile=profilename)
 
     paginator = client.get_paginator('describe_snapshots')
     response_iterator = paginator.paginate(
@@ -103,38 +104,54 @@ def retrieve_json(account, profilename, r):
             PaginationConfig={'PageSize': 100}
         )
     # page thru, retrieve all snapshots
-    container, json_data = [], {}
+    container = []
     for page in response_iterator:
-        #print(page['Snapshots'])
         for snapshot_dict in page['Snapshots']:
-             container.append(
-                 {
-                     'Description': snapshot_dict['Description'],
-                     'Encrypted': snapshot_dict['Encrypted'],
-                     'OwnerId': snapshot_dict['OwnerId'],
-                     'Progress': snapshot_dict['Progress']
-                 }
-             )
+            container.append(
+                {
+                    'Description': snapshot_dict['Description'],
+                    'Encrypted': snapshot_dict['Encrypted'],
+                    'OwnerId': snapshot_dict['OwnerId'],
+                    'Progress': snapshot_dict['Progress'],
+                    'SnapshotId': snapshot_dict['SnapshotId'],
+                    'StartTime': snapshot_dict['StartTime'].strftime('%Y-%m-%dT%H:%M'),
+                    'State': snapshot_dict['State'],
+                    'VolumeID': snapshot_dict['VolumeId'],
+                    'VolumeSize': snapshot_dict['VolumeSize'],
+                }
+            )
     return container
 
 
 def init_generator():
-    data_list = retrieve_json()
+    # account info
+    account_id, account_name = get_account_info()
 
-    input = map( lambda x: flattenjson( x, "__" ), input )
+    profile = 'default'
+    region = 'us-east-2'
+
+    # pull data from aws
+    data_list = retrieve_json(account=account_id, profilename=profile, r=region)
+    print(json.dumps(data_list, indent=4))
+
+    # pdb.set_trace()
 
     columns = [x for x in data_list[0]]
 
 
-    with open( output_fname, 'wb' ) as out_file:
-        csv_w = csv.writer( out_file )
-        csv_w.writerow( columns )
+    with open(output_fname, 'w') as out_file:
+        csv_w = csv.writer(out_file)
 
-        for i_r in input:
-            csv_w.writerow( map( lambda x: i_r.get( x, "" ), columns ) )
+        # write columns in first row
+        csv_w.writerow(columns)
+
+        for row in data_list:
+            csv_w.writerow(row.values())
+
     return True
 
 
 if __name__ == '__main__':
     r = init_generator()
-    logger.info('')
+    logger.info('Response is: %s' % r)
+    sys.exit(0)
