@@ -34,6 +34,7 @@ system=$(uname)
 
 # source lib deps
 source $pkg_path/core/_version.py        # package VERSION global var
+VERSION=$__version__
 
 # error codes
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
