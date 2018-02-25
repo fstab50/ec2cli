@@ -31,10 +31,11 @@ from botocore.exceptions import ClientError
 
 # project
 from colors import Colors
-from _version import VERSION
+from oscodes_unix import exit_codes
+from _version import __version__
 
 
-logger = logging.getLogger(VERSION)
+logger = logging.getLogger(__version__)
 logger.setLevel(logging.INFO)
 
 
@@ -63,6 +64,41 @@ def bool_assignment(arg, patterns=None):
                     return func(arg)
     except Exception as e:
         raise e
+
+
+def boto3_session(service, region, profile=None):
+    """
+    Summary:
+        Establishes boto3 sessions, client
+    Args:
+        :service (str): boto3 service abbreviation ('ec2', 's3', etc)
+        :profile (str): profile_name of an iam user from local awscli config
+    Returns:
+        TYPE: boto3 client object
+    """
+    try:
+        if profile:
+            if profile == 'default':
+                client = boto3.client(service, region_name=region)
+            else:
+                session = boto3.Session(profile_name=profile)
+                client = session.client(service, region_name=region)
+        else:
+            client = boto3.client(service, region_name=region)
+    except ClientError as e:
+        logger.exception(
+            "%s: IAM user or role not found (Code: %s Message: %s)" %
+            (inspect.stack()[0][3], e.response['Error']['Code'],
+             e.response['Error']['Message']))
+        raise
+    except ProfileNotFound:
+        msg = (
+            '%s: The profile (%s) was not found in your local config. Exit.' %
+            (inspect.stack()[0][3], profile))
+        stdout_message(msg, 'FAIL')
+        logger.warning(msg)
+        sys.exit(exit_codes['EX_NOUSER']['Code'])
+    return client
 
 
 def convert_strtime_datetime(dt_str):
