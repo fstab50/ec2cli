@@ -12,22 +12,18 @@ import logging
 # globals
 pkg = 'ec2cli'
 pkg_root = '/'.join(os.getcwd().split('/')[:-1])
-logfilename = pkg + '.log'
-log_path = pkg_root + '/' + log_filename
+log_file = pkg + '.log'
+log_path = pkg_root + '/' + log_file
 
 # log format - file
 file_format = '%(asctime)s - %(pathname)s - %(name)s - [%(levelname)s]: %(message)s'
 asctime_format = "%Y-%m-%d %H:%M:%S"
 
-# objects
-logger = logging.getLogger(*args, **kwargs)
-logger.propagate = False
-
 
 def getLogger(*args, **kwargs):
     """ std file handler logger """
-    #logger = logging.getLogger(*args, **kwargs)
-    #logger.propagate = False
+    logger = logging.getLogger(*args, **kwargs)
+    logger.propagate = False
 
     try:
         if not logger.handlers:
