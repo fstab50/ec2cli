@@ -13,7 +13,7 @@ import logging
 pkg = 'ec2cli'
 pkg_root = '/'.join(os.getcwd().split('/')[:-1])
 log_file = pkg + '.log'
-log_path = pkg_root + '/' + log_file
+log_path = pkg_root + '/logs/' + log_file
 
 # log format - file
 file_format = '%(asctime)s - %(pathname)s - %(name)s - [%(levelname)s]: %(message)s'
