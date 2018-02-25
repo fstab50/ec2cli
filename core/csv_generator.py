@@ -107,6 +107,12 @@ def retrieve_json(account, profilename, r):
     container = []
     for page in response_iterator:
         for snapshot_dict in page['Snapshots']:
+            # preprocess tags
+            if snapshot_dict.get('Tags'):
+                tags = snapshot_dict['Tags']
+            else:
+                tags = []
+
             container.append(
                 {
                     'Description': snapshot_dict['Description'],
@@ -118,33 +124,36 @@ def retrieve_json(account, profilename, r):
                     'State': snapshot_dict['State'],
                     'VolumeID': snapshot_dict['VolumeId'],
                     'VolumeSize': snapshot_dict['VolumeSize'],
+                    'Tags': tags
                 }
             )
     return container
 
 
 def init_generator():
-    # account info
-    account_id, account_name = get_account_info()
 
-    profile = 'default'
+    # account info
     region = 'us-east-2'
+    profile = 'default'
+    account_id, account_name = get_account_info(profile=profile)
 
     # pull data from aws
     data_list = retrieve_json(account=account_id, profilename=profile, r=region)
     print(json.dumps(data_list, indent=4))
 
     # pdb.set_trace()
-
+    # column headers for each row of csv data
     columns = [x for x in data_list[0]]
 
-
+    # create csv file
     with open(output_fname, 'w') as out_file:
+        # csv writer object
         csv_w = csv.writer(out_file)
 
         # write columns in first row
         csv_w.writerow(columns)
 
+        # iterate thru dictionaries, writing 1 per row
         for row in data_list:
             csv_w.writerow(row.values())
 
