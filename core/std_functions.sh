@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
 
+
 function print_header(){
     ## print formatted report header ##
     local title="$1"
     local width="$2"
     local reportfile="$3"
     #
-    printf "%-10s %*s" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
+    if (( $(tput cols) > 280 )); then
+        printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
+    else
+        printf "%-10s %*s" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
+    fi
     echo -e "${bodytext}" >> $reportfile
     echo -ne ${title} >> $reportfile
     echo -e "${frame}" >> $reportfile
