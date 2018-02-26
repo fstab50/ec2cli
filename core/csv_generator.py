@@ -129,10 +129,10 @@ def init():
     # file info
     output_fname = now + '_snapshots-' + account_name + '.csv'
     if args.filepath:
-        if args.path.endswith('/'):
-            path = '/'.join(args.path.split('/')[:-1])
+        if args.filepath.endswith('/'):
+            path = '/'.join(args.filepath.split('/')[:-1])
         else:
-            path = args.path
+            path = args.filepath
         output_filepath = path + '/' + output_fname
     else:
         output_filepath = os.environ['HOME'] + '/Downloads/' + output_fname
