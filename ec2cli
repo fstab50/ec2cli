@@ -272,7 +272,7 @@ function environment_info(){
 
     elif [[ $dep == "jq" ]]; then
         version_info=$(jq --version 2>&1)
-        std_message "JSON parser detected: ${title}$(echo $version_info)${reset}" $msg_header | indent04
+        std_message "parser detected: ${title}$(echo $version_info)${reset}" $msg_header | indent04
 
     else
         std_logger "[$msg_header]: detected: $($prog --version | head -1)"
@@ -2442,7 +2442,7 @@ function parse_parameters(){
                     std_message "${orange}ec2cli${bodytext}, version ${title}$VERSION${bodytext}" INFO | indent04
                     echo -e "\n${bodytext}Amazon command line interface (awscli)${bodytext}:\n" | indent04
                     environment_info "INFO" "awscli"
-                    echo -e "\n${bodytext}Installed Json Parser:${bodytext}" | indent04
+                    echo -e "\n${bodytext}Installed JSON Parser:${bodytext}" | indent04
                     environment_info "INFO" "jq"
                     echo -e "\n${bodytext}Operating System:${bodytext}" | indent04
                     environment_info "INFO" "os"
