@@ -392,7 +392,7 @@ function ec2cli_precheck-windows(){
 		# RDP password not found, auto-login to windows \
 		# instances via RDP will fail when attempted
 		#
-		std_error_exit "REMOTE_RDP_PASSWD global environment variable not set. Login to RDP EC2 instances will fail. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+		std_warn "REMOTE_RDP_PASSWD global environment variable not set. Login to RDP EC2 instances will fail"
 	fi
 
     # check RDP for accessing windows instances from Linux
@@ -401,7 +401,7 @@ function ec2cli_precheck-windows(){
 		# RDP app not found, auto-login to windows \
 		# instances via RDP will fail when attempted
 		#
-		std_error_exit "rdesktop app not found. Login to RDP EC2 instances will fail. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+		std_warn "${BOLD}rdesktop${UNBOLD} app not found. Login to RDP EC2 instances will fail"
 	fi
     #
     # <-- end function ec2cli_precheck-windows -->
