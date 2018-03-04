@@ -11,6 +11,9 @@ E_BADARG=8                  # exit code if bad input parameter
 E_EXPIRED_CREDS=9           # exit code if temporary credentials no longer valid
 E_MISC=11                   # exit code if miscellaneous (unspecified) error
 
+#
+VERSION="1.3"
+
 
 function authenticated(){
     ## validates authentication using iam user or role ##
