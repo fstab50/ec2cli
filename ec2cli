@@ -32,6 +32,7 @@ pwd=$(pwd)
 ec2cli_log="$pkg_path/logs/ec2cli.log"
 host=$(hostname)
 system=$(uname)
+clear=$(which clear)
 
 # source lib deps
 source $pkg_path/core/_version.py        # package VERSION global var
@@ -1023,11 +1024,23 @@ function ec2cli_list_images(){
     local MAXCT         # array length
     local total_width="110"
     local sp="${frame}|${bodytext}"       # separator
+    declare -a REGIONS
     # print out numbered list of instances?
     if [[ $2 ]] && [[ $2 -eq 1 ]]; then NUMLIST=1; fi
-
+    #ALL_REGIONS='true'
     # retrieve json array
-    aws ec2 --profile $PROFILE describe-images --region $REGION --output json --owner self > .jsonimages.tmp
+    if [ "ALL_REGIONS" ]; then
+        # load array from local list of regions
+        REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        for region in ${REGIONS[@]}; do \
+            aws ec2 --profile $PROFILE describe-images \
+                --region $region --output json --owner self >> .jsonimages.tmp; done &
+        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        clear
+    else
+        aws ec2 --profile $PROFILE describe-images --region $REGION --output json --owner self > .jsonimages.tmp
+    fi
+
     ARR_IMAGEID=( $(jq -r ".Images[].ImageId" .jsonimages.tmp) )
     MAXCT=${#ARR_IMAGEID[*]}    # values in array
 
@@ -1604,13 +1617,19 @@ function ec2cli_list_snapshots(){
 
 function ec2cli_spinner(){
     # vars
-    local PROGRESSTXT="Please wait..."
+    local PROGRESSTXT
+    if [ ! "$1" ]; then
+        PROGRESSTXT="  Please wait..."
+    else
+        PROGRESSTXT="$1"
+    fi
     # visual progress marker function
     # http://stackoverflow.com/users/2869509/wizurd
     # vars
     local pid=$!
     local delay=0.1
     local spinstr='|/-\'
+    echo -e "\n\n"
     while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local temp=${spinstr#?}
         printf "\r$PROGRESSTXT[%c]  " "$spinstr"
@@ -1927,6 +1946,10 @@ function parse_command(){
         RESOURCEID=$COMMAND
         COMMAND="list"    # set to default, resource-id given instead of command
         return
+    elif [ "$COMMAND" = "--all" ]; then
+        "ALL_REGIONS"="true"
+        COMMAND="list"
+        return
     elif [ ! $COMMAND ]; then
         # command blank
         std_warn "You must provide a command"
@@ -2011,6 +2034,10 @@ function parse_parameters(){
                     fi
                     shift 2
                     ;;
+                --all)
+                    ALL_REGIONS="ALL"
+                    shift 1
+                    ;;
                 -a | --images | --ami)
                     #
                     # display details of Amazon Machine Images for region
@@ -2035,7 +2062,7 @@ function parse_parameters(){
                             create)
                                 FUNCTION_CALL="ec2cli_create_images"
                                 ;;
-                            *)
+                            attach | run)
                                 std_message "Command ($2) not valid with option ${BOLD}$1${UNBOLD}" INFO
                                 ;;
                         esac
