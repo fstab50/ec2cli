@@ -93,13 +93,15 @@ function ec2cli_help(){
 
               $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
+                    [-A | --all ]
                     [-p | --profile <PROFILENAME> ]
                     [-V | --version ]
                     [-d | ---debug  ]
                     [-h | --help    ]
 
       ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
-          ${options}-p${bodytext},${options} --profile${bodytext} (str) Profile name of an IAM user from the local awscli
+          ${options}-A${bodytext},${options} --all${bodytext}:          Retrieve resources all AWS Regions combined
+          ${options}-p${bodytext},${options} --profile${bodytext}       Profile name of an IAM user from the local awscli
                               config for which you want to rotate access keys
           ${options}-V${bodytext},${options} --version${bodytext}:      Print package version, dependency versions
           ${options}-d${bodytext},${options} --debug${bodytext}:        Enable verbose log output, enhance stdout messaging
@@ -2044,7 +2046,7 @@ function parse_parameters(){
                     fi
                     shift 2
                     ;;
-                --all)
+                -A | --all)
                     ALL_REGIONS="true"
                     shift 1
                     ;;
