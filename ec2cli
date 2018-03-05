@@ -93,7 +93,7 @@ function ec2cli_help(){
 
               $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
-                    [-A | --all ]
+                    [-A | --all     ]
                     [-p | --profile <PROFILENAME> ]
                     [-V | --version ]
                     [-d | ---debug  ]
