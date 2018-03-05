@@ -94,10 +94,10 @@ function ec2cli_help(){
               $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
                     [-A | --all     ]
-                    [-p | --profile <PROFILENAME> ]
-                    [-V | --version ]
-                    [-d | ---debug  ]
+                    [-d | --debug   ]
                     [-h | --help    ]
+                    [-p | --profile <value> ]
+                    [-V | --version ]
 
       ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
           ${options}-A${bodytext},${options} --all${bodytext}:          Retrieve resources all AWS Regions combined
