@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+#
+#   colors.sh module | std colors for bash
+#
+
+
+VERSION="1.3"
+
+
 # Formatting
 blue=$(tput setaf 4)
 cyan=$(tput setaf 6)
@@ -10,7 +18,7 @@ white=$(tput setaf 7)
 yellow=$(tput setaf 3)
 orange='\033[38;5;95;38;5;214m'
 gray=$(tput setaf 008)
-wgray='\033[38;5;95;38;5;251m'          # white-gray
+wgray='\033[38;5;95;38;5;250m'          # white-gray
 lgray='\033[38;5;95;38;5;245m'          # light gray
 dgray='\033[38;5;95;38;5;8m'            # dark gray
 reset=$(tput sgr0)
@@ -46,7 +54,7 @@ ansi_orange=$(echo -e ${orange})        # use for ansi escape color codes
 # --- declarations  ------------------------------------------------------------
 
 
-# indent
+# indent, x spaces
 function indent02() { sed 's/^/  /'; }
 function indent04() { sed 's/^/    /'; }
 function indent10() { sed 's/^/          /'; }
