@@ -56,11 +56,11 @@ source $pkg_path/std_functions.sh
 
 function precheck(){
     ## validates presence of instance types file, gen if not  ##
-    if [ ! -e $config_file ]; then
-        bash $pkg_path/retrieve-instance-types.sh
+    if [ ! -e $config_dir/types.ec2 ]; then
+        bash $pkg_path/instancetypes.sh
     else
         # check age of file, if older than x age, renew it
-        bash $pkg_path/retrieve-instance-types.sh
+        bash $pkg_path/instancetypes.sh
     fi
 }
 
@@ -75,12 +75,12 @@ function load_arrays(){
     declare -a X_TYPE
     declare -a MISC_TYPE
     #
-    C_TYPE=$(grep c[1-9].* ~/.config/ec2cli/types.log | grep -v cc)
-    M_TYPE=$(grep m[1-9].* ~/.config/ec2cli/types.log)
-    G_TYPE=$(grep p[1-9].* ~/.config/ec2cli/types.log | grep -v cg)
-    P_TYPE=$(grep p[1-9].* ~/.config/ec2cli/types.log)
-    t_TYPE=$(grep t[1-9].* ~/.config/ec2cli/types.log)
-    X_TYPE=$(grep x[1-9].* ~/.config/ec2cli/types.log)
+    C_TYPE=$(grep c[1-9].* $config_dir/types.ec2 | grep -v cc)
+    M_TYPE=$(grep m[1-9].* $config_dir/types.ec2)
+    G_TYPE=$(grep p[1-9].* $config_dir/types.ec2 | grep -v cg)
+    P_TYPE=$(grep p[1-9].* $config_dir/types.ec2)
+    t_TYPE=$(grep t[1-9].* $config_dir/types.ec2)
+    X_TYPE=$(grep x[1-9].* $config_dir/types.ec2)
 
 }
 
