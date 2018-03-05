@@ -35,6 +35,8 @@ system=$(uname)
 # source lib deps
 source $pkg_path/core/_version.py        # package VERSION global var
 VERSION=$__version__
+source $pkg_path/core/colors.sh
+#source $pkg_path/core/std_functions.sh
 
 # error codes
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
@@ -58,38 +60,6 @@ FLOAT_DECIMAL="1"             # number of floating point decimal places to outpu
 #
 # Formatting
 #
-blue=$(tput setaf 4)
-cyan=$(tput setaf 6)
-green=$(tput setaf 2)
-purple=$(tput setaf 5)
-red=$(tput setaf 1)
-white=$(tput setaf 7)
-yellow=$(tput setaf 3)
-orange='\033[38;5;95;38;5;214m'
-brightgreen='\033[38;5;95;38;5;46m'
-gray=$(tput setaf 008)
-wgray='\033[38;5;95;38;5;249m'          # white-gray
-lgray='\033[38;5;95;38;5;245m'          # light gray
-dgray='\033[38;5;95;38;5;8m'            # dark gray
-
-# bright colors
-brightblue='\033[38;5;51m'
-brightcyan='\033[0;36m'
-#brightgreen='\033[38;5;46m'
-brightyellow='\033[38;5;11m'
-brightyellow2='\033[38;5;95;38;5;226m'
-brightwhite='\033[38;5;15m'
-bluepurple='\033[38;5;68m'
-
-# ansi formatting
-bold='\u001b[1m'
-underline='\u001b[4m'
-
-# reset colors -- all
-reset=$(tput sgr0)
-#
-BOLD=`tput bold`
-UNBOLD=`tput sgr0`
 
 # Initialize ansi colors
 title=$(echo -e ${bold}${white})
@@ -108,14 +78,6 @@ backcolor=$(echo -e ${brightgreen})
 # system functions  ------------------------------------------------------
 #
 
-
-# indent
-function indent02() { sed 's/^/  /'; }
-function indent04() { sed 's/^/    /'; }
-function indent10() { sed 's/^/          /'; }
-function indent15() { sed 's/^/               /'; }
-function indent18() { sed 's/^/                  /'; }
-function indent25() { sed 's/^/                         /'; }
 
 function ec2cli_help(){
   cat <<EOM
@@ -438,47 +400,6 @@ function convert_time(){
     #
 }
 
-function convert_time_months(){
-    # time format conversion (http://stackoverflow.com/users/1030675/choroba)
-    num=$1
-    min=0
-    hour=0
-    day=0
-    mo=0
-    if((num>59));then
-        ((sec=num%60))
-        ((num=num/60))
-        if((num>59));then
-            ((min=num%60))
-            ((num=num/60))
-            if((num>23));then
-                ((hour=num%24))
-                ((day=num/24))
-                ((num=num/24))
-                if((num>30)); then
-                  ((day=num%31))
-                  ((mo=num/30))
-              else
-                  ((day=num))
-              fi
-            else
-                ((hour=num))
-            fi
-        else
-            ((min=num))
-        fi
-    else
-        ((sec=num))
-    fi
-    if (( $mo > 0 )); then
-        echo "$mo"m,"$day"d
-    else
-        echo "$day"d,"$hour"h,"$min"m
-    fi
-    #
-    # <-- end function convert_time -->
-    #
-}
 
 function adjust_units(){
     ## adjusts size and units of disk based on inc of 1024 ##
