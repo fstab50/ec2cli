@@ -890,7 +890,7 @@ function ec2cli_list_instances(){
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-instances \
-                --region $region --output json > .jsonoutput.tmp; done &
+                --region $region --output json >> .jsonoutput.tmp; done &
         ec2cli_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
