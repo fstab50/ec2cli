@@ -885,7 +885,17 @@ function ec2cli_list_instances(){
     local total_width="145" # max width of cli output
 
     # pull json info, all instances in region
-    aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > .jsonoutput.tmp
+    if [ $ALL_REGIONS ]; then
+        # load array from local list of regions
+        REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        for region in ${REGIONS[@]}; do \
+            aws ec2 --profile $PROFILE describe-instances \
+                --region $region --output json > .jsonoutput.tmp; done &
+        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        clear
+    else
+        aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > .jsonoutput.tmp
+    fi
 
     # load fields into respective arrays
     ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
@@ -1027,9 +1037,9 @@ function ec2cli_list_images(){
     declare -a REGIONS
     # print out numbered list of instances?
     if [[ $2 ]] && [[ $2 -eq 1 ]]; then NUMLIST=1; fi
-    #ALL_REGIONS='true'
+
     # retrieve json array
-    if [ "ALL_REGIONS" ]; then
+    if [ $ALL_REGIONS ]; then
         # load array from local list of regions
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
         for region in ${REGIONS[@]}; do \
@@ -1946,7 +1956,7 @@ function parse_command(){
         RESOURCEID=$COMMAND
         COMMAND="list"    # set to default, resource-id given instead of command
         return
-    elif [ "$COMMAND" = "--all" ]; then
+    elif [ "$COMMAND" == "--all" ]; then
         "ALL_REGIONS"="true"
         COMMAND="list"
         return
@@ -2035,7 +2045,7 @@ function parse_parameters(){
                     shift 2
                     ;;
                 --all)
-                    ALL_REGIONS="ALL"
+                    ALL_REGIONS="true"
                     shift 1
                     ;;
                 -a | --images | --ami)
@@ -2089,7 +2099,7 @@ function parse_parameters(){
                             list)
                                 FUNCTION_CALL="ec2cli_list_subnets"
                                 ;;
-                            *)
+                            attach | create | run)
                                 std_message "Command ($2) not valid with option ${BOLD}$1${UNBOLD}" INFO
                                 ;;
                         esac
@@ -2146,7 +2156,7 @@ function parse_parameters(){
                             run)
                                 FUNCTION_CALL="ec2cli_run_instances"
                                 ;;
-                            *)
+                            attach | create)
                                 std_message "Command ($2) not valid with option ${BOLD}$1${UNBOLD}" INFO
                                 ;;
                         esac
