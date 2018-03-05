@@ -28,6 +28,7 @@
 #
 pkg=$(basename $0)
 pkg_path=$(cd $(dirname $0); pwd -P)
+pwd=$(pwd)
 ec2cli_log="$pkg_path/logs/ec2cli.log"
 host=$(hostname)
 system=$(uname)
@@ -1539,10 +1540,12 @@ function ec2cli_list_snapshots(){
     local total_width=$(( $(tput cols) - 4 ))
 
     if [ "$export" = "true" ]; then
-        echo -e "\nExport Data to Comma Separated Value Format -- ${title}Snapshots${bodytext}" | indent04
-        read -p "Export Location [ ~/Downloads ]: " choice | indent04
+        echo -e "\nExport Data to Comma Separated Value Format -- ${title}Snapshots${bodytext}\n" | indent04
+        read -p "    Export File Location? [ $pwd ]: " choice | indent04
         if [ -z $choice ]; then
-            path="$HOME/Downloads"
+            path="$pwd"
+        elif [ "$choice" = "q" ]; then
+            return 0
         else
             path="$choice"
         fi
