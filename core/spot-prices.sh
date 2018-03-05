@@ -68,18 +68,28 @@ function precheck(){
 function load_arrays(){
     ## loads array for each instance type family ##
     declare -a C_TYPE
+    declare -a D_TYPE
+    declare -a F_TYPE
     declare -a G_TYPE
+    declare -a I_TYPE
+    declare -a H_TYPE
     declare -a M_TYPE
     declare -a P_TYPE
+    declare -a R_TYPE
     declare -a T_TYPE
     declare -a X_TYPE
     declare -a MISC_TYPE
     #
     C_TYPE=$(grep c[1-9].* $config_dir/types.ec2 | grep -v cc)
+    D_TYPE=$(grep d[1-9].* $config_dir/types.ec2)
+    F_TYPE=$(grep f[1-9].* $config_dir/types.ec2)
+    G_TYPE=$(grep g[1-9].* $config_dir/types.ec2 | grep -v cg)
+    H_TYPE=$(grep h[1-9].* $config_dir/types.ec2)
+    I_TYPE=$(grep i[1-9].* $config_dir/types.ec2)
     M_TYPE=$(grep m[1-9].* $config_dir/types.ec2)
-    G_TYPE=$(grep p[1-9].* $config_dir/types.ec2 | grep -v cg)
     P_TYPE=$(grep p[1-9].* $config_dir/types.ec2)
-    t_TYPE=$(grep t[1-9].* $config_dir/types.ec2)
+    R_TYPE=$(grep r[1-9].* $config_dir/types.ec2 | grep -v cr)
+    T_TYPE=$(grep t[1-9].* $config_dir/types.ec2)
     X_TYPE=$(grep x[1-9].* $config_dir/types.ec2)
 
 }
@@ -298,61 +308,22 @@ rm ./.type.tmp
 #
 
 # build InstanceType array
+load_arrays
 
-# general purpose
-SIZE[0]='m3.medium'
-SIZE[1]='m4.large'
-SIZE[2]='m4.xlarge'
-SIZE[3]='m4.2xlarge'
-SIZE[4]='m4.4xlarge'
 # set max count based on # of entries in the previous section
-MAXCT=${#SIZE[*]}
-
-# 3rd gen compute optimized
-SIZE[5]='c3.large'
-SIZE[6]='c3.xlarge'
-SIZE[7]='c3.2xlarge'
-SIZE[8]='c3.4xlarge'
-SIZE[9]='c3.8xlarge'
-
-# mem optimized
-SIZE[10]='r3.large'
-SIZE[11]='r3.xlarge'
-SIZE[12]='r3.2xlarge'
-SIZE[13]='r3.4xlarge'
-SIZE[14]='r3.8xlarge'
-
-# storage optimized
-SIZE[15]='i2.xlarge'
-SIZE[16]='i2.2xlarge'
-SIZE[17]='i2.4xlarge'
-SIZE[18]='i2.8xlarge'
-SIZE[19]='hs1.8xlarge'
-
-# 4th gen compute optimized
-SIZE[20]='c4.large'
-SIZE[21]='c4.xlarge'
-SIZE[22]='c4.2xlarge'
-SIZE[23]='c4.4xlarge'
-SIZE[24]='c4.8xlarge'
+MAXCT=${#M_TYPE[*]}
 
 set counters
-i=0		# general purpose
-j=$(( $i+5 ))	# 3rd gen compute optimized
-k=$(( $i+10 ))	# mem optimized
-l=$(( $i+15 ))	# storage optimized
-m=$(( $i+20 ))  # 4th gen compute optimized
-
+i=1
+c=0; f=0; g=0; m=0; I=0
+j=$(( $i + 10 ))
+j=$(( $i + 10 ))
 # output choices
 while (( i < $MAXCT ))
 do
-        echo "($i): ""${SIZE[$i]}" "($j): ""${SIZE[$j]}" "($k): ""${SIZE[$k]}" "($l): ""${SIZE[$l]}" \
-        "($m): ""${SIZE[$m]}" >> data.output
-        i=$(( $i+1 ))
-        j=$(( $j+1 ))
-        k=$(( $k+1 ))
-        l=$(( $l+1 ))
-	m=$(( $m+1 ))
+    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" \
+        "($m): ""${M_TYPE[$i]}" >> data.output
+    i=$(( $i+1 ))
 done
 
 # print output
