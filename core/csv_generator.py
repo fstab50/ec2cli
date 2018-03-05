@@ -45,6 +45,7 @@ logger = loggers.getLogger(__version__)
 now = datetime.datetime.now().strftime('%Y-%m-%d')
 cur_dir = os.path.dirname(os.path.realpath(__file__))    # location of this script
 
+
 def flattenjson(b, delim):
     val = {}
     for i in b.keys():
@@ -58,7 +59,42 @@ def flattenjson(b, delim):
     return val
 
 
-def retrieve_json(account, profilename, r):
+def instance_json(account, profilename, r):
+    """ requests json data from aws """
+    client = boto3_session(service='ec2', region=r, profile=profilename)
+
+    paginator = client.get_paginator('describe_instances')
+    response_iterator = paginator.paginate(
+            PaginationConfig={'PageSize': 100}
+        )
+    # page thru, retrieve all snapshots
+    container = []
+    for page in response_iterator:
+        for _dict in page['Instances']:
+            # preprocess tags
+            if _dict.get('Tags'):
+                tags = {x['Key']:x['Value'] for x in _dict['Tags']}
+            else:
+                tags = 'None'
+
+            container.append(
+                {
+                    'AWS Account': _dict['OwnerId'],
+                    'SnapshotId': _dict['SnapshotId'],
+                    'Description': _dict['Description'],
+                    'StartTime': _dict['StartTime'].strftime('%Y-%m-%dT%H:%M'),
+                    'Encrypted': _dict['Encrypted'],
+                    'Progress': _dict['Progress'],
+                    'State': _dict['State'],
+                    'VolumeID': _dict['VolumeId'],
+                    'VolumeSize': _dict['VolumeSize'],
+                    'Tags': tags
+                }
+            )
+    return container
+
+
+def snapshot_json(account, profilename, r):
     """ requests json data from aws """
     client = boto3_session(service='ec2', region=r, profile=profilename)
 
@@ -103,6 +139,8 @@ def options(parser, help_menu=False):
     """
     parser.add_argument("-p", "--profile", nargs='?', default="default",
                               required=True, help="type (default: %(default)s)")
+    parser.add_argument("-t", "--type", nargs='?', default="snapshots",
+                              required=True, help="type (default: %(default)s)")
     parser.add_argument("-r", "--region", nargs='?', required=True)
     parser.add_argument("-f", "--filepath", nargs='?', required=False)
     parser.add_argument("-d", "--debug", dest='debug', action='store_true', required=False)
@@ -128,6 +166,7 @@ def init():
 
     # file info
     output_fname = now + '_snapshots-' + account_name + '.csv'
+
     if args.filepath:
         if args.filepath.endswith('/'):
             path = '/'.join(args.filepath.split('/')[:-1])
@@ -135,10 +174,11 @@ def init():
             path = args.filepath
         output_filepath = path + '/' + output_fname
     else:
-        output_filepath = os.environ['HOME'] + '/Downloads/' + output_fname
+        output_filepath = os.environ['HOME'] + '/' + output_fname
 
     # pull data from aws
-    data_list = retrieve_json(account=account_id, profilename=args.profile, r=args.region)
+    if args.type == 'snapshots':
+        data_list = snapshot_json(account=account_id, profilename=args.profile, r=args.region)
 
     # pdb.set_trace()
     # column headers for each row of csv data

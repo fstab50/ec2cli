@@ -1550,7 +1550,7 @@ function ec2cli_list_snapshots(){
             path="$choice"
         fi
         std_message "Exporting snapshot data to comma separated value (csv) file." "INFO" | indent04
-        python3 $pkg_path/core/csv_generator.py --profile $PROFILE --region $REGION --filepath $path
+        python3 $pkg_path/core/csv_generator.py --profile $PROFILE --type snapshots --region $REGION --filepath $path
         return 0
     fi
     #
@@ -2469,6 +2469,9 @@ fi
 
 # reset terminal colors to original
 #xterm_reset
+
+# clean up
+rm -fr $pkg_path/core/__pycache__ || true
 
 #
 # END (MAIN) ------------------------------------------------------------------
