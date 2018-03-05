@@ -40,7 +40,7 @@ REGION=$AWS_DEFAULT_REGION    # set region from global env var
 
 
 # source config file location
-source pkgconfig.json
+config_dir=$(cat $pkg_path/pkgconfig.json | jq -r .config_dir)
 
 # source colors library
 source $pkg_path/colors.sh
