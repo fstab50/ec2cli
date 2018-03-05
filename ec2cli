@@ -35,9 +35,10 @@ system=$(uname)
 
 # source lib deps
 source $pkg_path/core/_version.py        # package VERSION global var
-VERSION=$__version__
 source $pkg_path/core/colors.sh
-#source $pkg_path/core/std_functions.sh
+source $pkg_path/core/std_functions.sh
+
+VERSION=$__version__
 
 # error codes
 E_DEPENDENCY=1                # exit code if missing required ec2cli dependency
@@ -371,36 +372,6 @@ function ec2cli_precheck-windows(){
     #
 }
 
-function convert_time(){
-    # time format conversion (http://stackoverflow.com/users/1030675/choroba)
-    num=$1
-    min=0
-    hour=0
-    day=0
-    if((num>59));then
-        ((sec=num%60))
-        ((num=num/60))
-        if((num>59));then
-            ((min=num%60))
-            ((num=num/60))
-            if((num>23));then
-                ((hour=num%24))
-                ((day=num/24))
-            else
-                ((hour=num))
-            fi
-        else
-            ((min=num))
-        fi
-    else
-        ((sec=num))
-    fi
-    echo "$day"d,"$hour"h,"$min"m
-    #
-    # <-- end function convert_time -->
-    #
-}
-
 
 function adjust_units(){
     ## adjusts size and units of disk based on inc of 1024 ##
@@ -421,32 +392,6 @@ function adjust_units(){
     echo "$adj_sum $unit"
 }
 
-function print_header(){
-    ## print formatted report header ##
-    local title="$1"
-    local width="$2"
-    local reportfile="$3"
-    #
-    printf "%-10s %*s" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
-    echo -e "${bodytext}" >> $reportfile
-    echo -ne ${title} >> $reportfile
-    echo -e "${frame}" >> $reportfile
-    printf '%*s' "$width" '' | tr ' ' _  | indent02 >> $reportfile
-    echo -e "${bodytext}" >> $reportfile
-}
-
-function print_footer(){
-    ## print formatted report footer ##
-    local footer="$1"
-    local width="$2"
-    #
-    printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02
-    echo -e "${bodytext}"
-    echo -ne $footer | indent10
-    echo -e "${frame}"
-    printf '%*s\n' "$width" '' | tr ' ' _ | indent02
-    echo -e "${bodytext}"
-}
 
 function ec2cli_attach_volume(){
     # vars
