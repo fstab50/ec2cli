@@ -39,6 +39,52 @@ E_BADARG=8                    # exit code if bad input parameter
 REGION=$AWS_DEFAULT_REGION    # set region from global env var
 
 
+# source config file location
+source pkgconfig.json
+
+# source colors library
+source $pkg_path/colors.sh
+
+# source standard functions
+source $pkg_path/std_functions.sh
+
+
+#
+# functions  ------------------------------------------------------------------
+#
+
+
+function precheck(){
+    ## validates presence of instance types file, gen if not  ##
+    if [ ! -e $config_file ]; then
+        bash $pkg_path/retrieve-instance-types.sh
+    else
+        # check age of file, if older than x age, renew it
+        bash $pkg_path/retrieve-instance-types.sh
+    fi
+}
+
+
+function load_arrays(){
+    ## loads array for each instance type family ##
+    declare -a C_TYPE
+    declare -a G_TYPE
+    declare -a M_TYPE
+    declare -a P_TYPE
+    declare -a T_TYPE
+    declare -a X_TYPE
+    declare -a MISC_TYPE
+    #
+    C_TYPE=$(grep c[1-9].* ~/.config/ec2cli/types.log | grep -v cc)
+    M_TYPE=$(grep m[1-9].* ~/.config/ec2cli/types.log)
+    G_TYPE=$(grep p[1-9].* ~/.config/ec2cli/types.log | grep -v cg)
+    P_TYPE=$(grep p[1-9].* ~/.config/ec2cli/types.log)
+    t_TYPE=$(grep t[1-9].* ~/.config/ec2cli/types.log)
+    X_TYPE=$(grep x[1-9].* ~/.config/ec2cli/types.log)
+
+}
+
+
 # < -- Start -->
 
 echo -e "\n"
@@ -61,16 +107,6 @@ else
         TMPDIR="/tmp"
         cd $TMPDIR
 fi
-
-#
-# functions  ------------------------------------------------------------------
-#
-
-# source colors library
-source $pkg_path/colors.sh
-
-# source standard functions
-source $pkg_path/std_functions.sh
 
 #
 # Validate Shell  ------------------------------------------------------------
