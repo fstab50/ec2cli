@@ -68,7 +68,7 @@ yellow=$(tput setaf 3)
 orange='\033[38;5;95;38;5;214m'
 brightgreen='\033[38;5;95;38;5;46m'
 gray=$(tput setaf 008)
-wgray='\033[38;5;95;38;5;251m'          # white-gray
+wgray='\033[38;5;95;38;5;249m'          # white-gray
 lgray='\033[38;5;95;38;5;245m'          # light gray
 dgray='\033[38;5;95;38;5;8m'            # dark gray
 
@@ -100,10 +100,9 @@ regions=$(echo -e ${bluepurple})
 url=$(echo -e ${underline}${brightblue})
 frame=$(echo -e ${brightgreen})
 bodytext=$(echo -e ${reset}${wgray})            # report body text; set to reset for native xterm
-bodytext=$(echo -e ${reset})            # report body text; set to reset for native xterm
+#bodytext=$(echo -e ${reset})            # report body text; set to reset for native xterm
 ast="$(echo -e ${brightyellow})"    # astrick
 backcolor=$(echo -e ${brightgreen})
-backcolor=${reset}
 
 #
 # system functions  ------------------------------------------------------
@@ -122,63 +121,63 @@ function ec2cli_help(){
   cat <<EOM
 
 
-  Help Contents
+  ${bodytext}Help Contents
   -------------
 
-      ${white}${BOLD}SYNOPSIS${UNBOLD}${reset}:
+      ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
 
-              $ ec2cli  [${options}OPTION${reset}]  ${resources}RESOURCE${reset}${backcolor}  [${cyan}COMMAND${reset}${backcolor}]  [${regions}REGIONCODE${reset}${backcolor}]
+              $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
                     [-p | --profile <PROFILENAME> ]
                     [-V | --version ]
                     [-d | ---debug  ]
                     [-h | --help    ]
 
-      ${white}${BOLD}OPTIONS${UNBOLD}${backcolor}:
-          ${options}-p${backcolor},${options} --profile${backcolor} (str) Profile name of an IAM user from the local awscli
+      ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
+          ${options}-p${bodytext},${options} --profile${bodytext} (str) Profile name of an IAM user from the local awscli
                               config for which you want to rotate access keys
-          ${options}-V${backcolor},${options} --version${backcolor}:      Print package version, dependency versions
-          ${options}-d${backcolor},${options} --debug${backcolor}:        Enable verbose log output, enhance stdout messaging
-          ${options}-h${backcolor},${options} --help${backcolor}:         Display help
+          ${options}-V${bodytext},${options} --version${bodytext}:      Print package version, dependency versions
+          ${options}-d${bodytext},${options} --debug${bodytext}:        Enable verbose log output, enhance stdout messaging
+          ${options}-h${bodytext},${options} --help${bodytext}:         Display help
 
-      ${white}${BOLD}RESOURCES${UNBOLD}${backcolor}:
-          ${resources}-a${backcolor},${resources} --images       ${backcolor}Amazon Machine Image (AMI) details (regional)
-          ${resources}-b${backcolor},${resources} --subnets      ${backcolor}Virtual Private Cloud (VPC) Subnet details (regional)
-          ${resources}-g${backcolor},${resources} --sgroups      ${backcolor}Security Group details (regional)
-          ${resources}-i${backcolor},${resources} --instances    ${backcolor}EC2 Instance details (regional)
-          ${resources}-n${backcolor},${resources} --vpc          ${backcolor}Virtual Private Cloud (VPC) Network details (regional)
-          ${resources}-N${backcolor},${resources} --network      ${backcolor}All network details (regional)
-          ${resources}-s${backcolor},${resources} --snapshots    ${backcolor}Snapshot details (regional)
-          ${resources}-P${backcolor},${resources} --spot         ${backcolor}Spot Market Pricing (all regions)
-          ${resources}-t${backcolor},${resources} --tags         ${backcolor}Tags details for EC2 sub services (all regions)
-          ${resources}-v${backcolor},${resources} --volumes      ${backcolor}Elastic Block Store (EBS) Volume details (regional)
+      ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
+          ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Image (AMI) details (regional)
+          ${resources}-b${bodytext},${resources} --subnets      ${bodytext}Virtual Private Cloud (VPC) Subnet details (regional)
+          ${resources}-g${bodytext},${resources} --sgroups      ${bodytext}Security Group details (regional)
+          ${resources}-i${bodytext},${resources} --instances    ${bodytext}EC2 Instance details (regional)
+          ${resources}-n${bodytext},${resources} --vpc          ${bodytext}Virtual Private Cloud (VPC) Network details (regional)
+          ${resources}-N${bodytext},${resources} --network      ${bodytext}All network details (regional)
+          ${resources}-s${bodytext},${resources} --snapshots    ${bodytext}Snapshot details (regional)
+          ${resources}-P${bodytext},${resources} --spot         ${bodytext}Spot Market Pricing (all regions)
+          ${resources}-t${bodytext},${resources} --tags         ${bodytext}Tags details for EC2 sub services (all regions)
+          ${resources}-v${bodytext},${resources} --volumes      ${bodytext}Elastic Block Store (EBS) Volume details (regional)
 
-      ${white}${BOLD}COMMANDS${UNBOLD}${backcolor}:
-          ${cyan}list               ${backcolor}List aws resource details [DEFAULT]
-          ${cyan}attach             ${backcolor}Attach/ Detach aws resource
-          ${cyan}create             ${backcolor}Create new aws resource
-          ${cyan}run                ${backcolor}Run/ start existing aws resource
+      ${white}${BOLD}COMMANDS${UNBOLD}${bodytext}:
+          ${cyan}list               ${bodytext}List aws resource details [DEFAULT]
+          ${cyan}attach             ${bodytext}Attach/ Detach aws resource
+          ${cyan}create             ${bodytext}Create new aws resource
+          ${cyan}run                ${bodytext}Run/ start existing aws resource
 
-      ${white}${BOLD}REGIONCODES${UNBOLD}${backcolor}:
-          ${regions}ap-northeast-1     ${backcolor}Asia Pacific (Tokyo, Japan)
-          ${regions}ap-northeast-2     ${backcolor}Asia Pacific (Seoul, Korea)
-          ${regions}ap-south-1         ${backcolor}Asia Pacific (Mumbai, India)
-          ${regions}ap-southeast-1     ${backcolor}Asia Pacific (Singapore)
-          ${regions}ap-southeast-2     ${backcolor}Asia Pacific (Sydney, Austrailia)
-          ${regions}ca-central-1       ${backcolor}Canada (Montreal, CA)
-          ${regions}eu-central-1       ${backcolor}Europe (Frankfurt, Germany)
-          ${regions}eu-west-1          ${backcolor}Europe (Ireland)
-          ${regions}eu-west-2          ${backcolor}Europe (London, UK)
-          ${regions}eu-west-3          ${backcolor}Europe (Paris, France)
-          ${regions}sa-east-1          ${backcolor}South America (Sao Paulo, Brazil)
-          ${regions}us-east-1          ${backcolor}United States (N. Virgina)
-          ${regions}us-east-2          ${backcolor}United States (Ohio)
-          ${regions}us-west-1          ${backcolor}United States (N. California)
-          ${regions}us-west-2          ${backcolor}United States (Oregon)
+      ${white}${BOLD}REGIONCODES${UNBOLD}${bodytext}:
+          ${regions}ap-northeast-1     ${bodytext}Asia Pacific (Tokyo, Japan)
+          ${regions}ap-northeast-2     ${bodytext}Asia Pacific (Seoul, Korea)
+          ${regions}ap-south-1         ${bodytext}Asia Pacific (Mumbai, India)
+          ${regions}ap-southeast-1     ${bodytext}Asia Pacific (Singapore)
+          ${regions}ap-southeast-2     ${bodytext}Asia Pacific (Sydney, Austrailia)
+          ${regions}ca-central-1       ${bodytext}Canada (Montreal, CA)
+          ${regions}eu-central-1       ${bodytext}Europe (Frankfurt, Germany)
+          ${regions}eu-west-1          ${bodytext}Europe (Ireland)
+          ${regions}eu-west-2          ${bodytext}Europe (London, UK)
+          ${regions}eu-west-3          ${bodytext}Europe (Paris, France)
+          ${regions}sa-east-1          ${bodytext}South America (Sao Paulo, Brazil)
+          ${regions}us-east-1          ${bodytext}United States (N. Virgina)
+          ${regions}us-east-2          ${bodytext}United States (Ohio)
+          ${regions}us-west-1          ${bodytext}United States (N. California)
+          ${regions}us-west-2          ${bodytext}United States (Oregon)
 
           If region code omitted, defaults to AWS default region
 
-        For additional help, see ${url}https://bitbucket.org/blakeca00/ec2cli/overview${reset}
+        For additional help, see ${url}https://bitbucket.org/blakeca00/ec2cli/overview${bodytext}
 
 
 EOM
