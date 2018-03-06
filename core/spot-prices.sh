@@ -226,7 +226,7 @@ while [ $VALID -eq 0 ]; do
         # CHOICE is blank, default region chosen
 	    # use the aws_default_region env variable
         REGION=$AWS_DEFAULT_REGION
-      	echo -e "  You Selected: "$REGION"\n"
+      	echo -e "  You Selected: "${yellow}$REGION${bodytext}"\n"
 		VALID=1   # exit loop
 	elif [ "$CHOICE" = "q" ]; then
         exit 0
@@ -296,7 +296,7 @@ fi
 
 # set type
 TYPE=${OS[$CHOICE]}
-echo -e "  You Selected: "$TYPE"\n"
+echo -e "  You Selected: "${yellow}$TYPE${bodytext}"\n"
 
 total_width="110"
 print_separator $total_width
