@@ -1524,9 +1524,19 @@ function ec2cli_list_snapshots(){
         return 0
     fi
     #
-    # output from aws
-    aws ec2 --profile $PROFILE describe-snapshots --owner self --output json --region $REGION > .jsonoutput.tmp
-
+    # pull json info, all instances in region
+    if [ $ALL_REGIONS ]; then
+        # load array from local list of regions
+        REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        for region in ${REGIONS[@]}; do \
+            aws ec2 --profile $PROFILE describe-snapshots --owner self \
+                --region $region --output json >> .jsonoutput.tmp; done &
+        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        clear
+    else
+        aws ec2 --profile $PROFILE describe-snapshots --owner self \
+                    --output json --region $REGION > .jsonoutput.tmp
+    fi
     # Sum size of all snapshots (footer)
     SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' .jsonoutput.tmp)
 
@@ -1746,8 +1756,18 @@ function ec2cli_list_volumes(){
         total_width="126"
     fi
     # sum total size of all volumes (display in footer)
-    aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > .jsonoutput.tmp
-
+    # pull json info, all instances in region
+    if [ $ALL_REGIONS ]; then
+        # load array from local list of regions
+        REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        for region in ${REGIONS[@]}; do \
+            aws ec2 --profile $PROFILE describe-volumes \
+                --region $region --output json >> .jsonoutput.tmp; done &
+        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        clear
+    else
+        aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > .jsonoutput.tmp
+    fi
     # determine size of all volumes returned
     SUM=$(jq -r '.Volumes | map(.Size) | add' .jsonoutput.tmp)
 
@@ -1843,13 +1863,21 @@ function ec2cli_list_vpcs(){
     local region="$1"
     local total_width="133"
     local sp="${frame}|${bodytext}"       # separator
-    # print region identifier
-    printf "\n${white}${BOLD}Virtual Private Clouds (VPC)${UNBOLD}${reset} : $REGION\n" | indent18
-    # print header
-    print_header "VpcId State Tenancy CIDR-Block Default" $total_width .report.tmp
-    # output from aws
-    aws ec2 --profile $PROFILE describe-vpcs --output json --region $REGION > .jsonoutput.json
 
+    # output from aws
+    # pull json info, all instances in region
+    if [ $ALL_REGIONS ]; then
+        # load array from local list of regions
+        REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
+        for region in ${REGIONS[@]}; do \
+            aws ec2 --profile $PROFILE describe-vpcs \
+                --region $region --output json >> .jsonoutput.json; done &
+        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        clear
+    else
+        aws ec2 --profile $PROFILE describe-vpcs --output json --region $REGION > .jsonoutput.json
+    fi
     # parse json
     ARR_ID=( $(jq -r '.Vpcs[].VpcId' .jsonoutput.json) )
     ARR_DEFAULT=( $(jq -r '.Vpcs[].IsDefault' .jsonoutput.json) )
@@ -1869,6 +1897,11 @@ function ec2cli_list_vpcs(){
         # incr ct
         i=$(( $i+1 ))
     done
+    # print region identifier
+    printf "\n${title}Virtual Private Clouds (VPC)${bodytext} : $REGION\n" | indent18
+    # print header
+    print_header "VpcId State Tenancy CIDR-Block Default" $total_width .report.tmp
+
     # print header
     print_header "$sp VpcId $sp Default? $sp State $sp Tenancy $sp CIDR $sp DHCP-OptionId $sp Tags $sp" $total_width .report.tmp
     # sort body text
@@ -1877,7 +1910,11 @@ function ec2cli_list_vpcs(){
     awk  '{ printf "%-2s %-14s %-2s %-8s %-2s %-10s %-2s %-9s %-2s %-16s %-2s %-15s %-2s %-39s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .report.tmp | indent02
     # print footer
-    print_footer "${white}${BOLD}$MAXCT${UNBOLD}${reset} VPCs in region [$REGION]" $total_width
+    if [ $ALL_REGIONS ]; then
+        print_footer "${title}$MAXCT${bodytext} VPCs across ${title}$REGION_CT${bodytext} regions" $total_width
+    else
+        print_footer "${title}$MAXCT${bodytext} VPCs in region [$REGION]" $total_width
+    fi
     # clean up
     rm .jsonoutput.json .body.tmp .report.tmp
     #
