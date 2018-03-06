@@ -1540,7 +1540,7 @@ function ec2cli_list_snapshots(){
     # Sum size of all snapshots (footer)
     SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' .jsonoutput.tmp)
 
-    if [ $SUM == "null" ] || [ $SUM -eq 0 ]
+    if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
         # print footer if no snapshots found
         std_message "${title}0${bodytext} snapshots in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
