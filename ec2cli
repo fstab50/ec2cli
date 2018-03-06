@@ -100,7 +100,7 @@ function ec2cli_help(){
                     [-V | --version ]
 
       ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
-          ${options}-A${bodytext},${options} --all${bodytext}:          Retrieve resources all AWS Regions combined
+          ${options}-A${bodytext},${options} --all${bodytext}:          Retrieve resources across all AWS Regions
           ${options}-p${bodytext},${options} --profile${bodytext}       Profile name of an IAM user from the local awscli
                               config for which you want to rotate access keys
           ${options}-V${bodytext},${options} --version${bodytext}:      Print package version, dependency versions
