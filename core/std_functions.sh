@@ -133,7 +133,7 @@ function print_footer(){
     #
     printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02
     echo -e "${bodytext}"
-    echo -ne $footer | indent10
+    echo -ne $footer | indent20
     echo -e "${frame}"
     printf '%*s\n' "$width" '' | tr ' ' _ | indent02
     echo -e "${bodytext}"
