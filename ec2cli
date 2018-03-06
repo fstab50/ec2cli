@@ -100,12 +100,12 @@ function ec2cli_help(){
                     [-V | --version ]
 
       ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
-          ${options}-A${bodytext},${options} --all${bodytext}:          Retrieve resources across all AWS Regions
-          ${options}-p${bodytext},${options} --profile${bodytext}       Profile name of an IAM user from the local awscli
+          ${options}-A${bodytext},${options} --all${bodytext}          Retrieve resources across all AWS Regions 
+          ${options}-p${bodytext},${options} --profile${bodytext}      Profile name of an IAM user from the local awscli
                               config for which you want to rotate access keys
-          ${options}-V${bodytext},${options} --version${bodytext}:      Print package version, dependency versions
-          ${options}-d${bodytext},${options} --debug${bodytext}:        Enable verbose log output, enhance stdout messaging
-          ${options}-h${bodytext},${options} --help${bodytext}:         Display help
+          ${options}-V${bodytext},${options} --version${bodytext}      Print package version, dependency versions
+          ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose log output, enhance stdout messaging
+          ${options}-h${bodytext},${options} --help${bodytext}         Display help
 
       ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
           ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Image (AMI) details (regional)
