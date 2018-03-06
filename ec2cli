@@ -1528,6 +1528,7 @@ function ec2cli_list_snapshots(){
     if [ $ALL_REGIONS ]; then
         # load array from local list of regions
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-snapshots --owner self \
                 --region $region --output json >> .jsonoutput.tmp; done &
@@ -1537,8 +1538,17 @@ function ec2cli_list_snapshots(){
         aws ec2 --profile $PROFILE describe-snapshots --owner self \
                     --output json --region $REGION > .jsonoutput.tmp
     fi
+
     # Sum size of all snapshots (footer)
-    SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' .jsonoutput.tmp)
+    if [ $ALL_REGIONS ]; then
+        SUM=0
+        ARR=$(cat .jsonoutput.tmp | jq -r .Snapshots[].VolumeSize)
+        for vol in ${ARR[@]}; do
+            SUM=$(( $SUM + $vol ))
+        done
+    else
+        SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' .jsonoutput.tmp)
+    fi
 
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
@@ -1628,8 +1638,11 @@ function ec2cli_list_snapshots(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-snapshots.tmp | indent02
         fi
         # print footer
-        print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est)" $total_width
-
+        if [ $ALL_REGIONS ]; then
+            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots acorss ${title}$REGION_CT${bodytext} regions, total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est)" $total_width
+        else
+            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est)" $total_width
+        fi
         rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
     fi
     #
@@ -1760,6 +1773,7 @@ function ec2cli_list_volumes(){
     if [ $ALL_REGIONS ]; then
         # load array from local list of regions
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-volumes \
                 --region $region --output json >> .jsonoutput.tmp; done &
@@ -1768,10 +1782,18 @@ function ec2cli_list_volumes(){
     else
         aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > .jsonoutput.tmp
     fi
-    # determine size of all volumes returned
-    SUM=$(jq -r '.Volumes | map(.Size) | add' .jsonoutput.tmp)
 
-    if [ $SUM == "null" ] || [ $SUM -eq 0 ]
+    # determine size of all volumes returned
+    if [ $ALL_REGIONS ]; then
+        SUM=0
+        ARR=$(jq -r '.Volumes[].Size' json_output.json);
+        for vol in ${ARR[@]}; do
+            SUM=$(( $SUM + $vol ))
+        done
+    else
+        SUM=$(jq -r '.Volumes | map(.Size) | add' .jsonoutput.tmp)
+    fi
+    if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
         # print footer if no volumes found
         std_message "${title}0${bodytext} volumes in region [$REGION], total ${title}${BOLD}0${bodytext} GB" "INFO"
