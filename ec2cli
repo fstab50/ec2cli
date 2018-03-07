@@ -890,6 +890,7 @@ function ec2cli_list_instances(){
     if [ $ALL_REGIONS ]; then
         # load array from local list of regions
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-instances \
                 --region $region --output json >> .jsonoutput.tmp; done &
@@ -995,8 +996,11 @@ function ec2cli_list_instances(){
         awk  '{ printf "%-22s %-13s %-10s %-18s %-24s %-16s %-15s %-2s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9}' .body.tmp | indent02
         # print footer
-        print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped" $total_width
-
+        if [ $ALL_REGIONS ]; then
+            print_footer "Total Instances across $REGION_CT regions: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped" $total_width
+        else
+            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped" $total_width
+        fi
     else
         ### -- no running instances -- ###
         total_width="110"
