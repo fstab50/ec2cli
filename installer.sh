@@ -215,7 +215,7 @@ echo "# inserted by ec2cli installer" >> $profile
 echo "export EC2_REPO=$EC2_REPO" >> $profile
 echo "export PATH=$PATH:$EC2_REPO" >> $profile
 
-std_message "${title}ec2cli${reset} the directory where ssh\n public keys (.pem files) for ec2 instances are." "INFO"
+std_message "${title}ec2cli${reset} needs the directory where ssh public keys (.pem files) for ec2 instances." "INFO"
 
 read -p "  Please enter the directory location: [.]: " choice
 
