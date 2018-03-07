@@ -38,8 +38,10 @@ CONFIG_PATH="$CONFIG_ROOT/$CONFIG_DIR"
 CONFIG_PATH_ALT="$HOME/.ec2cli"
 
 # format
-BOLD=`tput bold`
-UNBOLD=`tput sgr0`
+white=$(tput setaf 7)
+bold='\u001b[1m'
+title=$(echo -e ${bold}${white})
+reset=$(tput sgr0)
 
 #
 # ---  delcarations -----------------------------------------------------------------------------------------
@@ -171,7 +173,7 @@ precheck
 
 # download ec2cli
 $clear
-std_message "\nThe installer will install ${BOLD}ec2cli${UNBOLD} to the current directory where the installer is located." "INFO"
+std_message "\nThe installer will install ${title}ec2cli${reset} to the current directory where the installer is located." "INFO"
 echo -e "\n\n"
 read -p "  Is this ok? [quit] " choice
 if [ -z $choice ] || [ "$choice" = "q" ]; then
@@ -213,7 +215,7 @@ echo "# inserted by ec2cli installer" >> $profile
 echo "export EC2_REPO=$EC2_REPO" >> $profile
 echo "export PATH=$PATH:$EC2_REPO" >> $profile
 
-std_message "\nec2cli must know the directory where ssh public keys (.pem files) for ec2 instances are.\n" "INFO"
+std_message "\n${title}ec2cli${reset} must know the directory where ssh public keys (.pem files) for ec2 instances are.\n" "INFO"
 
 read -p "  Please enter the directory location: [.]: " choice
 
@@ -225,6 +227,6 @@ fi
 
 echo "export SSH_KEYS=$SSH_KEYS" >> $profile
 
-std_message "\nec2cli Installer Complete. Installer log located at $installer_log.\n" "INFO"
+std_message "\n${title}ec2cli${reset} Installer Complete. Installer log located at $installer_log.\n" "INFO"
 std_message "End.\n" INFO
 exit 0
