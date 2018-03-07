@@ -16,7 +16,7 @@
 #------------------------------------------------------------------------------
 
 # ec2cli git repository
-repository_url='https://github.com/fstab50/ec2cli.git'
+repo_url='https://github.com/fstab50/ec2cli.git'
 
 #
 # global variables
@@ -125,7 +125,7 @@ function precheck(){
     fi
 
     ## check for required cli tools ##
-    for prog in git aws ssh dig awk sed bc wget; do
+    for prog in which git aws ssh awk sed bc wget; do
         if ! type "$prog" > /dev/null 2>&1; then
             std_error_exit "$prog is required and not found in the PATH. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
         fi
@@ -173,7 +173,7 @@ precheck
 
 # download ec2cli
 $clear
-std_message "\nThe installer will install ${title}ec2cli${reset} to the current directory where the installer is located." "INFO"
+std_message "The installer will install ${title}ec2cli${reset} to the current directory where the installer is located." "INFO"
 echo -e "\n\n"
 read -p "  Is this ok? [quit] " choice
 if [ -z $choice ] || [ "$choice" = "q" ]; then
@@ -184,7 +184,7 @@ fi
 std_message "Install proceeding.  Downloading files... " "INFO"
 
 # clone repo
-$git clone $respository_url
+$git clone $repo_url
 
 cd $PROJECT
 EC2_REPO=$(pwd .)
@@ -215,7 +215,7 @@ echo "# inserted by ec2cli installer" >> $profile
 echo "export EC2_REPO=$EC2_REPO" >> $profile
 echo "export PATH=$PATH:$EC2_REPO" >> $profile
 
-std_message "\n${title}ec2cli${reset} must know the directory where ssh public keys (.pem files) for ec2 instances are.\n" "INFO"
+std_message "${title}ec2cli${reset} the directory where ssh\n public keys (.pem files) for ec2 instances are." "INFO"
 
 read -p "  Please enter the directory location: [.]: " choice
 
@@ -227,6 +227,7 @@ fi
 
 echo "export SSH_KEYS=$SSH_KEYS" >> $profile
 
-std_message "\n${title}ec2cli${reset} Installer Complete. Installer log located at $installer_log.\n" "INFO"
+std_message "${title}ec2cli${reset} Installer Complete. Installer log located at $installer_log." "INFO"
 std_message "End.\n" INFO
+source $profile
 exit 0
