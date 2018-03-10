@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+pkg=$(basename $0)          # pkg reported in logs will be the basename of the caller
+pkg_path=$(cd $(dirname $0); pwd -P)
+host=$(hostname)
+system=$(uname)
+
 # error codes
 E_DEPENDENCY=1              # exit code if missing required dependency
 E_DIR=2                     # exit code if failure to create log dir, log file
@@ -12,7 +17,7 @@ E_EXPIRED_CREDS=9           # exit code if temporary credentials no longer valid
 E_MISC=11                   # exit code if miscellaneous (unspecified) error
 
 #
-VERSION="1.4"
+VERSION="1.5"
 
 
 function authenticated(){
@@ -186,21 +191,20 @@ function std_logger(){
     if [ ! $prefix ]; then
         prefix="[INFO]"
     fi
-    if [ $log_file ]; then
+    if [ ! -f $log_file ]; then
         echo "$prefix: $pkg ($VERSION): failure to call std_logger, $log_file location undefined"
         exit $E_DIR
     else
-        return
+        echo "$(date +'%b %d %T') $host $pkg - $VERSION - [$prefix]: $msg" >> "$log_file"
     fi
-    echo "$(date +'%b %d %T') $host $pkg - $VERSION - $msg" >> "$log_file"
 }
 
 function std_message(){
     local msg="$1"
     local prefix="$2"
-    local format="$3"
+    local log_file="$3"
     #
-    std_logger "$msg" "$prefix" $LOG_FILE
+    std_logger "$msg" "$prefix" $log_file
     [[ $quiet ]] && return
     shift
     pref="----"
