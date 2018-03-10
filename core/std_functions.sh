@@ -200,7 +200,7 @@ function std_message(){
     local prefix="$2"
     local format="$3"
     #
-    std_logger "$msg" "$prefix"
+    std_logger "$msg" "$prefix" $LOG_FILE
     [[ $quiet ]] && return
     shift
     pref="----"
