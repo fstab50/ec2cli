@@ -87,6 +87,18 @@ additional resource types as additional types are added.
 
 ## Installation ##
 
+* **Installer**:  Automated Installation
+    - The easiest way to install `ec2cli` is to download and run the installer.  It will check for all dependencies, and if missing,  
+    prompt you to install them.   
+    - Run the following commands _from the filesystem location where you wish to install `ec2cli`_:
+
+    ```bash
+        $ cd < ec2cli install dir >
+        $ wget https://bitbucket.org/blakeca00/ec2cli/downloads/installer.sh
+        $ sh installer.sh
+    ```
+Alternatively, if you wish to do the installation yourself, please read on.
+
 * **General Dependencies**
 
 	- Writable directory where utilities are located
