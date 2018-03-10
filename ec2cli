@@ -894,7 +894,7 @@ function ec2cli_list_instances(){
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-instances \
                 --region $region --output json >> .jsonoutput.tmp; done &
-        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
         aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > .jsonoutput.tmp
@@ -1051,7 +1051,7 @@ function ec2cli_list_images(){
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-images \
                 --region $region --output json --owner self >> .jsonimages.tmp; done &
-        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
         aws ec2 --profile $PROFILE describe-images --region $REGION --output json --owner self > .jsonimages.tmp
@@ -1401,7 +1401,7 @@ function ec2cli_run_instances(){
 	    aws ec2  --profile $PROFILE wait instance-running --region $REGION --instance-ids $TARGET &
 
 	    # call function to show on screen while wait
-	    ec2cli_spinner
+	    delay_spinner
 
 	    # FIXME (HACK) | login delay: loop for i seconds, display counter
     	i=10    # count in seconds
@@ -1536,7 +1536,7 @@ function ec2cli_list_snapshots(){
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-snapshots --owner self \
                 --region $region --output json >> .jsonoutput.tmp; done &
-        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
         aws ec2 --profile $PROFILE describe-snapshots --owner self \
@@ -1654,34 +1654,6 @@ function ec2cli_list_snapshots(){
     #
 }
 
-function ec2cli_spinner(){
-    # vars
-    local PROGRESSTXT
-    if [ ! "$1" ]; then
-        PROGRESSTXT="  Please wait..."
-    else
-        PROGRESSTXT="$1"
-    fi
-    # visual progress marker function
-    # http://stackoverflow.com/users/2869509/wizurd
-    # vars
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    echo -e "\n\n"
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "\r$PROGRESSTXT[%c]  " "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    #
-    # <-- end function ec2cli_spinner -->
-    #
-}
-
-
 function ec2cli_list_subnets(){
     # vars
     local TOTAL
@@ -1781,7 +1753,7 @@ function ec2cli_list_volumes(){
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-volumes \
                 --region $region --output json >> .jsonoutput.tmp; done &
-        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
         aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > .jsonoutput.tmp
@@ -1899,7 +1871,7 @@ function ec2cli_list_vpcs(){
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-vpcs \
                 --region $region --output json >> .jsonoutput.json; done &
-        ec2cli_spinner "  Please wait, retrieving data from AWS..."
+        delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
         aws ec2 --profile $PROFILE describe-vpcs --output json --region $REGION > .jsonoutput.json
