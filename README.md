@@ -88,7 +88,7 @@ additional resource types as additional types are added.
 ## Installation ##
 
 * **Installer**:  Automated Installation
-    - The easiest way to install `ec2cli` is to download and run the installer.  It will check for all dependencies, and if missing, prompt you to install them.   
+    - The easiest way to install `ec2cli` is to download and run [the installer](./installer.sh).  It will check for all dependencies, and if missing, prompt you to install them.   
     - Run the following commands from the filesystem location where you wish to install `ec2cli`:
 
         ```bash
@@ -109,26 +109,26 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 * **jq, JSON Parser**.  Install `jq` from your local distribution repository.  
 
-```bash
-	$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
-```
+        ```bash
+        	$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
+        ```
 
-```bash
-	$ sudo yum install jq        # RedHat, Fedora, CentOS
-```
+        ```bash
+        	$ sudo yum install jq        # RedHat, Fedora, CentOS
+        ```
 
 * **Environment variables**:
 
 	- Setup the following global environment variables by adding each to your	.bashrc or .bash_profile (substitute your respective values)
 
-```bash                              
-	# .bashrc / .bash_profile
+        ```bash                              
+        	# .bashrc / .bash_profile
 
-	export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
-	export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
-	export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
+        	export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
+        	export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
+        	export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
 
-```
+        ```
 
 * **Python Package Manager**. If you do not currently have it, install [pip](http://www.pip-installer.org/en/latest).  
 
@@ -148,27 +148,27 @@ Alternatively, if you wish to do the installation yourself, please read on.
     Detailed instructions can be found in the README located at:
     https://github.com/aws/aws-cli/
 
-```bash
-	$ sudo pip install awscli
-```
+    ```bash
+    	$ sudo pip install awscli
+    ```
 
 * If you have the aws-cli installed and want to upgrade to the latest version you can run:
 
-```bash
-	$ sudo pip install --upgrade awscli
-```
+    ```bash
+    	$ sudo pip install --upgrade awscli
+    ```
 
 * Clone this git repo in a writeable directory:
 
-```bash
-	$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
-```
+    ```bash
+    	$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+    ```
 
 * **Add `ec2cli` to your path**. Add the following to your .bashrc, .bash_profile, or .profile:  
 
-```bash
-    export PATH=$PATH:$EC2_REPO
-```
+    ```bash
+        export PATH=$PATH:$EC2_REPO
+    ```
 
 [back to the top](#ec2cli---amazon-ec2-utilities)
 
@@ -178,25 +178,25 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 * Configure awscli running the aws configure command:
 
-```bash
-   $ aws configure
+    ```bash
+       $ aws configure
 
-	AWS Access Key ID: foo
-	AWS Secret Access Key: bar
-	Default region name [us-west-2]: us-west-2
-	Default output format [None]: json
-```
+    	AWS Access Key ID: foo
+    	AWS Secret Access Key: bar
+    	Default region name [us-west-2]: us-west-2
+    	Default output format [None]: json
+    ```
 
 * Optionally, define a profile for a specific user:
 
-```bash
-   $ aws configure --profile testuser
+    ```bash
+       $ aws configure --profile testuser
 
-    AWS Access Key ID: footestuser
-    AWS Secret Access Key: bartestuser
-    Default region name [us-west-2]: us-west-2
-    Default output format [None]: json
-```
+        AWS Access Key ID: footestuser
+        AWS Secret Access Key: bartestuser
+        Default region name [us-west-2]: us-west-2
+        Default output format [None]: json
+    ```
 
 * Command Completion
 
@@ -204,10 +204,10 @@ Alternatively, if you wish to do the installation yourself, please read on.
 	commands easy to type and recall.  After installing awscli,
 	add the following to your .bashrc or .bash_profile:
 
-```bash
-	# .bashrc
-	complete -C aws_completer aws
-```
+    ```bash
+    	# .bashrc
+    	complete -C aws_completer aws
+    ```
 
 [back to the top](#ec2cli---amazon-ec2-utilities)
 
@@ -217,9 +217,9 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 After completing the above Installation and Configuration sections, verify your configuration:
 
-```bash
-	$ ec2cli --version
-```
+    ```bash
+    	$ ec2cli --version
+    ```
 
 [![version](./images/ec2cli-version.png)]((https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-version.png))
 
@@ -234,55 +234,55 @@ After completing the above Installation and Configuration sections, verify your 
 #### ec2cli Required Permissions ####
 You'll need appropriate IAM permissions to execute ec2cli.  
 
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": "ec2:Describe*",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "elasticloadbalancing:Describe*",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "cloudwatch:ListMetrics",
-                "cloudwatch:GetMetricStatistics",
-                "cloudwatch:Describe*"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "autoscaling:Describe*",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "ec2:AttachVolume",
-                "ec2:CreateKeyPair",
-                "ec2:CreateSecurityGroup",
-                "ec2:CreateSnapshot",
-                "ec2:DeleteSnapshot",
-                "ec2:DetachVolume",
-                "ec2:RunInstances",
-                "ec2:StartInstances",
-                "ec2:StopInstances"
-            ],
-            "Resource": [
-                "*"
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": "ec2:Describe*",
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": "elasticloadbalancing:Describe*",
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "cloudwatch:ListMetrics",
+                    "cloudwatch:GetMetricStatistics",
+                    "cloudwatch:Describe*"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": "autoscaling:Describe*",
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:AttachVolume",
+                    "ec2:CreateKeyPair",
+                    "ec2:CreateSecurityGroup",
+                    "ec2:CreateSnapshot",
+                    "ec2:DeleteSnapshot",
+                    "ec2:DetachVolume",
+                    "ec2:RunInstances",
+                    "ec2:StartInstances",
+                    "ec2:StopInstances"
+                ],
+                "Resource": [
+                    "*"
+            ]
+            }
         ]
-        }
-    ]
-}
+    }
 
-```
+    ```
 
 You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
 
@@ -296,55 +296,55 @@ You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-q
 
 List command displays AWS resource details for your AWS default region if no region specified. If an alternate region given as a parameter, displays resource details for the specified region.
 
-```bash
-$ ec2cli -n list   # list vpc nextwork details, AWS default aws region (us-west-2)
-```
+    ```bash
+    $ ec2cli -n list   # list vpc nextwork details, AWS default aws region (us-west-2)
+    ```
 ![](./images/ec2vpc.png)
 
-```bash
-$ ec2cli -n list eu-west-1    # list vpc nextwork details, alternate region (eu-west-1)
-```
+    ```bash
+    $ ec2cli -n list eu-west-1    # list vpc nextwork details, alternate region (eu-west-1)
+    ```
 ![](./images/ec2vpc_altregion.png)
 
-```bash
-$ ec2cli -b    # list subnet details, AWS default region (us-west-2)
-               # if no COMMAND given, command defaults to 'list'
-```
+    ```bash
+    $ ec2cli -b    # list subnet details, AWS default region (us-west-2)
+                   # if no COMMAND given, command defaults to 'list'
+    ```
 ![](./images/ec2sub.png)
 
-```bash
-$ ec2cli -b eu-west-1    # list subnet details, alternate region (eu-west-1)
-```
+    ```bash
+    $ ec2cli -b eu-west-1    # list subnet details, alternate region (eu-west-1)
+    ```
 ![](./images/ec2sub_altregion.png)
 
-```bash
-$ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
-```
+    ```bash
+    $ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
+    ```
 ![](./images/ec2i.png)
 
-```bash
-$ ec2cli -i    # list (running) ec2 instances, AWS default region (us-west-2)
-```
+    ```bash
+    $ ec2cli -i    # list (running) ec2 instances, AWS default region (us-west-2)
+    ```
 ![](./images/ec2i_running-instances.png)
 
-```bash
-$ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
-```
+    ```bash
+    $ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
+    ```
 ![](./images/ec2v.png)
 
-```bash
-$ ec2cli -s    # list snapshots, AWS default region (us-west-2)
-```
+    ```bash
+    $ ec2cli -s    # list snapshots, AWS default region (us-west-2)
+    ```
 ![](./images/ec2s.png)
 
-```bash
-$ ec2cli -g    # list security group details, AWS default region (us-west-2)
-```
+    ```bash
+    $ ec2cli -g    # list security group details, AWS default region (us-west-2)
+    ```
 ![](./images/ec2sg.png)
 
-```bash
-$ ec2cli -g us-east-1    # list security group details, alt region (us-east-1)
-```
+    ```bash
+    $ ec2cli -g us-east-1    # list security group details, alt region (us-east-1)
+    ```
 ![](./images/ec2sg_altregion.png)
 
 [back to the top](#ec2cli---amazon-ec2-utilities)
