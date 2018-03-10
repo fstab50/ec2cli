@@ -12,7 +12,7 @@ E_EXPIRED_CREDS=9           # exit code if temporary credentials no longer valid
 E_MISC=11                   # exit code if miscellaneous (unspecified) error
 
 #
-VERSION="1.3"
+VERSION="1.4"
 
 
 function authenticated(){
@@ -108,6 +108,35 @@ function convert_time_months(){
     #
 }
 
+
+function delay_spinner(){
+    # vars
+    local PROGRESSTXT
+    if [ ! "$1" ]; then
+        PROGRESSTXT="  Please wait..."
+    else
+        PROGRESSTXT="$1"
+    fi
+    # visual progress marker function
+    # http://stackoverflow.com/users/2869509/wizurd
+    # vars
+    local pid=$!
+    local delay=0.1
+    local spinstr='|/-\'
+    echo -e "\n\n"
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf "\r$PROGRESSTXT[%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    #
+    # <-- end function ec2cli_spinner -->
+    #
+}
+
+
 function print_header(){
     ## print formatted report header ##
     local title="$1"
@@ -147,6 +176,7 @@ function print_separator(){
     echo -e "${bodytext}\n"
 
 }
+
 
 function std_logger(){
     local msg="$1"
