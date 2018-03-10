@@ -149,25 +149,25 @@ Alternatively, if you wish to do the installation yourself, please read on.
     https://github.com/aws/aws-cli/
 
     ```bash
-    	$ sudo pip install awscli
+	$ sudo pip install awscli
     ```
 
 * If you have the aws-cli installed and want to upgrade to the latest version you can run:
 
     ```bash
-    	$ sudo pip install --upgrade awscli
+	$ sudo pip install --upgrade awscli
     ```
 
 * Clone this git repo in a writeable directory:
 
     ```bash
-    	$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+	$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
     ```
 
 * **Add `ec2cli` to your path**. Add the following to your .bashrc, .bash_profile, or .profile:  
 
     ```bash
-        export PATH=$PATH:$EC2_REPO
+    export PATH=$PATH:$EC2_REPO
     ```
 
 [back to the top](#ec2cli---amazon-ec2-utilities)
@@ -179,23 +179,23 @@ Alternatively, if you wish to do the installation yourself, please read on.
 * Configure awscli running the aws configure command:
 
     ```bash
-       $ aws configure
+   $ aws configure
 
-    	AWS Access Key ID: foo
-    	AWS Secret Access Key: bar
-    	Default region name [us-west-2]: us-west-2
-    	Default output format [None]: json
+	AWS Access Key ID: foo
+	AWS Secret Access Key: bar
+	Default region name [us-west-2]: us-west-2
+	Default output format [None]: json
     ```
 
 * Optionally, define a profile for a specific user:
 
     ```bash
-       $ aws configure --profile testuser
+   $ aws configure --profile testuser
 
-        AWS Access Key ID: footestuser
-        AWS Secret Access Key: bartestuser
-        Default region name [us-west-2]: us-west-2
-        Default output format [None]: json
+    AWS Access Key ID: footestuser
+    AWS Secret Access Key: bartestuser
+    Default region name [us-west-2]: us-west-2
+    Default output format [None]: json
     ```
 
 * Command Completion
@@ -205,8 +205,8 @@ Alternatively, if you wish to do the installation yourself, please read on.
 	add the following to your .bashrc or .bash_profile:
 
     ```bash
-    	# .bashrc
-    	complete -C aws_completer aws
+	# .bashrc
+	complete -C aws_completer aws
     ```
 
 [back to the top](#ec2cli---amazon-ec2-utilities)
@@ -217,9 +217,9 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 After completing the above Installation and Configuration sections, verify your configuration:
 
-    ```bash
-    	$ ec2cli --version
-    ```
+```bash
+	$ ec2cli --version
+```
 
 [![version](./images/ec2cli-version.png)]((https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-version.png))
 
