@@ -14,6 +14,7 @@ RETAIN_DOWNLOADS="true"
 E_DEPENDENCY=1			# exit code if missing deps
 NOW=$(date +"%Y-%m-%d")
 pkg_path=$(cd $(dirname $0); pwd -P)
+PWD=$(pwd)
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 ec2cli_log=$ROOT"/logs/ec2cli.log"
 
@@ -27,7 +28,7 @@ CONFIG_PATH_ALT="$HOME/.ec2cli"
 PRICEFILE="ec2prices_allregions.json"
 OFFERFILE="ec2offerfile_allregions.json"
 INDEXURL="https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/index.json"
-ONEDAY=$(( 24*60*60 ))    # 24 hours in seconds
+DELAY=$(( 5*24*60*60 ))    # 5 days in seconds
 
 # source config file location
 config_dir=$(cat $pkg_path/pkgconfig.json | jq -r .config_dir)
@@ -61,23 +62,38 @@ function dependency_check(){
 	fi
 }
 
+function set_tmpdir(){
+    ## set fs pointer to writeable temp location ##
+    if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]; then
+            # in-memory
+            TMPDIR="/run/shm"
+            cd $TMPDIR
+    else
+        std_logger "[INFO]: Failed to find tempfs ram disk.  Using /tmp as alternate"
+        TMPDIR="/tmp"
+        cd $TMPDIR
+    fi
+}
+
+
 function get_ec2_pricefile(){
 	std_message "Downloading a current EC2 inventory price file from AWS." "INFO" $ec2cli_log
 	# retrieve current url of EC2 price files
-	wget $INDEXURL
-	CurrentURL="https://pricing.us-east-1.amazonaws.com"$(jq -r '.offers.AmazonEC2.currentVersionUrl' index.json)
-
-	rm index.json
+    cd "$TMPDIR"
+	wget -O $TMPDIR/index.json $INDEXURL
+	CurrentURL="https://pricing.us-east-1.amazonaws.com"$(jq -r '.offers.AmazonEC2.currentVersionUrl' "$TMPDIR/index.json")
+    std_logger "CurrentURL is: $CurrentURL" "INFO" $ec2cli_log
+	rm "$TMPDIR/index.json"
 	# pull on-demand pricing from current EC2 Price API url
-	wget $CurrentURL
-	mv -v index.json $PRICEFILE 1>&2
+	wget -O "$TMPDIR/$PRICEFILE" $CurrentURL
+	#mv -v "$TMPDIR/index.json" "$TMPDIR/$PRICEFILE" 1>&2
 }
 
 function get_ec2_offerfile(){
-    if [ ! -e $OFFERFILE ]; then
+    if [ ! -e "$TMPDIR/$OFFERFILE" ]; then
 	    std_message "Retrieving offerfile to validate last official release date..." "INFO" $ec2cli_log
-	    wget $INDEXURL
-	    mv index.json $OFFERFILE 1>&2
+	    wget $INDEXURL -O $TMPDIR/$OFFERFILE
+	    #mv $TMPDIR/index.json $TMPDIR/$OFFERFILE 1>&2
     else
         std_message "$OFFERFILE found, skipping download new." "INFO" $ec2cli_log
         return
@@ -87,9 +103,9 @@ function get_ec2_offerfile(){
 function clean_up(){
     if [ ! "$RETAIN_DOWNLOADS" ] || [ "$RETAIN_DOWNLOADS" = "false" ]; then
         # offer location file
-        rm $OFFERFILE || true
+        rm "$TMPDIR/$OFFERFILE" || true
         # ec2 price file
-        rm "$pkg_path/$PRICEFILE" || true
+        rm "$TMPDIR/$PRICEFILE" || true
     fi
 }
 
@@ -98,24 +114,29 @@ function clean_up(){
 # validate deps
 dependency_check
 
+# set ram location in memory
+set_tmpdir
+
 ###
 ### retreive current ec2 inventory price file from AWS
 ###
 
-if [ ! -f $PRICEFILE ]; then
+if [ ! -f "$TMPDIR/$PRICEFILE" ]; then
     std_message "EC2 local price file not found, retrieving new file..." "INFO" $ec2cli_log
-    get_ec2_pricefile $PRICEFILE
+    get_ec2_pricefile "$TMPDIR/$PRICEFILE"
 else
-	std_message "Local file [$PRICEFILE] has been found, released $(stat -c '%.10y' $PRICEFILE)" "INFO" $ec2cli_log
-    get_ec2_offerfile $OFFERFILE
+	std_message "Local file [$PRICEFILE] has been found, released $(stat -c '%.10y' $TMPDIR/$PRICEFILE)" "INFO" $ec2cli_log
+    get_ec2_offerfile "$TMPDIR/$OFFERFILE"
     # grab publicationDate and convert to epoch seconds
-    PUBDATE=$(date -d$(jq -r .publicationDate $OFFERFILE) +%s)
-    std_message "Last AWS official release date found was: "$(date --date=@$PUBDATE) "INFO" $ec2cli_log
-    LOCALDATE=$(stat -c '%Y' $PRICEFILE)
-    if [[ $(( $PUBDATE - $LOCALDATE )) -gt $ONEDAY ]]; then
+    PUBDATE=$(date -d$(jq -r .publicationDate "$TMPDIR/$OFFERFILE") +%s)
+    std_message "Last AWS official release date found was: $(date --date=@$PUBDATE)" "INFO" $ec2cli_log
+    LOCALDATE=$(stat -c '%Y' "$TMPDIR/$PRICEFILE")
+    if [[ $(( $PUBDATE - $LOCALDATE )) -gt $DELAY ]]; then
     	# aws has released an update
     	std_message "AWS official EC2 inventory recently updated.  Downloading new inventory file..." "INFO" $ec2cli_log
-    	get_ec2_pricefile $PRICEFILE
+    	get_ec2_pricefile "$TMPDIR/$PRICEFILE"
+        # set success bit
+        if [ $TMPDIR/$PRICEFILE ]; then UPDATE_SUCCESS="true"; fi
     else
     	std_message "Local file matches latest AWS Official release date within 24 hours." "INFO" $ec2cli_log
         std_message "Processing local EC2 inventory file." "INFO" $ec2cli_log
@@ -126,7 +147,7 @@ fi
 ### process inventory file
 ###
 
-ARR_TYPES=( $(jq -r '.products | map(.attributes.instanceType)' $PRICEFILE) )
+ARR_TYPES=( $(jq -r '.products | map(.attributes.instanceType)' "$TMPDIR/$PRICEFILE") )
 # initial array scrub - remove duplicates, quotes
 ARR_CLEAN=( $(printf '%s\n' "${ARR_TYPES[@]}" | sort -u | sed -e 's|["'\'']||g') )
 # create array of all additional elements to remove
@@ -141,18 +162,24 @@ TYPE_CT=${#ARR_CLEAN[@]}    # total number of instance types available
 ### output cleaned list of ec2 instance types
 ###
 
-INV_REFRESH_DATE="$(stat -c '%.10y' $PRICEFILE)"    # AWS source file refresh date
+INV_REFRESH_DATE="$(stat -c '%.10y' $TMPDIR/$PRICEFILE)"    # AWS source file refresh date
 INV_FILE="types.ec2"
 
-if [ ! -e "$CONFIG_PATH/$INV_FILE" ]; then
-	for type in ${ARR_CLEAN[@]}; do
-		echo $type >> "$CONFIG_PATH/$INV_FILE"
-	done
+# write new local instance types file
+if [ -e "$CONFIG_PATH/$INV_FILE" ] && [ $UPDATE_SUCCESS ]; then
+    std_logger "aged inventory file ($INV_FILE) found.  Removing $CONFIG_PATH/$INV_FILE" "INFO" $ec2cli_log
+    rm  "$CONFIG_PATH/$INV_FILE"
 fi
+for type in ${ARR_CLEAN[@]}; do
+	echo $type >> "$CONFIG_PATH/$INV_FILE"
+done
+
+std_logger "New ec2 types file written to CONFIG_PATH ($CONFIG_PATH)" "INFO" $ec2cli_log
 
 if [ ! "$DISPLAY_INSTANCE_TYPES" = "true" ]; then
     # only create instance types file, then stop
     clean_up
+    cd $PWD
     exit 0
 fi
 
@@ -300,7 +327,7 @@ echo -e "\n"
 
 # clean up
 clean_up
-
+cd $PWD
 
 # <-- end -->
 exit 0
