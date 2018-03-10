@@ -34,22 +34,13 @@
 
 ## Introduction
 
-EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli  
-utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  
-accomplished using the console interface.  EC2cli will save time and effort to perform operations such as  
-taking a snapshot or listing which EC2 instances are running.
+EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or listing which EC2 instances are running.
 
-That being said, ec2cli was designed for use with relatively low AWS resource counts.  If you are operating  
-at scale, these will prove cumbersome since are no embedded filtering capabilities (if you would like to  
-contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you  
-have already developed your own tools for managing and operating AWS resources in a commercial environment.
+That being said, ec2cli was designed for use with relatively low AWS resource counts.  If you are operating at scale, these will prove cumbersome since are no embedded filtering capabilities (if you would like to contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you have already developed your own tools for managing and operating AWS resources in a commercial environment.
 
-While I realize that accomplishing the same functionality is easier with the AWS ruby or python SDK's, I  
-developed these in bash to make them easy for system administrators and solution architects to modify for  
-their particular use cases.
+While I realize that accomplishing the same functionality is easier with the AWS ruby or python SDK's, I developed these in bash to make them easy for system administrators and solution architects to modify for their particular use cases.
 
-_Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other  
-shells; however, your mileage may vary.
+_Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
 
 [![instances](./images/ec2cli-list-instances.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-instances.png)
 
@@ -72,14 +63,11 @@ shells; however, your mileage may vary.
 
 * **RESOURCE** is required. Represents a disparate AWS resource. Only 1 resource at a time is supported.
 
-* **COMMAND** is optional. If omitted, ec2cli defaults to the `list` command and lists details of the EC2 resource specified  
-by the OPTION parameter.
+* **COMMAND** is optional. If omitted, ec2cli defaults to the `list` command and lists details of the EC2 resource specified by the OPTION parameter.
 
-* **REGIONCODE** is optional. If omitted, ec2cli defaults to the AWS default region defined in the `AWS_DEFAULT_REGION` environment  
-variable (if present); or alternately, the awscli config file.
+* **REGIONCODE** is optional. If omitted, ec2cli defaults to the AWS default region defined in the `AWS_DEFAULT_REGION` environment variable (if present); or alternately, the awscli config file.
 
-* `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable  
-additional resource types as additional types are added.
+* `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable additional resource types as additional types are added.
 
 [back to the top](#ec2cli---amazon-ec2-utilities)
 
