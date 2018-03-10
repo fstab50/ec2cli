@@ -109,26 +109,26 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 * **jq, JSON Parser**.  Install `jq` from your local distribution repository.  
 
-        ```bash
-        	$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
-        ```
+    ```bash
+	$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
+    ```
 
-        ```bash
-        	$ sudo yum install jq        # RedHat, Fedora, CentOS
-        ```
+    ```bash
+	$ sudo yum install jq        # RedHat, Fedora, CentOS
+    ```
 
 * **Environment variables**:
 
 	- Setup the following global environment variables by adding each to your	.bashrc or .bash_profile (substitute your respective values)
 
-        ```bash                              
-        	# .bashrc / .bash_profile
+    ```bash                              
+    	# .bashrc / .bash_profile
 
-        	export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
-        	export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
-        	export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
+    	export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
+    	export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
+    	export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
 
-        ```
+    ```
 
 * **Python Package Manager**. If you do not currently have it, install [pip](http://www.pip-installer.org/en/latest).  
 
