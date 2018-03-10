@@ -234,55 +234,55 @@ After completing the above Installation and Configuration sections, verify your 
 #### ec2cli Required Permissions ####
 You'll need appropriate IAM permissions to execute ec2cli.  
 
-    ```json
-    {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Action": "ec2:Describe*",
-                "Resource": "*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": "elasticloadbalancing:Describe*",
-                "Resource": "*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "cloudwatch:ListMetrics",
-                    "cloudwatch:GetMetricStatistics",
-                    "cloudwatch:Describe*"
-                ],
-                "Resource": "*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": "autoscaling:Describe*",
-                "Resource": "*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "ec2:AttachVolume",
-                    "ec2:CreateKeyPair",
-                    "ec2:CreateSecurityGroup",
-                    "ec2:CreateSnapshot",
-                    "ec2:DeleteSnapshot",
-                    "ec2:DetachVolume",
-                    "ec2:RunInstances",
-                    "ec2:StartInstances",
-                    "ec2:StopInstances"
-                ],
-                "Resource": [
-                    "*"
-            ]
-            }
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "ec2:Describe*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "elasticloadbalancing:Describe*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:ListMetrics",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:Describe*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "autoscaling:Describe*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:AttachVolume",
+                "ec2:CreateKeyPair",
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateSnapshot",
+                "ec2:DeleteSnapshot",
+                "ec2:DetachVolume",
+                "ec2:RunInstances",
+                "ec2:StartInstances",
+                "ec2:StopInstances"
+            ],
+            "Resource": [
+                "*"
         ]
-    }
+        }
+    ]
+}
 
-    ```
+```
 
 You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
 
