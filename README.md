@@ -129,7 +129,7 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 
 | DISTRIBUTION | INSTALLATION COMMAND |  PYTHON VERSION |
-| :------------------------------ | :-----------------------------------------: | :--------: |
+| :------------------------------ | :----------------------------------------- | :--------: |
 | **Ubuntu** | ``` $ sudo apt install python-pip ``` | python2.7 |
 | **Redhat** | ```  $ sudo yum install python-pip  ``` | python2.7 |
 | **Fedora-based distros** | ``` $ sudo dnf install python-pip ``` | python2.7 |
