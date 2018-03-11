@@ -41,8 +41,19 @@ pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
 ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
 
-# source config file location
-config_dir=$(cat $EC2_REPO/core/pkgconfig.json | jq -r .config_dir)
+declare -a C_TYPE
+declare -a D_TYPE
+declare -a F_TYPE
+declare -a G_TYPE
+declare -a I_TYPE
+declare -a H_TYPE
+declare -a M_TYPE
+declare -a P_TYPE
+declare -a R_TYPE
+declare -a T_TYPE
+declare -a X_TYPE
+declare -a MISC_TYPE
+
 
 # source colors library
 source $pkg_path/colors.sh
@@ -50,6 +61,9 @@ source $pkg_path/colors.sh
 # source standard functions
 source $pkg_path/std_functions.sh
 
+# source config file location
+config_dir=$(cat $EC2_REPO/core/pkgconfig.json | jq -r .config_dir)
+std_logger "config_dir set ($config_dir)" "INFO" $ec2cli_log
 
 #
 # functions  ------------------------------------------------------------------
@@ -69,18 +83,6 @@ function precheck(){
 
 function load_arrays(){
     ## loads array for each instance type family ##
-    declare -a C_TYPE
-    declare -a D_TYPE
-    declare -a F_TYPE
-    declare -a G_TYPE
-    declare -a I_TYPE
-    declare -a H_TYPE
-    declare -a M_TYPE
-    declare -a P_TYPE
-    declare -a R_TYPE
-    declare -a T_TYPE
-    declare -a X_TYPE
-    declare -a MISC_TYPE
     #
     C_TYPE=$(grep c[1-9].* $config_dir/types.ec2 | grep -v cc)
     D_TYPE=$(grep d[1-9].* $config_dir/types.ec2)
@@ -143,7 +145,6 @@ precheck
 # collect list of all current AWS Regions globally:
 aws ec2 describe-regions --output json > .regions.json
 ARR_REGIONS=( $(jq -r .Regions[].RegionName .regions.json) )
-MAXCT=${#ARR_REGIONS[*]}    # array max length
 
 # output choices
 i=1
@@ -322,33 +323,33 @@ std_logger "MAXCT calculated as:  $MAXCT" "INFO" $ec2cli_log
 
 set counters
 i=0
-c=1; f=2; g=3; m=4; I=5
+c=1; f=2; g=3; I=5; m=4;
+echo -e "\nM_TYPE Array contains:  ${M_TYPE[@]}\n"
 
 # output choices
-for type in ${M_TYPE[@]}; do
+for type in "${M_TYPE[@]}"; do
     #if (( $i == 0 )); then
     #    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" \
     #        "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
     #else
-    echo "FUCKING EXECUTING A LOOP"
-    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
+    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" "($m): ""${M_TYPE[$i]}" >> "$TMPDIR/data.output"
     #fi
     i=$(( $i+1 ))
 done
 
 # print output
 echo -e "\n${BOLD}Choose from the following $TYPE EC2 instance types:\n${UNBOLD}" | indent02
-#echo -e "General Purpose  ""Compute Opt(Gen3)  ""Memory Optimized  ""Storage Optimized  " "Compute Opt(Gen4)" > "$TMPDIR"/header.tmp"
+echo -e "General Purpose  ""Compute Opt(Gen3)  ""Memory Optimized  ""Storage Optimized  " "Compute Opt(Gen4)" > "$TMPDIR"/header.tmp"
 #echo -e '---------------  ""----------------  ""----------------  ""-----------------   ""-----------------' >> "$TMPDIR/header.tmp"
 #awk -F "  " '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' "$TMPDIR/header.tmp" | indent02
-awk '{ printf "%-4s %-15s %-4s %-15s %-4s %-14s %-4s %-15s %-4s %-15s \n", \
+awk -F " " '{printf "%-4s %-15s %-4s %-15s %-4s %-14s %-4s %-15s %-4s %-15s \n", \
 	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' "$TMPDIR/data.output" | indent02
 
-exit 0
+
 # clean up
 rm $TMPDIR/data.output
 rm $TMPDIR"/header.tmp"
-
+exit 0
 # read instance choice in from user
 echo ""
 read -p "  Enter Instance size # or hit return for all spot prices [all]: " CHOICE
