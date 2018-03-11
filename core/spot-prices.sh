@@ -203,7 +203,7 @@ for region in ${ARR_REGIONS[@]}; do
     echo ""\($i\): "$region" $LOCATION"" >> .arrayoutput.tmp
     i=$(( i+1 ))
 done
-
+MAXCT=$(( $i - 1 ))
 # print header
 total_width="60"
 echo ""
@@ -236,20 +236,20 @@ while [ $VALID -eq 0 ]; do
 		VALID=1   # exit loop
 	elif [ "$CHOICE" = "q" ]; then
         exit 0
-    elif [[ ! "$CHOICE" =~ ^[0-9]+$ ]]; then
+    elif [[ ! "$CHOICE" =~ ^[1-9]+$ ]]; then
         # CHOICE is a value, check type and range
         # contains chars
-        echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
+        echo -e "Your entry must be an integer between 1 and $(( $MAXCT )) or hit return."
 	else
-        correct=$(( $CHOICE - 1))
-        if [[ $correct -ge 0 ]] && [[ $correct -lt $(( $MAXCT )) ]]; then
+        if [[ $CHOICE -gt 0 ]] && [[ $CHOICE -le $(( $MAXCT )) ]]; then
             # valid range, reset the aws default region to user choice momentarily
-	        REGION=${ARR_REGIONS[$correct]}
-	        echo -e "  You Selected: "$REGION"\n"
+            corrected=$(( $CHOICE - 1))
+	        REGION=${ARR_REGIONS[$corrected]}
+	        echo -e "  You Selected: "${yellow}$REGION${bodytext}"\n"
             VALID=1   # exit loop
         else
             # out of range
-            echo -e "Your entry must be an integer between 0 and $(( $MAXCT-1 )) or hit return."
+            echo -e "Your entry must be an integer between 1 and $(( $MAXCT )) or hit return."
         fi
 	fi
 done
@@ -263,14 +263,13 @@ print_separator $total_width
 OS[0]="Linux/UNIX"
 OS[1]="SUSE Linux"
 OS[2]="Windows"
-MAXCT=${#OS[*]}
+MAXCT="3"
 
 # output choices
-i=0
-while (( i < $MAXCT ))
-do
-        echo "($i): ""${OS[$i]}"  >> .type.tmp
-        i=$(( $i+1 ))
+i=1
+for os in ${OS[@]}; do
+    echo "($i): ""$os"  >> .type.tmp
+    i=$(( $i+1 ))
 done
 
 # print choices
@@ -286,10 +285,10 @@ do
 	echo ""
 	read -p "  Enter OS type [Linux/UNIX]: " CHOICE
 	echo ""
-
-	if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]
+    corrected=$(( $CHOICE - 1 ))
+	if [[ -n ${$corrected//[1-$(( $MAXCT ))]/} ]]
 	then
-		echo "  You must enter an integer number between 0 and $(( $MAXCT-1 ))."
+		echo "  You must enter an integer number between 1 and $(( $MAXCT ))."
 	else
 		VALID=1
 	fi
@@ -298,11 +297,11 @@ done
 if [ -z "$CHOICE" ]
 then
         # CHOICE is blank, default chosen
-	CHOICE=0
+	corrected=0
 fi
 
 # set type
-TYPE=${OS[$CHOICE]}
+TYPE=${OS[$corrected]}
 echo -e "  You Selected: "${yellow}$TYPE${bodytext}"\n"
 
 total_width="110"
@@ -332,7 +331,7 @@ for type in "${M_TYPE[@]}"; do
     #    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" \
     #        "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
     #else
-    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" "($m): ""${M_TYPE[$i]}" >> "$TMPDIR/data.output"
+    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
     #fi
     i=$(( $i+1 ))
 done
