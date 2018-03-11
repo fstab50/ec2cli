@@ -72,8 +72,8 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 [back to the top](#ec2cli---amazon-ec2-utilities)
 
 * * *
-
 ## Installation ##
+* * *
 
 ### AUTOMATED INSTALLATION
 
@@ -90,7 +90,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 Alternatively, if you wish to do the installation yourself, please read on.
 
-### Manual INSTALLATION
+### MANUAL INSTALLATION
 
 * **General Dependencies**
 
