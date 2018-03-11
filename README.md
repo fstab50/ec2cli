@@ -133,7 +133,12 @@ Alternatively, if you wish to do the installation yourself, please read on.
 | **Ubuntu** | ``` $ sudo apt install python-pip ``` | python2.7 |
 | **Redhat** | ```  $ sudo yum install python-pip  ``` | python2.7 |
 | **Fedora-based distros** | ``` $ sudo dnf install python-pip ``` | python2.7 |
-
+| **Ubuntu** | ``` $ sudo apt install python3-pip ``` | python3.4+ |
+| **Redhat** | ```  $ sudo yum install python34-setuptools  ``` | python3.4 |
+| **Redhat** | ```  $ sudo yum install python36-setuptools  ``` | python3.6 |
+| **CentOS7** | ```  $ sudo yum install python34-setuptools  ``` | python3.4 |
+| **CentOS7** | ```  $ sudo yum install python36-setuptools  ``` | python3.6 |
+| **Fedora-based distros** | ``` $ sudo dnf install python3-pip ``` | python3.4+ |
 
 * **Install the [awscli](https://github.com/aws/aws-cli/)**
 
