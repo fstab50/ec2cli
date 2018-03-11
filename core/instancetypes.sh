@@ -15,8 +15,7 @@ E_DEPENDENCY=1			# exit code if missing deps
 NOW=$(date +"%Y-%m-%d")
 pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
-ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
-ec2cli_log=$ROOT"/logs/ec2cli.log"
+ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
 
 # Configuration files, ancillary vars
 CONFIG_DIR="ec2cli"
@@ -175,7 +174,7 @@ if [ -e "$CONFIG_PATH/$INV_FILE" ] && [ $UPDATE_SUCCESS ]; then
     rm  "$CONFIG_PATH/$INV_FILE"
 fi
 for type in ${ARR_CLEAN[@]}; do
-	echo $type >> "$CONFIG_PATH/$INV_FILE"
+	echo "$type" >> "$CONFIG_PATH/$INV_FILE" 
 done
 
 std_logger "New ec2 types file written to CONFIG_PATH ($CONFIG_PATH)" "INFO" $ec2cli_log

@@ -37,10 +37,12 @@ pkg_path=$(cd $(dirname $0); pwd -P)
 E_BADSHELL=7              # exit code if incorrect shell detected
 E_BADARG=8                    # exit code if bad input parameter
 REGION=$AWS_DEFAULT_REGION    # set region from global env var
-
+pkg_path=$(cd $(dirname $0); pwd -P)
+PWD=$(pwd)
+ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
 
 # source config file location
-config_dir=$(cat $pkg_path/pkgconfig.json | jq -r .config_dir)
+config_dir=$(cat $EC2_REPO/core/pkgconfig.json | jq -r .config_dir)
 
 # source colors library
 source $pkg_path/colors.sh
@@ -103,10 +105,27 @@ function set_tmpdir(){
             TMPDIR="/dev/shm"
             cd $TMPDIR
     else
-        std_logger "[INFO]: Failed to find tempfs ram disk.  Using /tmp as alternate"
+        std_logger "Failed to find tempfs ram disk.  Using /tmp as alternate" "INFO" $ec2cli_log
         TMPDIR="/tmp"
         cd $TMPDIR
     fi
+    std_logger "TMPDIR set to $TMPDIR" "INFO" $ec2cli_log
+}
+
+function precheck(){
+    ## check dependencies ##
+    # test default shell, fail if not bash
+    if [ ! -n "$BASH" ]
+      then
+            # shell other than bash
+            echo "\nDefault shell appears to be something other than bash. \
+    		Please rerun with bash. Exiting. Code $E_BADSHELL\n"
+            exit $E_BADSHELL
+    fi
+
+    # set fs pointer to writeable temp location in memory if possible
+    set_tmpdir
+
 }
 
 #
@@ -116,34 +135,10 @@ function set_tmpdir(){
 
 echo -e "\n"
 
-# var definition
-# REGIONS[] :: List of AWS Global Regions, Array
-# REGIONCODE :: Region selected by user
-# LOCATION :: Location description of region selected by user
-# OS[]	::  Operating System choices, Array
-# TYPE :: Operating System selected by user from OS[] array choices
-# SIZE[] :: InstanceTypes, Array
-# CHOICE :: tmp var holding choice selected by user
+precheck
 
-# set fs pointer to writeable temp location in memory
-set_tmpdir
+#  choose region  ---------
 
-#
-# Validate Shell  ------------------------------------------------------------
-#
-
-# test default shell, fail if not bash
-if [ ! -n "$BASH" ]
-  then
-        # shell other than bash
-        echo "\nDefault shell appears to be something other than bash. \
-		Please rerun with bash. Exiting. Code $E_BADSHELL\n"
-        exit $E_BADSHELL
-fi
-
-#
-#  choose region  ------------------------------------------------------------
-#
 
 # collect list of all current AWS Regions globally:
 aws ec2 describe-regions --output json > .regions.json
@@ -214,15 +209,15 @@ echo ""
 echo -e "${title}     EC2 SPOT MARKET\n" | indent15
 echo -e "${bold}${orange}Amazon Web Services ${white}Regions Worldwide${bodytext}\n" | indent10
 
-print_header "\nRegionCode Location" $total_width .header.tmp
+print_header "\nRegionCode Location" $total_width header.tmp
 
 # print choices
-awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' .header.tmp | indent02
+awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' header.tmp | indent02
 echo -e "\n"
 awk '{printf "%-5s %-19s %-2s %-2s %-2s %-2s %-2s \n\n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
 print_separator $total_width
 # clean up
-rm ./.regions.json ./.header.tmp ./.arrayoutput.tmp
+rm .regions.json header.tmp .arrayoutput.tmp
 
 
 # enter loop to validate range and type of user entry
@@ -259,6 +254,7 @@ while [ $VALID -eq 0 ]; do
 done
 
 print_separator $total_width
+
 #
 ###  choose Operating System ##############################################
 #
@@ -311,7 +307,7 @@ echo -e "  You Selected: "${yellow}$TYPE${bodytext}"\n"
 total_width="110"
 print_separator $total_width
 # clean up
-rm ./.type.tmp
+rm .type.tmp
 
 #
 ###  choose Instance size #################################################
@@ -321,33 +317,37 @@ rm ./.type.tmp
 load_arrays
 
 # set max count based on # of entries in the previous section
-MAXCT=${#M_TYPE[*]}
+MAXCT=${#M_TYPE[@]}
+std_logger "MAXCT calculated as:  $MAXCT" "INFO" $ec2cli_log
 
 set counters
-i=1
-c=0; f=0; g=0; m=0; I=0
-j=$(( $i + 10 ))
-j=$(( $i + 10 ))
+i=0
+c=1; f=2; g=3; m=4; I=5
+
 # output choices
-while (( i < $MAXCT ))
-do
-    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" \
-        "($m): ""${M_TYPE[$i]}" >> data.output
+for type in ${M_TYPE[@]}; do
+    #if (( $i == 0 )); then
+    #    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" \
+    #        "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
+    #else
+    echo "FUCKING EXECUTING A LOOP"
+    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
+    #fi
     i=$(( $i+1 ))
 done
 
 # print output
 echo -e "\n${BOLD}Choose from the following $TYPE EC2 instance types:\n${UNBOLD}" | indent02
-echo -e "General Purpose  ""Compute Opt(Gen3)  ""Memory Optimized  ""Storage Optimized  " "Compute Opt(Gen4)" > .header.tmp
-echo -e "---------------  ""----------------  ""----------------  ""-----------------   ""-----------------" >> .header.tmp
-awk -F "  " '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' .header.tmp | indent02
+#echo -e "General Purpose  ""Compute Opt(Gen3)  ""Memory Optimized  ""Storage Optimized  " "Compute Opt(Gen4)" > "$TMPDIR"/header.tmp"
+#echo -e '---------------  ""----------------  ""----------------  ""-----------------   ""-----------------' >> "$TMPDIR/header.tmp"
+#awk -F "  " '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' "$TMPDIR/header.tmp" | indent02
 awk '{ printf "%-4s %-15s %-4s %-15s %-4s %-14s %-4s %-15s %-4s %-15s \n", \
-	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' data.output | indent02
-echo ""
+	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' "$TMPDIR/data.output" | indent02
 
+exit 0
 # clean up
-rm ./data.output
-rm ./.header.tmp
+rm $TMPDIR/data.output
+rm $TMPDIR"/header.tmp"
 
 # read instance choice in from user
 echo ""
@@ -379,9 +379,9 @@ then
         	        # special formatting for long RegionCodes
 			#
 			# print column header
-			echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-			echo -e "-------------  ""----------  ""----------  ""--------   " >> .header.tmp
-			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+			echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+			echo -e "-------------  ""----------  ""----------  ""--------   " >> header.tmp
+			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                 	aws ec2 describe-spot-price-history  \
                           --region $REGION \
@@ -396,9 +396,9 @@ then
 			# output formatting ap-northeast-1, ap-southeast-1, or ap-southeast-2
                         #
                         # print column header
-                        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-                        echo -e "---------------  ""----------  ""----------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+                        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+                        echo -e "---------------  ""----------  ""----------  ""--------   " >> header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
                                 --region $REGION \
@@ -413,9 +413,9 @@ then
 	                # all other RegionCodes, use std default formatting
 			#
 		        # print column header
-		        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-		        echo -e "----------  ""----------  ""----------  ""--------   " >> .header.tmp
-		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+		        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+		        echo -e "----------  ""----------  ""----------  ""--------   " >> header.tmp
+		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
 			aws ec2 describe-spot-price-history  \
                           --region $REGION \
@@ -435,9 +435,9 @@ then
                         # output formatting Frankfurt, Germany
                         #
                         # print column header
-                        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-                        echo -e "-------------  ""----------  ""----------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+                        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+                        echo -e "-------------  ""----------  ""----------  ""--------   " >> header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
                                 --region $REGION \
@@ -452,9 +452,9 @@ then
 			# output formatting ap-northeast-1&2, ap-southeast-1&2
 			#
 			# print column header
-			echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-			echo -e "---------------  ""----------  ""----------  ""--------   " >> .header.tmp
-			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+			echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+			echo -e "---------------  ""----------  ""----------  ""--------   " >> header.tmp
+			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
                                 --region $REGION \
@@ -469,9 +469,9 @@ then
                         # all other RegionCodes, use std default formatting
 			#
 		        # print column header
-		        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-		        echo -e "----------  ""----------  ""----------  ""--------   " >> .header.tmp
-		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+		        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+		        echo -e "----------  ""----------  ""----------  ""--------   " >> header.tmp
+		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                         aws ec2 describe-spot-price-history  \
                                 --region $REGION \
@@ -489,9 +489,9 @@ then
             case "$REGION" in
                 eu-central-1)
                     # print column header
-                    echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-                    echo -e "-------------  ""----------  ""-------  ""--------   " >> .header.tmp
-                    awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+                    echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+                    echo -e "-------------  ""----------  ""-------  ""--------   " >> header.tmp
+                    awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                     # special formatting for long RegionCodes
                     aws ec2 describe-spot-price-history  \
@@ -505,9 +505,9 @@ then
 
                 ap-northeast-1 | ap-northeast-2)
                     # print column header
-    	            echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-            	    echo -e "---------------  ""----------  ""-------  ""--------   " >> .header.tmp
-                    awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+    	            echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+            	    echo -e "---------------  ""----------  ""-------  ""--------   " >> header.tmp
+                    awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
 		            # special formatting for long RegionCodes
                     aws ec2 describe-spot-price-history  \
@@ -521,9 +521,9 @@ then
 
                 ap-southeast-1)
                         # print column header
-                        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-                        echo -e "---------------  ""----------  ""-------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+                        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+                        echo -e "---------------  ""----------  ""-------  ""--------   " >> header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                         # special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
@@ -537,9 +537,9 @@ then
 
                 ap-southeast-2)
                         # print column header
-                        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-                        echo -e "---------------  ""----------  ""-------  ""--------   " >> .header.tmp
-                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+                        echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+                        echo -e "---------------  ""----------  ""-------  ""--------   " >> header.tmp
+                        awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                         # special formatting for long RegionCodes
                         aws ec2 describe-spot-price-history  \
@@ -555,9 +555,9 @@ then
                     # ALL OTHER RegionCodes, use std default formatting
 			            #
                     # print column header
-                    echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > .header.tmp
-                    echo -e "----------  ""----------  ""-------  ""--------   " >> .header.tmp
-                    awk -F " " '{ printf "%-15s %-15s %-13s %-20s \n", $1, $2, $3, $4}' .header.tmp | indent02
+                    echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
+                    echo -e "----------  ""----------  ""-------  ""--------   " >> header.tmp
+                    awk -F " " '{ printf "%-15s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
                     aws ec2 describe-spot-price-history  \
                             --region $REGION \
                             --start-time "$NOW" \
@@ -572,8 +572,8 @@ then
 	esac
 
         # clean up, display all section complete
-        rm ./.header.tmp
-	rm ./.body.tmp
+        rm header.tmp
+	rm .body.tmp
 
 else
 	# display current spot prices only for specific instance type in region chosen
