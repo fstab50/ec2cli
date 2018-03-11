@@ -73,9 +73,8 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 * * *
 ## Installation ##
-* * *
 
-### AUTOMATED INSTALLATION
+### `AUTOMATED INSTALLATION`
 
 * **installer.sh**
 
@@ -90,7 +89,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 Alternatively, if you wish to do the installation yourself, please read on.
 
-### MANUAL INSTALLATION
+### `MANUAL INSTALLATION`
 
 * **General Dependencies**
 
