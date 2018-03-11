@@ -64,9 +64,11 @@ function dependency_check(){
 
 function set_tmpdir(){
     ## set fs pointer to writeable temp location ##
-    if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]; then
+    local df=$(which df)
+    #
+    if [ "$($df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]; then
             # in-memory
-            TMPDIR="/run/shm"
+            TMPDIR="/dev/shm"
             cd $TMPDIR
     else
         std_logger "[INFO]: Failed to find tempfs ram disk.  Using /tmp as alternate"
@@ -109,7 +111,9 @@ function clean_up(){
     fi
 }
 
-# <-- main start -->
+#
+# --- main start --------------------------------------------------------------
+#
 
 # validate deps
 dependency_check

@@ -94,8 +94,25 @@ function load_arrays(){
 
 }
 
+function set_tmpdir(){
+    ## set fs pointer to writeable temp location ##
+    local df=$(which df)
+    #
+    if [ "$($df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]; then
+            # in-memory
+            TMPDIR="/dev/shm"
+            cd $TMPDIR
+    else
+        std_logger "[INFO]: Failed to find tempfs ram disk.  Using /tmp as alternate"
+        TMPDIR="/tmp"
+        cd $TMPDIR
+    fi
+}
 
-# < -- Start -->
+#
+# --- main ---------------------------------------------------------------------
+#
+
 
 echo -e "\n"
 
@@ -109,14 +126,7 @@ echo -e "\n"
 # CHOICE :: tmp var holding choice selected by user
 
 # set fs pointer to writeable temp location in memory
-if [ "$(df /run | awk '{print $1, $6}' | grep tmpfs 2>/dev/null)" ]
-then
-        TMPDIR="/dev/shm"
-        cd $TMPDIR
-else
-        TMPDIR="/tmp"
-        cd $TMPDIR
-fi
+set_tmpdir
 
 #
 # Validate Shell  ------------------------------------------------------------
