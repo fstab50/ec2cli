@@ -76,15 +76,15 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 ### `AUTOMATED INSTALLATION`
 
-* **installer.sh**
+* **install.sh**
 
-    - The easiest way to install `ec2cli` is to download and run [the installer](./installer.sh).  It will check for all dependencies, and if missing, prompt you to install them.   
+    - The easiest way to install `ec2cli` is to download and run [the installer](./install.sh).  It will check for all dependencies, and if missing, prompt you to install them.   
     - Run the following commands from the filesystem location where you wish to install `ec2cli`:
 
         ```bash
             $ cd < ec2cli install dir >
-            $ wget https://bitbucket.org/blakeca00/ec2cli/downloads/installer.sh
-            $ sh installer.sh
+            $ wget https://bitbucket.org/blakeca00/ec2cli/downloads/install.sh
+            $ sh install.sh
         ```
 
 Alternatively, if you wish to do the installation yourself, please read on.
