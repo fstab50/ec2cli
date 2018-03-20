@@ -25,7 +25,7 @@ PROJECT='ec2cli'
 pkg=$(basename $0)
 pkg_path=$(cd $(dirname $0); pwd -P)
 installer_log="$pkg_path/installer.log"
-pwd=$(pwd .)
+PWD=$(pwd .)
 git=$(which git)
 host=$(hostname)
 system=$(uname)
@@ -165,6 +165,16 @@ function precheck(){
     #
 }
 
+function repo_context(){
+    ## determines if installer is executed from within repo on local fs ##
+    if [ $(echo "$(git rev-parse --show-toplevel 2>/dev/null)"| grep ec2cli) ]; then
+        # installer run from within the current git repo
+        return 0
+    else
+        return 1
+    fi
+}
+
 #
 # --- main ---------------------------------------------------------------------------------------------------
 #
@@ -184,9 +194,11 @@ fi
 std_message "Install proceeding.  Downloading files... " "INFO"
 
 # clone repo
-$git clone $repo_url
+if ! repo_context:
+    $git clone $repo_url
+    cd $PROJECT
+fi
 
-cd $PROJECT
 EC2_REPO=$(pwd .)
 profile=''
 
