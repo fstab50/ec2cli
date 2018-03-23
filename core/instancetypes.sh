@@ -139,7 +139,11 @@ else
     	std_message "AWS official EC2 inventory recently updated.  Downloading new inventory file..." "INFO" $ec2cli_log
     	get_ec2_pricefile "$TMPDIR/$PRICEFILE"
         # set success bit
-        if [ $TMPDIR/$PRICEFILE ]; then UPDATE_SUCCESS="true"; fi
+        if [ -f "$TMPDIR/$PRICEFILE" ]; then
+            UPDATE_SUCCESS="true"
+            std_logger "UPDATE_SUCCESS set to true." "INFO" $ec2cli_log
+        fi
+
     else
     	std_message "Local file matches latest AWS Official release date within 24 hours." "INFO" $ec2cli_log
         std_message "Processing local EC2 inventory file." "INFO" $ec2cli_log
@@ -169,12 +173,12 @@ INV_REFRESH_DATE="$(stat -c '%.10y' $TMPDIR/$PRICEFILE)"    # AWS source file re
 INV_FILE="types.ec2"
 
 # write new local instance types file
-if [ -e "$CONFIG_PATH/$INV_FILE" ] && [ $UPDATE_SUCCESS ]; then
+if [ -e "$CONFIG_PATH/$INV_FILE" ]; then
     std_logger "aged inventory file ($INV_FILE) found.  Removing $CONFIG_PATH/$INV_FILE" "INFO" $ec2cli_log
     rm  "$CONFIG_PATH/$INV_FILE"
 fi
 for type in ${ARR_CLEAN[@]}; do
-	echo "$type" >> "$CONFIG_PATH/$INV_FILE" 
+	echo "$type" >> "$CONFIG_PATH/$INV_FILE"
 done
 
 std_logger "New ec2 types file written to CONFIG_PATH ($CONFIG_PATH)" "INFO" $ec2cli_log
