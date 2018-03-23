@@ -1500,12 +1500,12 @@ function ec2cli_list_securitygroups(){
         # print and format output
         sp="${frame}|${bodytext}"       # separator
 
-        if (( $(tput cols) >= "160" )); then
+        if (( $(tput cols) > "170" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
             total_width="168"
         else
-            total_width="132"
+            total_width="140"
         fi
         # snapshots found, print region identifier
         printf "\n${title}SECURITY GROUPS${bodytext} : $REGION\n\n" | indent25
@@ -1541,7 +1541,8 @@ function ec2cli_list_securitygroups(){
         else
             while (( i < $MAXCT )); do
                 while (( i < $MAXCT )); do
-                    echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp ${ARR_FPORT[$i]} $sp ${ARR_TPORT[$i]} $sp \
+                    echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
+                          $sp "$( if [ $(echo ${ARR_TPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )" $sp \
                           ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
                     # incr ct
                     i=$(( $i+1 ))
@@ -1549,12 +1550,17 @@ function ec2cli_list_securitygroups(){
             done
         fi
 
+        # sort
         cat .body.tmp | sort -k2 -r >> .ec2-qv-securitygroups.tmp
 
-        # print and format output
-        awk '{ printf "%-2s %-32.31s %-2s %-20s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-14s %-2s %-20.19s %-2s %-25.24s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-securitygroups.tmp | indent02
-
+        if [ $FULL_CLI ]; then
+            # print and format output
+            awk '{ printf "%-2s %-32.31s %-2s %-20s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-14s %-2s %-20.19s %-2s %-25.24s %-2s \n", \
+                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-securitygroups.tmp | indent02
+        else
+            awk '{ printf "%-2s %-32.31s %-2s %-20s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-14s %-2s %-20.19s %-2s \n", \
+                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .ec2-qv-securitygroups.tmp | indent02
+        fi
         # print footer
         print_footer "${white}${BOLD}$SUM${UNBOLD}${reset} Security Groups in region [$REGION]" $total_width
 
