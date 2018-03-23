@@ -285,22 +285,19 @@ do
 	echo ""
 	read -p "  Enter OS type [Linux/UNIX]: " CHOICE
 	echo ""
+
     corrected=$(( $CHOICE - 1 ))
 
-    #if [[ -n ${$corrected//[1-$(( $MAXCT ))]/} ]];	then
-
-    if [ $corrected -lt 0 ] || [ $corrected -gt $(($MAXCT-1)) ];	then
+    if [ -z "$CHOICE" ]; then
+        # CHOICE is blank, default chosen
+    	corrected=0
+        VALID=1
+    elif [ $corrected -lt 0 ] || [ $corrected -gt $(($MAXCT-1)) ];	then
 		echo "  You must enter an integer number between 1 and $(( $MAXCT ))."
 	else
 		VALID=1
 	fi
 done
-
-if [ -z "$CHOICE" ]
-then
-        # CHOICE is blank, default chosen
-	corrected=0
-fi
 
 # set type
 TYPE=${OS[$corrected]}
