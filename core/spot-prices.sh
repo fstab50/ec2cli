@@ -261,14 +261,14 @@ print_separator $total_width
 #
 
 OS[0]="Linux/UNIX"
-OS[1]="SUSE Linux"
+OS[1]="SUSE"
 OS[2]="Windows"
 MAXCT="3"
 
 # output choices
 i=1
 for os in ${OS[@]}; do
-    echo "($i): ""$os"  >> .type.tmp
+    echo "($i): $os"  >> .type.tmp
     i=$(( $i+1 ))
 done
 
@@ -286,8 +286,10 @@ do
 	read -p "  Enter OS type [Linux/UNIX]: " CHOICE
 	echo ""
     corrected=$(( $CHOICE - 1 ))
-	if [[ -n ${$corrected//[1-$(( $MAXCT ))]/} ]]
-	then
+
+    #if [[ -n ${$corrected//[1-$(( $MAXCT ))]/} ]];	then
+
+    if [ $corrected -lt 0 ] || [ $corrected -gt $(($MAXCT-1)) ];	then
 		echo "  You must enter an integer number between 1 and $(( $MAXCT ))."
 	else
 		VALID=1
@@ -309,15 +311,31 @@ print_separator $total_width
 # clean up
 rm .type.tmp
 
+
+### STUB-IN FUNCTIONALITY ################################################
+# below this section has failures - create full table for the region
+# until fixed.
+
+aws ec2 describe-spot-price-history  \
+    --region $REGION \
+    --start-time "$NOW" \
+    --product-description "$TYPE" \
+    --output table
+
+exit 0
+
+
 #
 ###  choose Instance size #################################################
 #
+
 
 # build InstanceType array
 load_arrays
 
 # set max count based on # of entries in the previous section
-MAXCT=${#M_TYPE[@]}
+MAXCT=${#M_TYPE[*]}
+MAXCT=10
 std_logger "MAXCT calculated as:  $MAXCT" "INFO" $ec2cli_log
 
 set counters
@@ -326,23 +344,25 @@ c=1; f=2; g=3; I=5; m=4;
 echo -e "\nM_TYPE Array contains:  ${M_TYPE[@]}\n"
 
 # output choices
-for type in "${M_TYPE[@]}"; do
+#for type in "${M_TYPE[@]}"; do
+while (( $i < $(($MAXCT-1)) )); do
     #if (( $i == 0 )); then
     #    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" \
     #        "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
     #else
-    echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
+    #echo "($c): ""${C_TYPE[$i]}" "($f): ""${F_TYPE[$i]}" "($g): ""${G_TYPE[$i]}" "($I): ""${I_TYPE[$i]}" "($m): ""${M_TYPE[$i]}" >> $TMPDIR/data.output
+    echo "${C_TYPE[$i]} ${F_TYPE[$i]} ${G_TYPE[$i]} ${I_TYPE[$i]} ${M_TYPE[$i]}" >> $TMPDIR/data.output
     #fi
     i=$(( $i+1 ))
 done
 
 # print output
-echo -e "\n${BOLD}Choose from the following $TYPE EC2 instance types:\n${UNBOLD}" | indent02
-echo -e "General Purpose  ""Compute Opt(Gen3)  ""Memory Optimized  ""Storage Optimized  " "Compute Opt(Gen4)" > "$TMPDIR"/header.tmp"
-#echo -e '---------------  ""----------------  ""----------------  ""-----------------   ""-----------------' >> "$TMPDIR/header.tmp"
-#awk -F "  " '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' "$TMPDIR/header.tmp" | indent02
-awk -F " " '{printf "%-4s %-15s %-4s %-15s %-4s %-14s %-4s %-15s %-4s %-15s \n", \
-	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' "$TMPDIR/data.output" | indent02
+#echo -e "\n${BOLD}Choose from the following $TYPE EC2 instance types:\n${UNBOLD}" | indent02
+#echo -e "General Purpose  ""Compute Opt(Gen3)  ""Memory Optimized  ""Storage Optimized  " "Compute Opt(Gen4)" > "$TMPDIR"/header.tmp"
+##echo -e '---------------  ""----------------  ""----------------  ""-----------------   ""-----------------' >> "$TMPDIR/header.tmp"
+#awk -F " " '{printf "%-4s %-15s %-4s %-15s %-4s %-14s %-4s %-15s %-4s %-15s \n", $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' "$TMPDIR/data.output" | indent02
+awk '{ printf "%-20s %-20s %-20s %-20s %-20s \n", $1, $2, $3, $4, $5}' $TMPDIR/data.output | indent02
+
 
 
 # clean up
