@@ -1489,16 +1489,8 @@ function ec2cli_list_securitygroups(){
                     --output json --region $REGION > .jsonoutput.tmp
     fi
 
-    # Sum size of all snapshots (footer)
-    if [ $ALL_REGIONS ]; then
-        SUM=0
-        ARR=$(cat .jsonoutput.tmp | jq -r .Snapshots[].VolumeSize)
-        for vol in ${ARR[@]}; do
-            SUM=$(( $SUM + $vol ))
-        done
-    else
-        SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' .jsonoutput.tmp)
-    fi
+    # number of groups
+    SUM=$(jq -r '.SecurityGroups[].GroupName' .jsonoutput.tmp | wc -l)
 
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
@@ -1540,7 +1532,8 @@ function ec2cli_list_securitygroups(){
         i=0
         if [ $FULL_CLI ]; then
             while (( i < $MAXCT )); do
-                echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp ${ARR_FPORT[$i]} $sp ${ARR_TPORT[$i]} $sp \
+                echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
+                      $sp "$( if [ $(echo ${ARR_TPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )" $sp \
                       ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAG[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
@@ -1563,7 +1556,7 @@ function ec2cli_list_securitygroups(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-securitygroups.tmp | indent02
 
         # print footer
-        print_footer "${white}${BOLD}$TOTAL${UNBOLD}${reset} Security Groups in region [$REGION]" $total_width
+        print_footer "${white}${BOLD}$SUM${UNBOLD}${reset} Security Groups in region [$REGION]" $total_width
 
         # clean up
         rm .jsonoutput.tmp .body.tmp  .ec2-qv-securitygroups.tmp
