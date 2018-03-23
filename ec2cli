@@ -1472,39 +1472,102 @@ function ec2cli_list_securitygroups(){
     local REGION=$1
     local TOTAL
     local total_width="130"
-    # print region identifier
-    printf "\n${title}SECURITY GROUPS${bodytext} : $REGION\n\n" | indent18
+    local total_width=$(( $(tput cols) - 4 ))
 
-    # print header
-    print_header "GroupName Group-Id Ports Ports CidrIp VpcId Tag Description" $total_width .ec2-qv-securitygroups.tmp
+    # pull json info, all instances in region
+    if [ $ALL_REGIONS ]; then
+        # load array from local list of regions
+        REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
+        for region in ${REGIONS[@]}; do \
+            aws ec2 --profile $PROFILE describe-secdurity-groups \
+                --region $region --output json >> .jsonoutput.tmp; done &
+        delay_spinner "  Please wait, retrieving data from AWS..."
+        clear
+    else
+        aws ec2 --profile $PROFILE describe-security-groups \
+                    --output json --region $REGION > .jsonoutput.tmp
+    fi
 
-    # output from aws
-    aws ec2 --profile $PROFILE describe-security-groups \
-        --output text \
-        --region $REGION \
-        --query "SecurityGroups[*]. \
-            [GroupName, \
-            GroupId, \
-            IpPermissions[0].FromPort, \
-            IpPermissions[0].ToPort, \
-            IpPermissions[0].IpRanges[0].CidrIp, \
-            VpcId, \
-            Tags[0].Value, \
-            Description]" \
-    >> .ec2-qv-securitygroups.tmp
+    # Sum size of all snapshots (footer)
+    if [ $ALL_REGIONS ]; then
+        SUM=0
+        ARR=$(cat .jsonoutput.tmp | jq -r .Snapshots[].VolumeSize)
+        for vol in ${ARR[@]}; do
+            SUM=$(( $SUM + $vol ))
+        done
+    else
+        SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' .jsonoutput.tmp)
+    fi
 
-    # count total
-    TOTAL=$(cat .ec2-qv-securitygroups.tmp | grep "sg-" | wc -l)
+    if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
+    then
+        # print footer if no snapshots found
+        std_message "${title}0${bodytext} snapshots in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
+    else
+        # print and format output
+        sp="${frame}|${bodytext}"       # separator
 
-    # print and format output
-    awk  '{ printf "%-20s %-13s %-6s %-7s %-19s %-14s %-20s %-20s\n", \
-            $1, $2, $3, $4, $5, $6, $7, $8}' .ec2-qv-securitygroups.tmp | indent02
+        if (( $(tput cols) >= "160" )); then
+            FULL_CLI="True"
+            std_logger "[INFO]: FULL_CLI set to True, Full width output"
+            total_width="168"
+        else
+            total_width="132"
+        fi
+        # snapshots found, print region identifier
+        printf "\n${title}SECURITY GROUPS${bodytext} : $REGION\n\n" | indent25
 
-    # print footer
-    print_footer "${white}${BOLD}$TOTAL${UNBOLD}${reset} Security Groups in region [$REGION]" $total_width
+        if [ $FULL_CLI ]; then
+            print_header "$sp  GroupName $sp GroupId $sp Ports $sp Ports $sp CidrIp $sp VpcId $sp Tag $sp Description $sp" $total_width  .ec2-qv-securitygroups.tmp
+        else
+            print_header "$sp  GroupName $sp GroupId $sp Ports $sp Ports $sp CidrIp $sp VpcId $sp Tag $sp" $total_width  .ec2-qv-securitygroups.tmp
+        fi
 
-    # clean up
-    rm .ec2-qv-securitygroups.tmp
+        # parse json
+        ARR_ID=( $(jq -r '.SecurityGroups[].GroupId' .jsonoutput.tmp) )
+        ARR_NAME=( $(jq -r '.SecurityGroups[].GroupName' .jsonoutput.tmp) )
+        ARR_FPORT=( $(jq -r '.SecurityGroups[].IpPermissions[0].FromPort' .jsonoutput.tmp) )
+        ARR_TPORT=( $(jq -r '.SecurityGroups[].IpPermissions[0].ToPort' .jsonoutput.tmp) )
+        ARR_CIDR=( $(jq -r '.SecurityGroups[].IpPermissions[0].IpRanges[0].CidrIp' .jsonoutput.tmp) )
+        ARR_VPC=( $(jq -r '.SecurityGroups[].VpcId' .jsonoutput.tmp) )
+        ARR_TAG=( $(jq -r '.SecurityGroups[].Tags[0].Value' .jsonoutput.tmp) )
+        ARR_DESC=( $(jq -r '.SecurityGroups[].Description' .jsonoutput.tmp) )
+
+        MAXCT=${#ARR_ID[*]}    # count snapshots found
+
+        # output table of json array
+        i=0
+        if [ $FULL_CLI ]; then
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp ${ARR_FPORT[$i]} $sp ${ARR_TPORT[$i]} $sp \
+                      ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAG[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+        else
+            while (( i < $MAXCT )); do
+                while (( i < $MAXCT )); do
+                    echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp ${ARR_FPORT[$i]} $sp ${ARR_TPORT[$i]} $sp \
+                          ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
+                    # incr ct
+                    i=$(( $i+1 ))
+                done
+            done
+        fi
+
+        cat .body.tmp | sort -k2 -r >> .ec2-qv-securitygroups.tmp
+
+        # print and format output
+        awk '{ printf "%-2s %-32.31s %-2s %-20s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-14s %-2s %-20.19s %-2s %-25.24s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-securitygroups.tmp | indent02
+
+        # print footer
+        print_footer "${white}${BOLD}$TOTAL${UNBOLD}${reset} Security Groups in region [$REGION]" $total_width
+
+        # clean up
+        rm .jsonoutput.tmp .body.tmp  .ec2-qv-securitygroups.tmp
+    fi
     #
     # <-- end function ec2cli_list_securitygroups -->
     #
