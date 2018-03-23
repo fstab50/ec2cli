@@ -17,7 +17,7 @@ E_EXPIRED_CREDS=9           # exit code if temporary credentials no longer valid
 E_MISC=11                   # exit code if miscellaneous (unspecified) error
 
 #
-VERSION="1.5"
+VERSION="1.6"
 
 
 function authenticated(){
@@ -148,11 +148,11 @@ function print_header(){
     local width="$2"
     local reportfile="$3"
     #
-    if (( $(tput cols) > 280 )); then
-        printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
-    else
+    #if (( $(tput cols) > 480 )); then
+    #    printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
+    #else
         printf "%-10s %*s" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
-    fi
+    #fi
     echo -e "${bodytext}" >> $reportfile
     echo -ne ${title} >> $reportfile
     echo -e "${frame}" >> $reportfile
@@ -200,11 +200,20 @@ function std_logger(){
 }
 
 function std_message(){
+    #
+    # Caller formats:
+    #
+    #   Logging to File | std_message "xyz message" "INFO" "/pathto/log_file"
+    #
+    #   No Logging  | std_message "xyz message" "INFO"
+    #
     local msg="$1"
     local prefix="$2"
     local log_file="$3"
     #
-    std_logger "$msg" "$prefix" $log_file
+    if [ $log_file ]; then
+        std_logger "$msg" "$prefix" $log_file
+    fi
     [[ $quiet ]] && return
     shift
     pref="----"
