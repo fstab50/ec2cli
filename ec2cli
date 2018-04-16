@@ -914,7 +914,7 @@ function ec2cli_list_instances(){
     MAXCT=${#ARR_STATE[*]}    # count instances found
 
     # test for 0 instances in region
-    if [[ $MAXCT = 0 ]]; then
+    if [ "$MAXCT" -eq 0 ]; then
         # no instances in region
         std_logger "INFO: function ec2cli_list_instances: list instances"
         std_message "No EC2 instances found in region $REGION." INFO
