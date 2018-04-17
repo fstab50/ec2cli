@@ -187,7 +187,7 @@ function precheck(){
 
 function repo_context(){
     ## determines if installer is executed from within repo on local fs ##
-    if [ $(echo "$(git rev-parse --show-toplevel 2>/dev/null)"| grep ec2cli) ]; then
+    if [ $(echo "$(git rev-parse --show-toplevel 2>/dev/null)" | grep ec2cli) ]; then
         # installer run from within the current git repo
         return 0
     elif [ -d ec2cli ]; then
