@@ -247,22 +247,22 @@ fi
 # --- update local profile -----------------------------------------------------
 
 
-if [ ! $(grep 'ec2cli installer' $profile) ]; then
+if [ ! "$(grep 'ec2cli installer' $profile)" ]; then
     echo "# inserted by ec2cli installer" >> $profile
 fi
 
 # EC2_REPO
-if [ ! $(echo $EC2_REPO) ]; then
+if [ ! "$(echo $EC2_REPO)" ]; then
      echo "export EC2_REPO=$EC2_REPO" >> $profile
 fi
 
 # path update
-if [ ! $(echo $PATH | grep ec2cli) ]; then
+if [ ! "$(echo $PATH | grep ec2cli)" ]; then
     echo "export PATH=$PATH:$EC2_REPO" >> $profile
 fi
 
 # ssh_key location
-if [ ! $(echo $SSH_KEYS) ]; then
+if [ ! "$(echo $SSH_KEYS)" ]; then
     std_message "${title}ec2cli${reset} needs the directory where ssh public keys (.pem files) for ec2 instances." "INFO"
     read -p "  Please enter the directory location: [.]: " choice
 
