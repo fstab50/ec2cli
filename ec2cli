@@ -105,6 +105,7 @@ function ec2cli_help(){
           ${options}-h${bodytext},${options} --help${bodytext}         Display help
           ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role from the local
                              awscli config used to run ec2cli
+          ${options}-S${bodytext},${options} --sort${bodytext}         Sort by value provided, size | id | date
           ${options}-V${bodytext},${options} --version${bodytext}      Print package version, dependency versions
 
       ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
