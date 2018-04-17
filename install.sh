@@ -132,8 +132,12 @@ function precheck(){
     done
 
     ## check if awscli tools are configured ##
-    if [[ ! -f $HOME/.aws/config ]]; then
-        std_error_exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+    if [ $(curl http://169.254.169.254/latest/meta-data/instance-id 2>/dev/null) ]; then
+        std_logger "Skipping awscli configuration check, appears to be EC2 instance detected."
+    else
+        if [[ ! -f $HOME/.aws/config ]]; then
+            std_error_exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+        fi
     fi
 
     ## check for jq, use system installed version if found, otherwise use bundled ##
@@ -194,7 +198,7 @@ fi
 std_message "Install proceeding.  Downloading files... " "INFO"
 
 # clone repo
-if ! repo_context:
+if ! repo_context; then
     $git clone $repo_url
     cd $PROJECT
 fi
