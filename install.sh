@@ -203,7 +203,8 @@ precheck
 
 # download ec2cli
 $clear
-std_message "START: The installer will install ${title}ec2cli${reset} to the current directory where the installer is located." "INFO" $log_file
+std_message "START: The installer will install ${title}ec2cli${reset} to the current
+    \tdirectory where the installer is located." "INFO" $log_file
 echo -e "\n\n"
 read -p "  Is this ok? [quit] " choice
 if [ -z $choice ] || [ "$choice" = "q" ]; then
