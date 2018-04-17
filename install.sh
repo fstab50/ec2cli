@@ -125,7 +125,7 @@ function precheck(){
     fi
 
     ## check for required cli tools ##
-    for prog in which git aws ssh awk sed bc wget; do
+    for prog in which git aws ssh awk sed bc wget curl; do
         if ! type "$prog" > /dev/null 2>&1; then
             std_error_exit "$prog is required and not found in the PATH. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
         fi
