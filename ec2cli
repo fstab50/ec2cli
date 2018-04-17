@@ -1029,9 +1029,9 @@ function ec2cli_list_instances(){
         fi
         case $sort_column in
             id | Id | ID | SnapshotId)
-                column=1; cat sort.tmp | sort -k"$column" -n >> .body.tmp;;
+                column=2; cat sort.tmp | sort -k"$column" -n >> .body.tmp;;
             size | Size)
-                column=2; cat sort.tmp | sort -k"$column" -r >> .body.tmp;;
+                column=4; cat sort.tmp | sort -k"$column" -r >> .body.tmp;;
             runtime)
                 column=15; cat sort.tmp | sort -k$column -n >> .body.tmp;;
         esac
