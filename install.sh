@@ -190,6 +190,9 @@ function repo_context(){
     if [ $(echo "$(git rev-parse --show-toplevel 2>/dev/null)"| grep ec2cli) ]; then
         # installer run from within the current git repo
         return 0
+    elif [ -d ec2cli ]; then
+        cd ec2cli
+        return 0
     else
         return 1
     fi
