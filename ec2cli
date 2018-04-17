@@ -1364,11 +1364,11 @@ function ec2cli_run_instances(){
 	done
 
 	# display choices from array
-	echo -e "     InstanceID           Type       State    SecurityGroup    Root-Volume            PublicIP        Description"
-	echo -e "     -------------------  ---------  -------  ---------------  ---------------------  --------------  -------------------------"
+	echo -e "     InstanceID           Type        State    SecurityGroup         Root-Volume            PublicIP        Description"
+	echo -e "     -------------------  ----------  -------  --------------------  ---------------------  --------------  -------------------------"
 
 	# values
-	awk  '{ printf "%-4s %-20s %-10s %-8s %-16s %-22s %-15s %-2s %-2s %-2s %-2s \n", \
+	awk  '{ printf "%-4s %-20s %-11s %-8s %-21s %-22s %-15s %-2s %-2s %-2s %-2s \n", \
 	        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .arrayoutput.tmp
 
 	# get user input while checking type and range
