@@ -956,10 +956,10 @@ function ec2cli_list_instances(){
     # limit security grp name to 15 chars
     ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' .jsonoutput.tmp | cut -c 1-15) )
     # limit length of tag fields to 20 chars
-    ARR_TAGK1=( $(jq -r '.Reservations[].Instances[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-15) )
-    ARR_TAGV1=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-15) )
-    ARR_TAGK2=( $(jq -r '.Reservations[].Instances[].Tags[1].Key' .jsonoutput.tmp | cut -c 1-15) )
-    ARR_TAGV2=( $(jq -r '.Reservations[].Instances[].Tags[1].Value' .jsonoutput.tmp | cut -c 1-15) )
+    ARR_TAGK1=( $(jq -r '.Reservations[].Instances[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGV1=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGK2=( $(jq -r '.Reservations[].Instances[].Tags[1].Key' .jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGV2=( $(jq -r '.Reservations[].Instances[].Tags[1].Value' .jsonoutput.tmp | cut -c 1-17) )
 
     #
     # instances in region.  test if running instances
@@ -1041,10 +1041,10 @@ function ec2cli_list_instances(){
         # print and format output
         #
         if [ $FULL_CLI ]; then
-            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9s %-2s %-18s %-2s %-23s %-2s %-15s %-2s %-14s %-2s %-33s %-2s \n", \
+            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-15s %-2s %-14s %-2s %-33.32s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16, $17, $18}' .body.tmp | indent02
         else
-            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9s %-2s %-18s %-2s %-23s %-2s %-16s %-2s %-15s %-2s \n", \
+            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-16s %-2s %-15s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16}' .body.tmp | indent02
         fi
         # print footer
@@ -1069,7 +1069,7 @@ function ec2cli_list_instances(){
                 i=$(( $i+1 ))
             done
             # print full format
-            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9s %-2s %-16s %-2s %-23s %-2s %-69s %-2s \n", \
+            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9.9s %-2s %-16s %-2s %-23s %-2s %-69s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
             # print footer
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
@@ -1081,7 +1081,7 @@ function ec2cli_list_instances(){
                 i=$(( $i+1 ))
             done
             # print narrow format
-            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9s %-2s %-16s %-2s %-23s %-2s %-35s %-2s \n", \
+            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9.9s %-2s %-16s %-2s %-23s %-2s %-35s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
             # print footer
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
