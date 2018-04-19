@@ -5,7 +5,7 @@
 #
 
 
-VERSION="1.3"
+VERSION="1.5"
 
 
 # Formatting
@@ -29,6 +29,7 @@ brightcyan='\033[0;36m'
 brightgreen='\033[38;5;95;38;5;46m'
 brightyellow='\033[38;5;11m'
 brightyellow2='\033[38;5;95;38;5;226m'
+brightyellowgreen='\033[38;5;95;38;5;155m'
 brightwhite='\033[38;5;15m'
 bluepurple='\033[38;5;68m'
 
@@ -43,8 +44,12 @@ title=$(echo -e ${bold}${white})
 url=$(echo -e ${underline}${brightblue})
 options=$(echo -e ${white})
 commands=$(echo -e ${brightcyan})       # use for ansi escape color codes
-frame=$(echo -e ${brightgreen})         # use for tables; border faming
+gframe=$(echo -e ${brightgreen})        # use for tables; green border faming
+oframe=$(echo -e ${orange})             # use for tables; orange border faming
+wframe=$(echo -e ${brightwhite})        # use for tables; white border faming
 bodytext=$(echo -e ${reset}${wgray})    # main body text; set to reset for native xterm
+bg=$(echo -e ${brightgreen})            # brightgreen foreground cmd
+bbg=$(echo -e ${bold}${brightgreen})    # bold brightgreen foreground cmd
 
 # initialize default color scheme
 accent=$(tput setaf 008)                # ansi format
