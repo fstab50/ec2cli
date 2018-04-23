@@ -57,6 +57,7 @@ declare -a MISC_TYPE
 
 # source colors library
 source $pkg_path/colors.sh
+frame=$bgframe
 
 # source standard functions
 source $pkg_path/std_functions.sh

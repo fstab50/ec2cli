@@ -24,7 +24,7 @@ repo_url='https://github.com/fstab50/ec2cli.git'
 PROJECT='ec2cli'
 pkg=$(basename $0)
 pkg_path=$(cd $(dirname $0); pwd -P)
-installer_log="$pkg_path/installer.log"
+log_file="$pkg_path/installer.log"
 PWD=$(pwd .)
 git=$(which git)
 host=$(hostname)
@@ -54,23 +54,39 @@ function indent04() { sed 's/^/    /'; }
 function std_logger(){
     local msg="$1"
     local prefix="$2"
+    local log_file="$3"
     #
     if [ ! $prefix ]; then
-        prefix="[INFO]"
+        prefix="INFO"
     fi
-    if [[ ! $installer_log ]]; then
-        echo "$prefix: $pkg ($VERSION): failure to call std_logger, $installer_log location undefined"
-        exit $E_DIR
+    if [ ! -f $log_file ]; then
+        # create log file
+        touch $log_file
+        if [ ! -f $log_file ]; then
+            echo "[$prefix]: $pkg ($VERSION): failure to call std_logger, $log_file location not writeable"
+            exit $E_DIR
+        fi
+    else
+        echo "$(date +'%Y-%m-%d %T') $host - $pkg - $VERSION - [$prefix]: $msg" >> "$log_file"
     fi
-    echo "$(date +'%b %d %T') $host $pkg - $VERSION - $msg" >> "$installer_log"
 }
 
 function std_message(){
-    local msg="$1"
-    local format="$3"
     #
-    std_logger "$msg"
-    [[ $quiet ]] && return
+    # Caller formats:
+    #
+    #   Logging to File | std_message "xyz message" "INFO" "/pathto/log_file"
+    #
+    #   No Logging  | std_message "xyz message" "INFO"
+    #
+    local msg="$1"
+    local prefix="$2"
+    local log_file="$3"
+    #
+    if [ $log_file ]; then
+        std_logger "$msg" "$prefix" $log_file
+    fi
+    [[ $QUIET ]] && return
     shift
     pref="----"
     if [[ $1 ]]; then
@@ -86,13 +102,13 @@ function std_message(){
 
 function std_error(){
     local msg="$1"
-    std_logger "[ERROR]: $msg"
+    std_logger "$msg" "ERROR" $log_file
     echo -e "\n${yellow}[ ${red}ERROR${yellow} ]$reset  $msg\n" | indent04
 }
 
 function std_warn(){
     local msg="$1"
-    std_logger "[WARN]: $msg"
+    std_logger "$msg" "WARN" $log_file
     if [ "$3" ]; then
         # there is a second line of the msg, to be printed by the caller
         echo -e "\n${yellow}[ ${red}WARN${yellow} ]$reset  $msg" | indent04
@@ -125,15 +141,19 @@ function precheck(){
     fi
 
     ## check for required cli tools ##
-    for prog in which git aws ssh awk sed bc wget; do
+    for prog in which git aws ssh awk sed bc wget curl; do
         if ! type "$prog" > /dev/null 2>&1; then
             std_error_exit "$prog is required and not found in the PATH. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
         fi
     done
 
     ## check if awscli tools are configured ##
-    if [[ ! -f $HOME/.aws/config ]]; then
-        std_error_exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+    if [ $(curl http://169.254.169.254/latest/meta-data/instance-id 2>/dev/null) ]; then
+        std_message "Skipping awscli configuration check, appears to be EC2 instance detected." "INFO" $log_file
+    else
+        if [[ ! -f $HOME/.aws/config ]]; then
+            std_error_exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+        fi
     fi
 
     ## check for jq, use system installed version if found, otherwise use bundled ##
@@ -149,13 +169,13 @@ function precheck(){
     ## config directories, files ##
     if [ -d $CONFIG_ROOT ]; then
         if [ ! -d $CONFIG_PATH ]; then
-            std_logger "[INFO]: Directory CONFIG_PATH ($CONFIG_PATH) not found, creating."
+            std_message "Directory CONFIG_PATH ($CONFIG_PATH) not found, creating." "INFO" $log_file
             mkdir $CONFIG_PATH
         fi
     else
         std_logger "[INFO]: Directory CONFIG_ROOT ($CONFIG_ROOT) not found, use alternate."
         if [ ! -d $CONFIG_PATH_ALT ]; then
-            std_logger "[INFO]: Directory CONFIG_PATH_ALT ($CONFIG_PATH_ALT) not found, creating."
+            std_message "Directory CONFIG_PATH_ALT ($CONFIG_PATH_ALT) not found, creating." "INFO" $log_file
             mkdir $CONFIG_PATH_ALT
         fi
         CONFIG_PATH=$CONFIG_PATH_ALT
@@ -167,8 +187,11 @@ function precheck(){
 
 function repo_context(){
     ## determines if installer is executed from within repo on local fs ##
-    if [ $(echo "$(git rev-parse --show-toplevel 2>/dev/null)"| grep ec2cli) ]; then
+    if [ $(echo "$(git rev-parse --show-toplevel 2>/dev/null)" | grep ec2cli) ]; then
         # installer run from within the current git repo
+        return 0
+    elif [ -d ec2cli ]; then
+        cd ec2cli
         return 0
     else
         return 1
@@ -176,14 +199,15 @@ function repo_context(){
 }
 
 #
-# --- main ---------------------------------------------------------------------------------------------------
+# --- main ---------------------------------------------------------------------
 #
 
 precheck
 
 # download ec2cli
 $clear
-std_message "The installer will install ${title}ec2cli${reset} to the current directory where the installer is located." "INFO"
+std_message "START: The installer will install ${title}ec2cli${reset} to the current
+    \tdirectory where the installer is located." "INFO" $log_file
 echo -e "\n\n"
 read -p "  Is this ok? [quit] " choice
 if [ -z $choice ] || [ "$choice" = "q" ]; then
@@ -191,10 +215,10 @@ if [ -z $choice ] || [ "$choice" = "q" ]; then
 fi
 
 # proceed with install
-std_message "Install proceeding.  Downloading files... " "INFO"
+std_message "Install proceeding.  Downloading files... " "INFO" $log_file
 
 # clone repo
-if ! repo_context:
+if ! repo_context; then
     $git clone $repo_url
     cd $PROJECT
 fi
@@ -202,7 +226,7 @@ fi
 EC2_REPO=$(pwd .)
 profile=''
 
-std_message "Locating local bash profile..." "INFO"
+std_message "Locating local bash profile..." "INFO" $log_file
 
 if [ -f $HOME/.bashrc ]; then
     std_message "Found .bashrc" INFO
@@ -213,7 +237,7 @@ elif [ -f $HOME/.bash_profile ]; then
     profile="$HOME/.bash_profile"
 
 else
-    std_message "Could not find either a .bashrc or .bash_profile.  Creating .bashrc." "INFO"
+    std_message "Could not find either a .bashrc or .bash_profile.  Creating .bashrc." "INFO" $log_file
     read -p "  Is this ok? [quit] " choice
     if [ -z $choice ] || [ "$choice" = "y" ]; then
         exit 0
@@ -222,24 +246,40 @@ else
     touch $profile
 fi
 
-# update local profile
-echo "# inserted by ec2cli installer" >> $profile
-echo "export EC2_REPO=$EC2_REPO" >> $profile
-echo "export PATH=$PATH:$EC2_REPO" >> $profile
 
-std_message "${title}ec2cli${reset} needs the directory where ssh public keys (.pem files) for ec2 instances." "INFO"
+# --- update local profile -----------------------------------------------------
 
-read -p "  Please enter the directory location: [.]: " choice
 
-if [ -z $choice ]; then
-    SSH_KEYS=$EC2_REPO
-else
-    SSH_KEYS=$choice
+if [ ! "$(grep 'ec2cli installer' $profile)" ]; then
+    echo "# inserted by ec2cli installer" >> $profile
 fi
 
-echo "export SSH_KEYS=$SSH_KEYS" >> $profile
+# EC2_REPO
+if [ ! "$(echo $EC2_REPO)" ]; then
+     echo "export EC2_REPO=$EC2_REPO" >> $profile
+fi
 
-std_message "${title}ec2cli${reset} Installer Complete. Installer log located at $installer_log." "INFO"
-std_message "End.\n" INFO
+# path update
+if [ ! "$(echo $PATH | grep ec2cli)" ]; then
+    echo "export PATH=$PATH:$EC2_REPO" >> $profile
+fi
+
+# ssh_key location
+if [ ! "$(echo $SSH_KEYS)" ]; then
+    std_message "${title}ec2cli${reset} needs the directory where ssh public keys (.pem files) for ec2 instances." "INFO"
+    read -p "  Please enter the directory location: [.]: " choice
+
+    if [ -z $choice ]; then
+        SSH_KEYS=$EC2_REPO
+    else
+        SSH_KEYS=$choice
+    fi
+    echo "export SSH_KEYS=$SSH_KEYS" >> $profile
+else
+    std_message "Skipping configuration of SSH_KEYS env variable; found in $profile" "INFO" $log_file
+fi
+
+std_message "${title}ec2cli${reset} Installer Complete. Installer log located at $installer_log." "INFO" $log_file
+std_message "End.\n" "INFO"
 source $profile
 exit 0

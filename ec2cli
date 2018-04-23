@@ -71,7 +71,7 @@ resources=${yellow}
 commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
 regions=$(echo -e ${bluepurple})
 url=$(echo -e ${underline}${brightblue})
-frame=$(echo -e ${brightgreen})
+frame=$bgframe
 bodytext=$(echo -e ${reset}${wgray})            # report body text; set to reset for native xterm
 #bodytext=$(echo -e ${reset})            # report body text; set to reset for native xterm
 ast="$(echo -e ${brightyellow})"    # astrick
@@ -105,6 +105,7 @@ function ec2cli_help(){
           ${options}-h${bodytext},${options} --help${bodytext}         Display help
           ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role from the local
                              awscli config used to run ec2cli
+          ${options}-S${bodytext},${options} --sort${bodytext}         Sort by value provided, size | id | date
           ${options}-V${bodytext},${options} --version${bodytext}      Print package version, dependency versions
 
       ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
@@ -350,9 +351,6 @@ function ec2cli_precheck(){
         fi
         CONFIG_PATH=$CONFIG_PATH_ALT
     fi
-
-    # check regioncode setup
-    setup_regioncodes
     #
     # <-- end function ec2cli_precheck -->
     #
@@ -885,15 +883,31 @@ function ec2cli_create_tag(){
 
 function ec2cli_list_instances(){
     # vars
-    local TOTAL             # region EC2 instance count
-    local REGION=$1         # region identifier
-    local sort_column="$2"
-    local NOW               # date, formatted
-    local LAUNCHTIME        # date/time launched from json object
-    local EPOCHLT           # LAUNCHTIME in epoch seconds
-    local RUNSECS           # runtime in sec
-    local MAXCT             # max length of array (json object)
-    local total_width="145" # max width of cli output
+    local TOTAL                                 # region EC2 instance count
+    local REGION=$1                             # region identifier
+    local sort_column="$2"                      # column to use when sorting all fields
+    local NOW                                   # date, formatted
+    local LAUNCHTIME                            # date/time launched from json object
+    local EPOCHLT                               # LAUNCHTIME in epoch seconds
+    local RUNSECS                               # runtime in sec
+    local MAXCT                                 # max length of array (json object)
+    local total_width="145"                     # max width of cli output
+    local total_width=$(( $(tput cols) - 4 ))
+
+    if [ "$export" = "true" ]; then
+        echo -e "\nExport Data to Comma Separated Value Format -- ${title}Instances${bodytext}\n" | indent04
+        read -p "    Export File Location? [ $pwd ]: " choice | indent04
+        if [ -z $choice ]; then
+            path="$pwd"
+        elif [ "$choice" = "q" ]; then
+            return 0
+        else
+            path="$choice"
+        fi
+        std_message "Exporting data to comma separated value (csv) file." "INFO" | indent04
+        python3 $pkg_path/core/csv_generator.py --profile $PROFILE --type instances --region $REGION --filepath $path
+        return 0
+    fi
 
     # pull json info, all instances in region
     if [ $ALL_REGIONS ]; then
@@ -913,12 +927,21 @@ function ec2cli_list_instances(){
     ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
     MAXCT=${#ARR_STATE[*]}    # count instances found
 
-    # test for 0 instances in region
-    if [[ $MAXCT = 0 ]]; then
-        # no instances in region
+    if [ "$MAXCT" = "null" ] || [ "$MAXCT" -eq 0 ]; then
+        # no instances in region, print footer
         std_logger "INFO: function ec2cli_list_instances: list instances"
-        std_message "No EC2 instances found in region $REGION." INFO
-        return
+        std_message "${title}0${bodytext} instances in region [$REGION]" "INFO"  | indent10
+        return 0
+    fi
+
+    # print and format output
+    sp="${frame}|${bodytext}"       # separator
+    if (( $(tput cols) >= "175" )); then
+        FULL_CLI="True"
+        std_logger "[INFO]: FULL_CLI set to True, Full width output"
+        total_width="170"
+    else
+        total_width="136"
     fi
 
     # instances > 0, parse remainder of json object
@@ -930,7 +953,10 @@ function ec2cli_list_instances(){
     # limit security grp name to 15 chars
     ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' .jsonoutput.tmp | cut -c 1-15) )
     # limit length of tag fields to 20 chars
-    ARR_TAG=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+    ARR_TAGK1=( $(jq -r '.Reservations[].Instances[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGV1=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGK2=( $(jq -r '.Reservations[].Instances[].Tags[1].Key' .jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGV2=( $(jq -r '.Reservations[].Instances[].Tags[1].Value' .jsonoutput.tmp | cut -c 1-17) )
 
     #
     # instances in region.  test if running instances
@@ -972,38 +998,52 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # print title
-        printf "\n${title}EC2 INSTANCES${bodytext} : $REGION  |  * sorted\n" | indent18
+        printf "\n${title}EC2 INSTANCES${bodytext} : $REGION  |  $ast*${bodytext}sorted\n" | indent25
 
-        # print header
-        print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
+        if [ $FULL_CLI ]; then
+            #print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
+            print_header "$sp InstanceId $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp PublicIP $sp $sp RunTime* $sp Tag $sp" $total_width  .body.tmp
+        else
+            print_header "$sp InstanceId $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp PublicIP $sp $sp RunTime* $sp" $total_width  .body.tmp
+        fi
 
-
-        #
-        # output table of json array
-        #
+        ## output table of json array ##
         i=0
-        while (( i < $MAXCT )); do
-            echo "${ARR_ID[$i]}  ${ARR_TYPE[$i]}  ${ARR_STATE[$i]} ${ARR_SG[$i]}  \
-                ${ARR_DEV[$i]}  ${ARR_IP[$i]}  ${RT[$i]}  ${ARR_TAG[$i]}" >> sort.tmp
-            i=$(( $i+1 ))
-        done
+        if [ $FULL_CLI ]; then
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} $sp \
+                    ${ARR_DEV[$i]} $sp ${ARR_IP[$i]} $sp $sp ${RT[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[$i]} $sp" >> sort.tmp
+                i=$(( $i+1 ))
+            done
+        else
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} $sp \
+                    ${ARR_DEV[$i]} $sp ${ARR_IP[$i]} $sp $sp ${RT[$i]} $sp" >> sort.tmp
+                i=$(( $i+1 ))
+            done
+        fi
         if [ ! $sort_column ]; then
-            sort_column="date"
+            sort_column="runtime"
         fi
         case $sort_column in
             id | Id | ID | SnapshotId)
-                column=1; cat sort.tmp | sort -k"$column" -n >> .body.tmp;;
+                column=2; cat sort.tmp | sort -k"$column" -n >> .body.tmp;;
             size | Size)
-                column=2; cat sort.tmp | sort -k"$column" -r >> .body.tmp;;
-            date)
-                column=7; cat sort.tmp | sort -k$column -n >> .body.tmp;;
+                column=4; cat sort.tmp | sort -k"$column" -r >> .body.tmp;;
+            runtime)
+                column=15; cat sort.tmp | sort -k$column -n >> .body.tmp;;
         esac
         rm sort.tmp    # clean up
         #
         # print and format output
         #
-        awk  '{ printf "%-22s %-13s %-10s %-18s %-24s %-16s %-15s %-2s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9}' .body.tmp | indent02
+        if [ $FULL_CLI ]; then
+            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-15s %-2s %-14s %-2s %-33.33s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16, $17, $18}' .body.tmp | indent02
+        else
+            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-16s %-2s %-15s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16}' .body.tmp | indent02
+        fi
         # print footer
         if [ $ALL_REGIONS ]; then
             print_footer "Total Instances across $REGION_CT regions: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped" $total_width
@@ -1012,25 +1052,37 @@ function ec2cli_list_instances(){
         fi
     else
         ### -- no running instances -- ###
-        total_width="110"
         printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION\n" | indent18
-        print_header "InstanceId* Type State SecurityGroup Root-Volume Tag" $total_width .body.tmp
+        print_header "$sp InstanceId* $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp Tag $sp" $total_width .body.tmp
         #
         # output table of json array
         #
         i=0
-        while (( i < $MAXCT )); do
-            echo "${ARR_ID[$i]} ${ARR_TYPE[$i]} ${ARR_STATE[$i]} ${ARR_SG[$i]} \
-                  ${ARR_DEV[$i]} ${ARR_TAG[$i]}" >> .body.tmp
-            # incr ct
-            i=$(( $i+1 ))
-        done
-            # print and format output
-            awk  '{ printf "%-22s %-12s %-9s %-16s %-23s %-11s %-2s %-2s %-2s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .body.tmp | indent02
-
-        # print footer
-        print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
+        if [ $FULL_CLI ]; then
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} \
+                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[$i]},${ARR_TAGK2[$i]}:${ARR_TAGV2[$i]} $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+            # print full format
+            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9.9s %-2s %-16s %-2s %-23s %-2s %-69.69s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
+            # print footer
+            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
+        else
+            while (( i < $MAXCT )); do
+                echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} \
+                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[@]} $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+            # print narrow format
+            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9.9s %-2s %-16s %-2s %-23s %-2s %-35.35s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
+            # print footer
+            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
+        fi
     fi
 
     # clean up
@@ -1309,11 +1361,11 @@ function ec2cli_run_instances(){
 	done
 
 	# display choices from array
-	echo -e "     InstanceID           Type       State    SecurityGroup    Root-Volume            PublicIP        Description"
-	echo -e "     -------------------  ---------  -------  ---------------  ---------------------  --------------  -------------------------"
+	echo -e "     InstanceID           Type        State    SecurityGroup         Root-Volume            PublicIP        Description"
+	echo -e "     -------------------  ----------  -------  --------------------  ---------------------  --------------  -------------------------"
 
 	# values
-	awk  '{ printf "%-4s %-20s %-10s %-8s %-16s %-22s %-15s %-2s %-2s %-2s %-2s \n", \
+	awk  '{ printf "%-4s %-20s %-11s %-8s %-21s %-22s %-15s %-2s %-2s %-2s %-2s \n", \
 	        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .arrayoutput.tmp
 
 	# get user input while checking type and range
@@ -2000,6 +2052,7 @@ function setup_regioncodes(){
     local now=$(date -u +%s)
     local regioncodes="$CONFIG_PATH/$REGION_CONFIGFILE"
     #
+    std_logger "[INFO]: Validating existence of "$CONFIG_PATH/$REGION_CONFIGFILE""
     if [ -f "$CONFIG_PATH/$REGION_CONFIGFILE" ]; then
         # check file age
         mtime=$(stat -c %Y $CONFIG_PATH/$REGION_CONFIGFILE)
@@ -2017,10 +2070,11 @@ function setup_regioncodes(){
     fi
     if [ ! -f "$CONFIG_PATH/$REGION_CONFIGFILE" ] || [ $recreate_flag ]; then
         std_logger "[INFO]: (re)creating REGION_CONFIGFILE ($CONFIG_PATH/$REGION_CONFIGFILE)"
-        JSON_REGIONS=$(aws ec2 describe-regions --output json)
+        JSON_REGIONS=$(aws ec2 --profile $PROFILE describe-regions --output json)
         echo $JSON_REGIONS | jq -r .Regions[].RegionName > "$CONFIG_PATH/$REGION_CONFIGFILE"
     fi
-    return
+    REGIONFILE_CHECK="true"
+    return 0
 }
 
 function parse_regioncode(){
@@ -2033,6 +2087,8 @@ function parse_regioncode(){
             ;;
     esac
 
+    # validate against local cache of region codes
+    setup_regioncodes
     # parameter is a region, validate it
     if [ "$(grep $user_provided "$CONFIG_PATH/$REGION_CONFIGFILE")" == "$user_provided" ]; then
         # aws region given
@@ -2511,6 +2567,9 @@ ec2cli_precheck
 
 # parse all cli parameters
 parse_parameters $@
+
+# validate regioncode against local cache if not interrogated already
+if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
 
 # execute
 if [ $DBUGMODE ]; then
