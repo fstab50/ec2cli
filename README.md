@@ -1,3 +1,4 @@
+<a name="top"></a>
 # EC2cli - Amazon EC2 Utilities
 
 
@@ -28,7 +29,7 @@
 * All utilities contained herein are copyrighted and made available under GPLv2
 * See [LICENSE](./LICENSE.txt)
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -46,7 +47,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 (See [Screenshots](#screenshots) section below)
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -69,7 +70,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 * `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable additional resource types as additional types are added.
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 ## Installation ##
@@ -167,7 +168,7 @@ Alternatively, if you wish to do the installation yourself, please read on.
     export PATH=$PATH:$EC2_REPO
     ```
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -206,7 +207,7 @@ Alternatively, if you wish to do the installation yourself, please read on.
 	complete -C aws_completer aws
     ```
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -222,7 +223,7 @@ After completing the above Installation and Configuration sections, verify your 
 
 **Note**: Python and Kernel versions will depend upon your system parameters
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -283,7 +284,7 @@ You'll need appropriate IAM permissions to execute ec2cli.
 
 You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -354,7 +355,7 @@ $ ec2cli -g us-east-1    # list security group details, alt region (us-east-1)
 
 ![](./images/ec2sg_altregion.png)
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -394,7 +395,7 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 ![](./images/start-instance_05.png)
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -404,7 +405,7 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 [Screenshots (continued)](./README_spot.md)
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -413,7 +414,7 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
    If you'd like to contribute, please fork and then send me
    a pull request.
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
 
 * * *
 
@@ -421,4 +422,4 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 * Repo owner:  Blake Huber // @B1akeHuber
 
-[back to the top](#ec2cli---amazon-ec2-utilities)
+[back to the top](#top)
