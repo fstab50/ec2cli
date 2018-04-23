@@ -351,9 +351,6 @@ function ec2cli_precheck(){
         fi
         CONFIG_PATH=$CONFIG_PATH_ALT
     fi
-
-    # check regioncode setup
-    setup_regioncodes
     #
     # <-- end function ec2cli_precheck -->
     #
@@ -2055,6 +2052,7 @@ function setup_regioncodes(){
     local now=$(date -u +%s)
     local regioncodes="$CONFIG_PATH/$REGION_CONFIGFILE"
     #
+    std_logger "[INFO]: Validating existence of "$CONFIG_PATH/$REGION_CONFIGFILE""
     if [ -f "$CONFIG_PATH/$REGION_CONFIGFILE" ]; then
         # check file age
         mtime=$(stat -c %Y $CONFIG_PATH/$REGION_CONFIGFILE)
@@ -2072,10 +2070,11 @@ function setup_regioncodes(){
     fi
     if [ ! -f "$CONFIG_PATH/$REGION_CONFIGFILE" ] || [ $recreate_flag ]; then
         std_logger "[INFO]: (re)creating REGION_CONFIGFILE ($CONFIG_PATH/$REGION_CONFIGFILE)"
-        JSON_REGIONS=$(aws ec2 describe-regions --output json)
+        JSON_REGIONS=$(aws ec2 --profile $PROFILE describe-regions --output json)
         echo $JSON_REGIONS | jq -r .Regions[].RegionName > "$CONFIG_PATH/$REGION_CONFIGFILE"
     fi
-    return
+    REGIONFILE_CHECK="true"
+    return 0
 }
 
 function parse_regioncode(){
@@ -2088,6 +2087,8 @@ function parse_regioncode(){
             ;;
     esac
 
+    # validate against local cache of region codes
+    setup_regioncodes
     # parameter is a region, validate it
     if [ "$(grep $user_provided "$CONFIG_PATH/$REGION_CONFIGFILE")" == "$user_provided" ]; then
         # aws region given
@@ -2566,6 +2567,9 @@ ec2cli_precheck
 
 # parse all cli parameters
 parse_parameters $@
+
+# validate regioncode against local cache if not interrogated already
+if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
 
 # execute
 if [ $DBUGMODE ]; then
