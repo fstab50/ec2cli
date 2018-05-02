@@ -86,8 +86,8 @@ function ec2cli_help(){
   cat <<EOM
 
 
-  ${bodytext}Help Contents
-  -------------
+                              ${title}ec2cli${bodytext} Help Contents
+                              ____________________
 
       ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
 
