@@ -1818,7 +1818,11 @@ function ec2cli_list_tags(){
     local region="$1"
     local resource_id="$2"
 
-    if [[ ! $resource_id ]]; then
+    if [ "$resource_id" = "??-*-[1-9]" ]; then
+        resource_id="$1"
+        region="$2"
+    fi
+    if [ ! "$resource_id" ]; then
         echo " "
         aws ec2 --profile $PROFILE describe-tags --output table
         echo " "
