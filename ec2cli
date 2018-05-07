@@ -85,7 +85,7 @@ backcolor=$(echo -e ${brightgreen})
 function ec2cli_help(){
   cat <<EOM
 
-                              Help Contents | ${title}ec2cli${bodytext}
+                              ${bodytext}Help Contents | ${title}ec2cli${bodytext}
                               ______________________
 
       ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
