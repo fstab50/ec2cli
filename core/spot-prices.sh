@@ -36,6 +36,7 @@ NOW=$(date)
 pkg_path=$(cd $(dirname $0); pwd -P)
 E_BADSHELL=7              # exit code if incorrect shell detected
 E_BADARG=8                    # exit code if bad input parameter
+PROFILE="$1"
 REGION=$AWS_DEFAULT_REGION    # set region from global env var
 pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
@@ -144,7 +145,7 @@ precheck
 
 
 # collect list of all current AWS Regions globally:
-aws --profile $PROFILE ec2 describe-regions --output json > .regions.json
+aws ec2 describe-regions --profile $PROFILE --output json > .regions.json
 ARR_REGIONS=( $(jq -r .Regions[].RegionName .regions.json) )
 
 # output choices
@@ -314,7 +315,8 @@ rm .type.tmp
 # below this section has failures - create full table for the region
 # until fixed.
 
-aws --profile $PROFILE ec2 describe-spot-price-history  \
+aws ec2 describe-spot-price-history  \
+    --profile $PROFILE \
     --region $REGION \
     --start-time "$NOW" \
     --product-description "$TYPE" \
@@ -595,8 +597,9 @@ then
 
 else
 	# display current spot prices only for specific instance type in region chosen
-	aws --profile $PROFILE ec2 describe-spot-price-history  \
-    --region $REGION \
+	aws ec2 describe-spot-price-history  \
+        --profile $PROFILE \
+        --region $REGION \
 		--start-time "$NOW" \
 		--product-description "$TYPE" \
 		--instance- ${SIZE[$CHOICE]} \
