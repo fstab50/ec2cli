@@ -144,7 +144,7 @@ precheck
 
 
 # collect list of all current AWS Regions globally:
-aws ec2 describe-regions --output json > .regions.json
+aws --profile $PROFILE ec2 describe-regions --output json > .regions.json
 ARR_REGIONS=( $(jq -r .Regions[].RegionName .regions.json) )
 
 # output choices
@@ -314,7 +314,7 @@ rm .type.tmp
 # below this section has failures - create full table for the region
 # until fixed.
 
-aws ec2 describe-spot-price-history  \
+aws --profile $PROFILE ec2 describe-spot-price-history  \
     --region $REGION \
     --start-time "$NOW" \
     --product-description "$TYPE" \
@@ -401,7 +401,7 @@ then
 			echo -e "-------------  ""----------  ""----------  ""--------   " >> header.tmp
 			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
-                	aws ec2 describe-spot-price-history  \
+                	aws --profile $PROFILE ec2 describe-spot-price-history  \
                           --region $REGION \
                         	--start-time "$NOW" \
 	                        --product-description "$TYPE" \
@@ -418,7 +418,7 @@ then
                         echo -e "---------------  ""----------  ""----------  ""--------   " >> header.tmp
                         awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
-                        aws ec2 describe-spot-price-history  \
+                        aws --profile $PROFILE ec2 describe-spot-price-history  \
                                 --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
@@ -435,7 +435,7 @@ then
 		        echo -e "----------  ""----------  ""----------  ""--------   " >> header.tmp
 		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
-			aws ec2 describe-spot-price-history  \
+			aws --profile $PROFILE ec2 describe-spot-price-history  \
                           --region $REGION \
                 	        --start-time "$NOW" \
                         	--product-description "$TYPE" \
@@ -457,7 +457,7 @@ then
                         echo -e "-------------  ""----------  ""----------  ""--------   " >> header.tmp
                         awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
-                        aws ec2 describe-spot-price-history  \
+                        aws --profile $PROFILE ec2 describe-spot-price-history  \
                                 --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
@@ -474,7 +474,7 @@ then
 			echo -e "---------------  ""----------  ""----------  ""--------   " >> header.tmp
 			awk -F " " '{ printf "%-20s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
-                        aws ec2 describe-spot-price-history  \
+                        aws --profile $PROFILE ec2 describe-spot-price-history  \
                                 --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
@@ -491,7 +491,7 @@ then
 		        echo -e "----------  ""----------  ""----------  ""--------   " >> header.tmp
 		        awk -F " " '{ printf "%-15s %-15s %-15s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
-                        aws ec2 describe-spot-price-history  \
+                        aws --profile $PROFILE ec2 describe-spot-price-history  \
                                 --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
@@ -512,7 +512,7 @@ then
                     awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                     # special formatting for long RegionCodes
-                    aws ec2 describe-spot-price-history  \
+                    aws --profile $PROFILE ec2 describe-spot-price-history  \
                             --region $REGION \
                             --start-time "$NOW" \
                             --product-description "$TYPE" \
@@ -528,7 +528,7 @@ then
                     awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
 		            # special formatting for long RegionCodes
-                    aws ec2 describe-spot-price-history  \
+                    aws --profile $PROFILE ec2 describe-spot-price-history  \
                             --region $REGION \
                             --start-time "$NOW" \
                             --product-description "$TYPE" \
@@ -544,7 +544,7 @@ then
                         awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                         # special formatting for long RegionCodes
-                        aws ec2 describe-spot-price-history  \
+                        aws --profile $PROFILE ec2 describe-spot-price-history  \
                                 --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
@@ -560,7 +560,7 @@ then
                         awk -F " " '{ printf "%-20s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
 
                         # special formatting for long RegionCodes
-                        aws ec2 describe-spot-price-history  \
+                        aws --profile $PROFILE ec2 describe-spot-price-history  \
                                 --region $REGION \
                                 --start-time "$NOW" \
                                 --product-description "$TYPE" \
@@ -576,7 +576,7 @@ then
                     echo -e "RegionCode  ""Instance  ""OperSys  ""Price/hr  " > header.tmp
                     echo -e "----------  ""----------  ""-------  ""--------   " >> header.tmp
                     awk -F " " '{ printf "%-15s %-15s %-13s %-20s \n", $1, $2, $3, $4}' header.tmp | indent02
-                    aws ec2 describe-spot-price-history  \
+                    aws --profile $PROFILE ec2 describe-spot-price-history  \
                             --region $REGION \
                             --start-time "$NOW" \
                             --product-description "$TYPE" \
@@ -595,7 +595,7 @@ then
 
 else
 	# display current spot prices only for specific instance type in region chosen
-	aws ec2 describe-spot-price-history  \
+	aws --profile $PROFILE ec2 describe-spot-price-history  \
     --region $REGION \
 		--start-time "$NOW" \
 		--product-description "$TYPE" \
