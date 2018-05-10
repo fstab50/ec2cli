@@ -1867,9 +1867,9 @@ function ec2cli_list_volumes(){
     local sp="${frame}|${bodytext}"       # separator
     #
     # determine output size
-    if (( $(tput cols) >= "170" )); then
+    if (( $(tput cols) >= "172" )); then
         FULL_CLI="True"
-        total_width="165"
+        total_width="170"
     elif (( $(tput cols) >= "136" )); then
         MED_CLI="True"
         std_logger "[INFO]: MED_CLI set to True, Full width output"
@@ -1922,7 +1922,8 @@ function ec2cli_list_volumes(){
         ARR_VTYPE=( $(jq -r '.Volumes[].VolumeType' .jsonoutput.tmp) )
         ARR_AZ=( $(jq -r '.Volumes[].AvailabilityZone' .jsonoutput.tmp | cut -c 1-20) )
         # limit length of tag fields to 20 chars
-        ARR_TAG=( $(jq -r '.Volumes[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+        ARR_TAGKEY=( $(jq -r '.Volumes[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-17) )
+        ARR_TAGVALUE=( $(jq -r '.Volumes[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-18) )
 
         MAXCT=${#ARR_VID[*]}    # count snapshots found
 
@@ -1933,7 +1934,7 @@ function ec2cli_list_volumes(){
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
                       ${ARR_STATE[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
+                      ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1951,9 +1952,9 @@ function ec2cli_list_volumes(){
                 date)
                     column=6; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
             esac
-            awk  '{ printf "%-2s %-23s %-2s %-6s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-23s %-2s %-10s %-2s %-11s %-2s %-32s %-2s\n", \
+            awk  '{ printf "%-2s %-23s %-2s %-6s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-23s %-2s %-10s %-2s %-11s %-2s %-37s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19}' .ec2-qv-volumes.tmp | indent02
-            
+
         elif [ $MED_CLI ]; then
             # output table of json array
             while (( i < $MAXCT )); do
