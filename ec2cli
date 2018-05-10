@@ -313,8 +313,14 @@ function ec2cli_precheck(){
     done
 
     ## check if awscli tools are configured ##
-    if [[ ! -f $HOME/.aws/config ]]; then
-        std_error_exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+    #metadata="$(curl http://169.254.169.254/latest/meta-data/ 2>/dev/null)"
+    metadata=$(cat $CONFIG_PATH/config.json | jq -r .configuration.LOCATION)
+    if [ "$metadata" = "AWS" ] || [ "$metadata" = "aws" ]; then
+        std_logger "Host detected at Amazon Web Services. Exempt check for awscli configuration" "INFO" $ec2cli_log
+    else
+        if [[ ! -f $HOME/.aws/config ]]; then
+            std_error_exit "awscli not configured, run 'aws configure'. Aborting (code $E_DEPENDENCY)" $E_DEPENDENCY
+        fi
     fi
 
     ## check for jq, use system installed version if found, otherwise use bundled ##
