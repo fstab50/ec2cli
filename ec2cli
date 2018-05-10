@@ -2060,6 +2060,7 @@ function setup_regioncodes(){
     local recreate_flag=""
     local now=$(date -u +%s)
     local regioncodes="$CONFIG_PATH/$REGION_CONFIGFILE"
+    local num_codes="$(cat $regioncodes | wc -l)"
     #
     std_logger "[INFO]: Validating existence of "$CONFIG_PATH/$REGION_CONFIGFILE""
     if [ -f "$CONFIG_PATH/$REGION_CONFIGFILE" ]; then
@@ -2067,7 +2068,8 @@ function setup_regioncodes(){
         mtime=$(stat -c %Y $CONFIG_PATH/$REGION_CONFIGFILE)
         age=$(( $now - $mtime ))
         allowable_age_secs=$(( $REFRESH_REGIONCODES * 24 * 60 * 60 ))
-        if [ $age -gt $allowable_age_secs ]; then
+        # check age and correct number of regions present
+        if [ $age -gt $allowable_age_secs ] || [ "$num_codes" -lt "10" ]; then
             # refresh region codes
             std_logger "[INFO]: Regioncode file age: $(( $age / 24 / 60 / 60 )) days"
             std_logger "[INFO]: Allowable file age: $REFRESH_REGIONCODES days"
