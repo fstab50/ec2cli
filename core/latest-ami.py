@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""
+Summary:
+    Use Amazon Parameter Store to retrieve the latest AMI for
+    any of the mainstay OS Types
+
+    See: https://aws.amazon.com/blogs/mt/query-for-the-latest-windows-ami-using-systems-manager-parameter-store/
+
+"""
 import os
 import json
 import argparse
