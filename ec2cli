@@ -1867,7 +1867,7 @@ function ec2cli_list_volumes(){
     local sp="${frame}|${bodytext}"       # separator
     #
     # determine output size
-    if (( $(tput cols) >= "172" )); then
+    if (( $(tput cols) >= "174" )); then
         FULL_CLI="True"
         total_width="170"
     elif (( $(tput cols) >= "136" )); then
