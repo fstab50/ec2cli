@@ -2487,7 +2487,8 @@ function parse_parameters(){
                     fi
                     # provision for help submenu
                     if [ "$1" = "help" ]; then
-                        FUNCTION_CALL="HELP"
+                        FUNCTION_CALL="ec2cli_help_command_list_volumes"
+                        shift 1
                     else
                         case $COMMAND in
                             attach)
@@ -2633,6 +2634,9 @@ if [ "$FUNCTION_CALL" = "HELP" ]; then
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_snapshots" ]; then
     source $pkg_path/core/help_menus.lib
     ec2cli_help_command_list_snapshots
+elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_volumes" ]; then
+    source $pkg_path/core/help_menus.lib
+    ec2cli_help_command_list_volumes
 else
     # execute operations which require authentication to AWS
     if authenticated $PROFILE; then
