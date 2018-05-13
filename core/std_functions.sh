@@ -1,24 +1,66 @@
 #!/usr/bin/env bash
 
-pkg=$(basename $0)          # pkg reported in logs will be the basename of the caller
-pkg_path=$(cd $(dirname $0); pwd -P)
+#------------------------------------------------------------------------------
+#
+#   Note:  to be used with dependent modules
+#
+#       - colors.sh
+#       - exitcodes.sh
+#
+#       Dependencies must be sourced from the same calling script
+#       as this std_functions.sh
+#
+#   Global Variables provided by the Caller:
+#       - LOG_FILE      # std_logger writes to this file
+#       - QUIET         # Value = "true" to supress stdout from these reference functions
+#
+#------------------------------------------------------------------------------
+
+ # pkg reported in logs will be the basename of the caller
+pkg=$(basename $0 2>/dev/null)
+pkg_root="$(echo $pkg | awk -F '.' '{print $1}')"       # pkg without file extention
+pkg_path=$(cd $(dirname $0 2>/dev/null); pwd -P)
 host=$(hostname)
 system=$(uname)
 
-# error codes
-E_DEPENDENCY=1              # exit code if missing required dependency
-E_DIR=2                     # exit code if failure to create log dir, log file
-E_BADSHELL=3                # exit code if incorrect shell detected
-E_AUTHFAIL=5                # exit code if authentication failure
-E_BADPROFILE=6              # exit code if profile name/ role not found in local config
-E_USER_CANCEL=7             # exit code if user cancel
-E_BADARG=8                  # exit code if bad input parameter
-E_EXPIRED_CREDS=9           # exit code if temporary credentials no longer valid
-E_MISC=11                   # exit code if miscellaneous (unspecified) error
+# this file
+VERSION="2.5.3"
 
-#
-VERSION="1.6"
+if [ ! $pkg ] || [ ! $pkg_path ]; then
+    echo -e "\npkg and pkg_path errors - both are null"
+    exit
+fi
 
+function array2json(){
+    ## converts associative array to single-level (no nested keys) json file output ##
+    #
+    #   Caller syntax:
+    #       $ array2json config_dict $config_path/configuration_file
+    #
+    #   where:
+    #       $ declare -A config_dict        # config_dict is assoc array, declared in main script
+    #
+    local -n array_dict=$1      # local assoc array must use -n opt
+    local output_file=$2        # location
+    local ct                    # counter
+    local max_keys              # num keys in array
+    #
+    echo -e "{" > $output_file
+    ct=1
+    max_keys=${#array_dict[@]}
+    for key in ${!array_dict[@]}; do
+        if [ $ct == $max_keys ]; then
+            # last key, no comma
+            echo "\"${key}\": \"${array_dict[${key}]}\"" | indent04 >> $output_file
+        else
+            echo "\"${key}\": \"${array_dict[${key}]}\"," | indent04 >> $output_file
+        fi
+        ct=$(( $ct + 1 ))
+    done
+    echo -e "}" >> $output_file
+    #
+    # <-- end function array2json -->
+}
 
 function authenticated(){
     ## validates authentication using iam user or role ##
@@ -142,6 +184,114 @@ function delay_spinner(){
 }
 
 
+function environment_info(){
+    local prefix=$1
+    local dep=$2
+    local log_file="$3"
+    local version_info
+    local awscli_ver
+    local boto_ver
+    local python_ver
+    #
+    version_info=$(aws --version 2>&1)
+    awscli_ver=$(echo $version_info | awk '{print $1}')
+    boto_ver=$(echo $version_info | awk '{print $4}')
+    python_ver=$(echo $version_info | awk '{print $2}')
+    #
+    if [[ $dep == "aws" ]]; then
+        std_logger "awscli version detected: $awscli_ver" $prefix $log_file
+        std_logger "Python runtime detected: $python_ver" $prefix $log_file
+        std_logger "Kernel detected: $(echo $version_info | awk '{print $3}')" $prefix $log_file
+        std_logger "boto library detected: $boto_ver" $prefix $log_file
+
+    elif [[ $dep == "awscli" ]]; then
+        std_message "awscli version detected: ${accent}${BOLD}$awscli_ver${UNBOLD}${reset}" $prefix $log_file | indent04
+        std_message "boto library detected: ${accent}${BOLD}$boto_ver${UNBOLD}${reset}" $prefix $log_file | indent04
+        std_message "Python runtime detected: ${accent}${BOLD}$python_ver${UNBOLD}${reset}" $prefix $log_file | indent04
+
+    elif [[ $dep == "os" ]]; then
+        std_message "Kernel detected: ${title}$(echo $version_info | awk '{print $3}')${reset}" $prefix $log_file | indent04
+
+    elif [[ $dep == "jq" ]]; then
+        version_info=$(jq --version 2>&1)
+        std_message "JSON parser detected: ${title}$(echo $version_info)${reset}" $prefix $log_file | indent04
+
+    else
+        std_logger "Detected: $($prog --version | head -1)" $prefix $log_file
+    fi
+    #
+    #<-- end function environment_info -->
+}
+
+
+function is_installed(){
+    ## validate if binary previously installed  ##
+    local binary="$1"
+    local location=$(which $binary 2>/dev/null)
+    if [ $location ]; then
+        std_message "$binary is installed:  $location" "INFO" $LOG_FILE
+        return 0
+    else
+        return 1
+    fi
+}
+
+
+
+function linux_distro(){
+    ## determine linux os distribution ##
+    local os_major
+    local os_release
+    local os_codename
+    declare -a distro_info
+
+    if [ "$(which lsb_release)" ]; then
+        distro_info=( $(lsb_release -sirc) )
+        if [[ ${#distro_detect[@]} -eq 3 ]]; then
+            os_major=${distro_info[0]}
+            os_release=${distro_info[1]}
+            os_codename=${distro_info[2]}
+        fi
+    else
+        ## AMAZON Linux ##
+        if [ "$(grep -i amazon /etc/os-release  | head -n 1)" ]; then
+            os_major="amazonlinux"
+            if [ "$(grep VERSION_ID /etc/os-release | awk -F '=' '{print $2}')" = '"2"' ]; then
+                os_release="$(grep VERSION /etc/os-release | grep -v VERSION_ID | awk -F '=' '{print $2}')"
+                os_release=$(echo $os_release | cut -c 2-15 | rev | cut -c 2-15 | rev)
+            elif [ "$(grep VERSION_ID /etc/os-release | awk -F '=' '{print $2}')" = '"1"' ]; then
+                os_release="$(grep VERSION /etc/os-release | grep -v VERSION_ID | awk -F '=' '{print $2}')"
+                os_release=$(echo $os_release | cut -c 2-15 | rev | cut -c 2-15 | rev)
+            else os_release="unknown"; fi
+
+        ## REDHAT Linux ##
+        elif [ $(grep -i redhat /etc/os-release  | head -n 1) ]; then
+            os_major="redhat"
+            os_release="future"
+
+        ## UBUNTU, ubuntu variants ##
+        elif [ "$(grep -i ubuntu /etc/os-release)" ]; then
+            os_major="ubuntu"
+            if [ "$(grep -i mint /etc/os-release | head -n1)" ]; then
+                os_release="linuxmint"
+            elif [ "$(grep -i ubuntu_codename /etc/os-release | awk -F '=' '{print $2}')" ]; then
+                os_release="$(grep -i ubuntu_codename /etc/os-release | awk -F '=' '{print $2}')"
+            else
+                os_release="unknown"; fi
+
+        ## distribution not determined ##
+        else
+            os_major="unknown"; os_release="unknown"
+        fi
+    fi
+    # set distribution type in environment
+    export OS_DISTRO="$os_major"
+    std_logger "Operating system identified as Major Version: $os_major, Minor Version: $os_release" "INFO" $LOG_FILE
+    # return major, minor disto versions
+    echo "$os_major $os_release $os_codename"
+}
+
+
 function print_header(){
     ## print formatted report header ##
     local title="$1"
@@ -189,13 +339,17 @@ function std_logger(){
     local log_file="$3"
     #
     if [ ! $prefix ]; then
-        prefix="[INFO]"
+        prefix="INFO"
     fi
     if [ ! -f $log_file ]; then
-        echo "$prefix: $pkg ($VERSION): failure to call std_logger, $log_file location undefined"
-        exit $E_DIR
+        # create log file
+        touch $log_file
+        if [ ! -f $log_file ]; then
+            echo "[$prefix]: $pkg ($VERSION): failure to call std_logger, $log_file location not writeable"
+            exit $E_DIR
+        fi
     else
-        echo "$(date +'%b %d %T') $host $pkg - $VERSION - [$prefix]: $msg" >> "$log_file"
+        echo "$(date +'%Y-%m-%d %T') $host - $pkg - $VERSION - [$prefix]: $msg" >> "$log_file"
     fi
 }
 
@@ -210,11 +364,12 @@ function std_message(){
     local msg="$1"
     local prefix="$2"
     local log_file="$3"
+    local format="$4"
     #
     if [ $log_file ]; then
-        std_logger "$msg" "$prefix" $log_file
+        std_logger "$msg" "$prefix" "$log_file"
     fi
-    [[ $quiet ]] && return
+    [[ $QUIET ]] && return
     shift
     pref="----"
     if [[ $1 ]]; then
@@ -230,13 +385,13 @@ function std_message(){
 
 function std_error(){
     local msg="$1"
-    std_logger "[ERROR]: $msg"
+    std_logger "$msg" "ERROR" $LOG_FILE
     echo -e "\n${yellow}[ ${red}ERROR${yellow} ]$reset  $msg\n" | indent04
 }
 
 function std_warn(){
     local msg="$1"
-    std_logger "[WARN]: $msg"
+    std_logger "$msg" "WARN" $LOG_FILE
     if [ "$3" ]; then
         # there is a second line of the msg, to be printed by the caller
         echo -e "\n${yellow}[ ${red}WARN${yellow} ]$reset  $msg" | indent04
@@ -251,42 +406,4 @@ function std_error_exit(){
     local status="$2"
     std_error "$msg"
     exit $status
-}
-
-function environment_info(){
-    local msg_header=$1
-    local dep=$2
-    local version_info
-    local awscli_ver
-    local boto_ver
-    local python_ver
-    #
-    version_info=$(aws --version 2>&1)
-    awscli_ver=$(echo $version_info | awk '{print $1}')
-    boto_ver=$(echo $version_info | awk '{print $4}')
-    python_ver=$(echo $version_info | awk '{print $2}')
-    #
-    if [[ $dep == "aws" ]]; then
-        std_logger "[$msg_header]: awscli version detected: $awscli_ver"
-        std_logger "[$msg_header]: Python runtime detected: $python_ver"
-        std_logger "[$msg_header]: Kernel detected: $(echo $version_info | awk '{print $3}')"
-        std_logger "[$msg_header]: boto library detected: $boto_ver"
-
-    elif [[ $dep == "awscli" ]]; then
-        std_message "awscli version detected: ${accent}${BOLD}$awscli_ver${UNBOLD}${reset}" $msg_header "pprint" | indent04
-        std_message "boto library detected: ${accent}${BOLD}$boto_ver${UNBOLD}${reset}" $msg_header "pprint" | indent04
-        std_message "Python runtime detected: ${accent}${BOLD}$python_ver${UNBOLD}${reset}" $msg_header "pprint" | indent04
-
-    elif [[ $dep == "os" ]]; then
-        std_message "Kernel detected: ${title}$(echo $version_info | awk '{print $3}')${reset}" $msg_header | indent04
-
-    elif [[ $dep == "jq" ]]; then
-        version_info=$(jq --version 2>&1)
-        std_message "JSON parser detected: ${title}$(echo $version_info)${reset}" $msg_header | indent04
-
-    else
-        std_logger "[$msg_header]: detected: $($prog --version | head -1)"
-    fi
-    #
-    #<-- end function environment_info -->
 }

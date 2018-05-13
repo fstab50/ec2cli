@@ -82,18 +82,41 @@ EOM
 function ec2cli_help_command_list_snapshots(){
     cat <<EOM
 
-    ${accent}COMMAND${reset}:
+  ${accent}COMMAND${reset}:
 
-            $ ${yellow}ec2cli${accent} --snapshots list ${reset}[REGION] [${accent}--sort ${reset}<value>]
+                $ ${yellow}ec2cli${accent} --snapshots list ${reset}[REGION] [${accent}--sort ${reset}<value>]
 
-            Sort parameter --sort can be used with one the following values:
 
-            VALUE                         Description                        Sort Order
-           ----------------    ------------------------------------     -----------------------
-            ${accent}date${reset} [DEFAULT]     Sort snapshot list by date               order newest to oldest
-            ${accent}size${reset}               Sort snapshot list by size of volume     smallest to largest
-                               from which snapshot taken
-            ${accent}id${reset}                 Sort snapshot list by snapshot id        alphabetical
+        Parameter --sort can be used with one the following values:
+
+        VALUE                         Description                        Sort Order
+       ----------------    ------------------------------------     -----------------------
+        ${accent}date${reset} [DEFAULT]     Sort snapshot list by date               order newest to oldest
+        ${accent}size${reset}               Sort snapshot list by size of volume     smallest to largest
+                           from which snapshot taken
+        ${accent}id${reset}                 Sort snapshot list by snapshot id        alphabetical order
+
+
+EOM
+}
+
+
+function ec2cli_help_command_list_volumes(){
+    cat <<EOM
+
+  ${accent}COMMAND${reset}:
+
+                $ ${yellow}ec2cli${accent} --volumes list ${reset}[REGION] [${accent}--sort ${reset}<value>]
+
+
+        Parameter --sort can be used with one the following values:
+
+        VALUE                         Description                        Sort Order
+        ----------------    ------------------------------------     -----------------------
+        ${accent}date${reset} [DEFAULT]     Sort volume list by date                 order newest to oldest
+        ${accent}size${reset}               Sort volume list by size of volume       smallest to largest
+                           from which snapshot taken
+        ${accent}id${reset}                 Sort volume list by volume id            alphabetical order
 
 
 EOM
