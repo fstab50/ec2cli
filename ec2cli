@@ -1934,7 +1934,7 @@ function ec2cli_list_volumes(){
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
                       $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
-                      $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encypt"; else echo "-"; fi ) $sp \
+                      $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
                       ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
@@ -1961,7 +1961,7 @@ function ec2cli_list_volumes(){
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
                       $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
-                      $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encypt"; else echo "-"; fi ) $sp \
+                      $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
                       ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
