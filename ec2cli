@@ -1584,7 +1584,25 @@ function ec2cli_list_securitygroups(){
         ARR_TAGVALUE=( $(jq -r '.SecurityGroups[].Tags[0].Value' .jsonoutput.tmp) )
         ARR_DESC=( $(jq -r '.SecurityGroups[].Description' .jsonoutput.tmp) )
 
+        # ip stats
         MAXCT=${#ARR_ID[*]}    # count snapshots found
+        SUM_OPEN=0; SUM_P22=0; SUM_P80=0; SUM_32=0
+        for record in ${ARR_CIDR[@]}; do
+            if [ $(echo "$record" | grep "0.0.0.0") ]; then
+                SUM_OPEN=$(( $SUM_OPEN + 1))
+            elif [ $(echo $record | grep '/32') ]; then
+                SUM_32=$(( $SUM_32 + 1))
+            fi
+        done
+        i=0
+        for record in ${ARR_FPORT[@]}; do
+            if [ "${ARR_FPORT[$i]}" = "80" ] || [ "${ARR_TPORT[$i]}" = "80" ]; then
+                SUM_P80=$(( $SUM_P80 + 1))
+            elif [ "${ARR_FPORT[$i]}" = "22" ] || [ "${ARR_TPORT[$i]}" = "22" ]; then
+                SUM_P22=$(( $SUM_P22 + 1))
+            fi
+            i=$(( $i + 1 ))
+        done
 
         # output table of json array
         i=0
@@ -1620,7 +1638,11 @@ function ec2cli_list_securitygroups(){
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .ec2-qv-securitygroups.tmp | indent02
         fi
         # print footer
-        print_footer "${title}$SUM${bodytext} Security Groups in region [$REGION]" $total_width
+        print_footer "${title}$SUM${bodytext} Security Groups in region [$REGION]
+        \n\n     Group Summary:\n\n\t\tOpen (0.0.0.0):\t\t ${title}$SUM_OPEN${bodytext}\n
+        \t\tPort 80:\t\t ${title}$SUM_P80${bodytext}${bodytext}\n
+        \t\tPort 22:\t\t ${title}$SUM_P22${bodytext}\n
+        \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
 
         # clean up
         rm .jsonoutput.tmp .body.tmp  .ec2-qv-securitygroups.tmp
