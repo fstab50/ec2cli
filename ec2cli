@@ -1560,9 +1560,9 @@ function ec2cli_list_securitygroups(){
         if (( $(tput cols) > "170" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
-            total_width="168"
+            total_width="173"
         else
-            total_width="140"
+            total_width="145"
         fi
         # snapshots found, print region identifier
         printf "\n${title}SECURITY GROUPS${bodytext} : $REGION\n\n" | indent25
@@ -1580,10 +1580,29 @@ function ec2cli_list_securitygroups(){
         ARR_TPORT=( $(jq -r '.SecurityGroups[].IpPermissions[0].ToPort' .jsonoutput.tmp) )
         ARR_CIDR=( $(jq -r '.SecurityGroups[].IpPermissions[0].IpRanges[0].CidrIp' .jsonoutput.tmp) )
         ARR_VPC=( $(jq -r '.SecurityGroups[].VpcId' .jsonoutput.tmp) )
-        ARR_TAG=( $(jq -r '.SecurityGroups[].Tags[0].Value' .jsonoutput.tmp) )
+        ARR_TAGKEY=( $(jq -r '.SecurityGroups[].Tags[0].Key' .jsonoutput.tmp) )
+        ARR_TAGVALUE=( $(jq -r '.SecurityGroups[].Tags[0].Value' .jsonoutput.tmp) )
         ARR_DESC=( $(jq -r '.SecurityGroups[].Description' .jsonoutput.tmp) )
 
+        # ip stats
         MAXCT=${#ARR_ID[*]}    # count snapshots found
+        SUM_OPEN=0; SUM_P22=0; SUM_P80=0; SUM_32=0
+        for record in ${ARR_CIDR[@]}; do
+            if [ $(echo "$record" | grep "0.0.0.0") ]; then
+                SUM_OPEN=$(( $SUM_OPEN + 1))
+            elif [ $(echo $record | grep '/32') ]; then
+                SUM_32=$(( $SUM_32 + 1))
+            fi
+        done
+        i=0
+        for record in ${ARR_FPORT[@]}; do
+            if [ "${ARR_FPORT[$i]}" = "80" ] || [ "${ARR_TPORT[$i]}" = "80" ]; then
+                SUM_P80=$(( $SUM_P80 + 1))
+            elif [ "${ARR_FPORT[$i]}" = "22" ] || [ "${ARR_TPORT[$i]}" = "22" ]; then
+                SUM_P22=$(( $SUM_P22 + 1))
+            fi
+            i=$(( $i + 1 ))
+        done
 
         # output table of json array
         i=0
@@ -1591,7 +1610,7 @@ function ec2cli_list_securitygroups(){
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
                       $sp "$( if [ $(echo ${ARR_TPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )" $sp \
-                      ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAG[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                      ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1600,7 +1619,7 @@ function ec2cli_list_securitygroups(){
                 while (( i < $MAXCT )); do
                     echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
                           $sp "$( if [ $(echo ${ARR_TPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )" $sp \
-                          ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
+                          ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
                     # incr ct
                     i=$(( $i+1 ))
                 done
@@ -1612,14 +1631,18 @@ function ec2cli_list_securitygroups(){
 
         if [ $FULL_CLI ]; then
             # print and format output
-            awk '{ printf "%-2s %-32.31s %-2s %-20s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-14s %-2s %-20.19s %-2s %-25.24s %-2s \n", \
+            awk '{ printf "%-2s %-30.29s %-2s %-12s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-37.37s %-2s %-25.25s %-2s \n", \
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-securitygroups.tmp | indent02
         else
-            awk '{ printf "%-2s %-32.31s %-2s %-20s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-14s %-2s %-20.19s %-2s \n", \
+            awk '{ printf "%-2s %-26.25s %-2s %-12s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-40.40s %-2s \n", \
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .ec2-qv-securitygroups.tmp | indent02
         fi
         # print footer
-        print_footer "${title}$SUM${bodytext} Security Groups in region [$REGION]" $total_width
+        print_footer "${title}$SUM${bodytext} Security Groups in region [$REGION]
+        \n\n     Group Summary:\n\n\t\tOpen (0.0.0.0):\t\t ${title}$SUM_OPEN${bodytext}\n
+        \t\tPort 80:\t\t ${title}$SUM_P80${bodytext}${bodytext}\n
+        \t\tPort 22:\t\t ${title}$SUM_P22${bodytext}\n
+        \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
 
         # clean up
         rm .jsonoutput.tmp .body.tmp  .ec2-qv-securitygroups.tmp
@@ -1867,13 +1890,13 @@ function ec2cli_list_volumes(){
     local sp="${frame}|${bodytext}"       # separator
     #
     # determine output size
-    if (( $(tput cols) >= "174" )); then
+    if (( $(tput cols) >= "175" )); then
         FULL_CLI="True"
-        total_width="170"
+        total_width="173"
     elif (( $(tput cols) >= "136" )); then
         MED_CLI="True"
         std_logger "[INFO]: MED_CLI set to True, Full width output"
-        total_width="130"
+        total_width="133"
     else
         total_width="116"
     fi
@@ -1895,7 +1918,7 @@ function ec2cli_list_volumes(){
     # determine size of all volumes returned
     if [ $ALL_REGIONS ]; then
         SUM=0
-        ARR=$(jq -r '.Volumes[].Size' json_output.json);
+        ARR=$(jq -r '.Volumes[].Size' .jsonoutput.tmp);
         for vol in ${ARR[@]}; do
             SUM=$(( $SUM + $vol ))
         done
@@ -1922,8 +1945,8 @@ function ec2cli_list_volumes(){
         ARR_VTYPE=( $(jq -r '.Volumes[].VolumeType' .jsonoutput.tmp) )
         ARR_AZ=( $(jq -r '.Volumes[].AvailabilityZone' .jsonoutput.tmp | cut -c 1-20) )
         # limit length of tag fields to 20 chars
-        ARR_TAGKEY=( $(jq -r '.Volumes[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-17) )
-        ARR_TAGVALUE=( $(jq -r '.Volumes[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-18) )
+        ARR_TAGKEY=( $(jq -r '.Volumes[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-20) )
+        ARR_TAGVALUE=( $(jq -r '.Volumes[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
 
         MAXCT=${#ARR_VID[*]}    # count snapshots found
 
@@ -1933,7 +1956,8 @@ function ec2cli_list_volumes(){
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      ${ARR_STATE[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encypt"; else echo "-"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
                       ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
@@ -1952,14 +1976,15 @@ function ec2cli_list_volumes(){
                 date)
                     column=6; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
             esac
-            awk  '{ printf "%-2s %-23s %-2s %-6s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-23s %-2s %-10s %-2s %-11s %-2s %-37s %-2s\n", \
+            awk  '{ printf "%-2s %-22s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-9s %-2s %-23s %-2s %-8s %-2s %-15s %-2s %-41s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19}' .ec2-qv-volumes.tmp | indent02
 
         elif [ $MED_CLI ]; then
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      ${ARR_STATE[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encypt"; else echo "-"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
                       ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
@@ -1978,13 +2003,14 @@ function ec2cli_list_volumes(){
                 date)
                     column=6; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
             esac
-            awk  '{ printf "%-2s %-23s %-2s %-6s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-23s %-2s %-10s %-2s %-11s %-2s \n", \
+            awk  '{ printf "%-2s %-22s %-2s %-6s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-23s %-2s %-9s %-2s %-16s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-volumes.tmp | indent02
         else
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      ${ARR_STATE[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encypt"; else echo "-"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
                       ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
@@ -2003,7 +2029,7 @@ function ec2cli_list_volumes(){
                 date)
                     column=6; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
             esac
-            awk  '{ printf "%-2s %-23s %-2s %-6s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-23s %-2s %-10s %-2s\n", \
+            awk  '{ printf "%-2s %-22s %-2s %-6s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-24s %-2s %-10s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-volumes.tmp | indent02
         fi
         # size, unit calcs of raw volumes

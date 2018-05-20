@@ -82,9 +82,13 @@ EOM
 function ec2cli_help_command_list_snapshots(){
     cat <<EOM
 
-  ${accent}COMMAND${reset}:
+    ${title}COMMAND${reset}:
 
-                $ ${yellow}ec2cli${accent} --snapshots list ${reset}[REGION] [${accent}--sort ${reset}<value>]
+              -s | --snapshots list
+
+    ${title}SYNOPSIS${reset}:
+
+              $ ${yellow}ec2cli${accent} --snapshots list ${reset}[REGION] [${accent}--sort ${reset}<value>]
 
 
         Parameter --sort can be used with one the following values:
@@ -104,9 +108,13 @@ EOM
 function ec2cli_help_command_list_volumes(){
     cat <<EOM
 
-  ${accent}COMMAND${reset}:
+    ${title}COMMAND${reset}:
 
-                $ ${yellow}ec2cli${accent} --volumes list ${reset}[REGION] [${accent}--sort ${reset}<value>]
+              -v | --volumes list
+
+    ${title}SYNOPSIS${reset}:
+
+              $ ${yellow}ec2cli${accent} --volumes list ${reset}[REGION] [${accent}--sort ${reset}<value>]
 
 
         Parameter --sort can be used with one the following values:
