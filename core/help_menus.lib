@@ -104,7 +104,10 @@ function ec2cli_help_command_list_instances(){
     ${title}EXAMPLE${reset}:
 
 
-                $ ${yellow}ec2cli${accent} --i list ${reset}eu-west-1 ${accent}--sort ${reset} size
+                $ ${yellow}ec2cli${reset} --i list eu-west-1 --sort size
+
+
+      Output:
 
 
                 ${title}EC2 INSTANCES${bodytext} : eu-west-1  |  *sorted
