@@ -2119,7 +2119,7 @@ function setup_regioncodes(){
     local recreate_flag=""
     local now=$(date -u +%s)
     local regioncodes="$CONFIG_PATH/$REGION_CONFIGFILE"
-    local num_codes="$(cat $regioncodes | wc -l)"
+    local num_codes="$(cat $regioncodes 2>/dev/null | wc -l)"
     #
     std_logger "[INFO]: Validating existence of "$CONFIG_PATH/$REGION_CONFIGFILE""
     if [ -f "$CONFIG_PATH/$REGION_CONFIGFILE" ]; then
@@ -2137,6 +2137,8 @@ function setup_regioncodes(){
         fi
         std_logger "[INFO]: Region code config file ($regioncodes) found, age $(($age/24/60/60)) days"
         std_logger "[INFO]: $(cat $regioncodes | wc -l) Regions identified"
+    elif [ "$num_codes" = "0" ]; then
+        recreate_flag="True"
     fi
     if [ ! -f "$CONFIG_PATH/$REGION_CONFIGFILE" ] || [ $recreate_flag ]; then
         std_logger "[INFO]: (re)creating REGION_CONFIGFILE ($CONFIG_PATH/$REGION_CONFIGFILE)"
@@ -2381,7 +2383,8 @@ function parse_parameters(){
                     fi
                     # provision for help submenu
                     if [ "$1" = "help" ]; then
-                        FUNCTION_CALL="HELP"
+                        FUNCTION_CALL="ec2cli_help_command_list_instances"
+                        shift 1
                     else
                         case $COMMAND in
                             list)
@@ -2657,6 +2660,9 @@ fi
 if [ "$FUNCTION_CALL" = "HELP" ]; then
     source $pkg_path/core/help_menus.lib
     help_submenu $COMMAND
+elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_instances" ]; then
+    source $pkg_path/core/help_menus.lib
+    ec2cli_help_command_list_instances    
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_snapshots" ]; then
     source $pkg_path/core/help_menus.lib
     ec2cli_help_command_list_snapshots

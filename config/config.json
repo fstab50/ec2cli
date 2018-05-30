@@ -1,0 +1,13 @@
+{
+    "application": "ec2cli",
+    "configuration": {
+        "REFRESH_REGIONCODES": "14",
+        "REGION_CONFIGFILE": "regions.list",
+        "LOCATION": "external"
+    },
+    "colors": {
+        "title": "white",
+        "frame": "brightgreen",
+        "body": "lgray"
+    }
+}

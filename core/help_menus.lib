@@ -7,7 +7,8 @@ pkg_path=$(cd $(dirname $0); pwd -P)
 source $pkg_path/core/colors.sh
 
 accent=$(echo -e ${bold}${white})
-
+frame=$greenbold_frame
+bodytext=$(echo -e ${reset}${wgray})            # report body text; set to reset for native xterm
 
 function help_submenu(){
     ## displayes appropriate submenu ##
@@ -79,6 +80,54 @@ EOM
 }
 
 
+function ec2cli_help_command_list_instances(){
+    cat <<EOM
+
+    ${title}COMMAND${reset}:
+
+              -i | --instances list
+
+    ${title}SYNOPSIS${reset}:
+
+              $ ${yellow}ec2cli${accent} --instances list ${reset}[REGION] [${accent}--sort ${reset}<value>]
+
+
+        Parameter --sort can be used with one the following values:
+
+        VALUE                         Description                        Sort Order
+       ----------------    ------------------------------------     -----------------------
+        ${accent}date${reset} [DEFAULT]     Sort instance list by create date        order newest to oldest
+        ${accent}size${reset}               Sort instance list by EC2 size           smallest to largest
+        ${accent}id${reset}                 Sort instance list by instance id        alphabetical order
+
+
+    ${title}EXAMPLE${reset}:
+
+
+                $ ${yellow}ec2cli${reset} --i list eu-west-1 --sort size
+
+
+      Output:
+
+
+                ${title}EC2 INSTANCES${bodytext} : eu-west-1  |  *sorted
+       ${frame}_________________________________________________________________________________________________
+
+       |${bodytext} InstanceId            ${frame}|${bodytext} Type         ${frame}|${bodytext} State     ${frame}|${bodytext} SecurityGroup      ${frame}|${bodytext} Root-Volume
+       ${frame}__________________________________________________________________________________________________
+       |${bodytext} i-00b308c370052123d   ${frame}|${bodytext} t2.micro     ${frame}|${bodytext} stopped   ${frame}|${bodytext} CFN-MPC-VPC-EUW    ${frame}|${bodytext} vol-07d154ae06655736f   ${frame}|${bodytext}
+       ${frame}|${bodytext} i-016b1ed9525798efc   ${frame}|${bodytext} t2.micro     ${frame}|${bodytext} running   ${frame}|${bodytext} CFN-MPC-VPC-EUW    ${frame}|${bodytext} vol-0e110e400a54c4f95   ${frame}|${bodytext}
+       ${frame}|${bodytext} i-0d0a2f439d44938c8   ${frame}|${bodytext} t2.micro     ${frame}|${bodytext} running   ${frame}|${bodytext} CFN-MPC-VPC-EUW    ${frame}|${bodytext} vol-0b0074bb594424a7c   ${frame}|${bodytext}
+       ${frame}|${bodytext} i-053827337f408c25a   ${frame}|${bodytext} t2.medium    ${frame}|${bodytext} running   ${frame}|${bodytext} CFN-MPC-VPC-EUW    ${frame}|${bodytext} vol-0a3e3875479142265   ${frame}|${bodytext}
+       ${frame}|${bodytext} i-0b9b1bb4e1f200bb5   ${frame}|${bodytext} t2.large     ${frame}|${bodytext} running   ${frame}|${bodytext} CFN-MPC-VPC-EUW    ${frame}|${bodytext} vol-08d3322c245d57be1   ${frame}|${bodytext}
+       ${frame}|${bodytext} i-0142de843cd829b69   ${frame}|${bodytext} m4.xlarge    ${frame}|${bodytext} running   ${frame}|${bodytext} CFN-MPC-VPC-EUW    ${frame}|${bodytext} vol-0703400a9c4c3982c   ${frame}|${bodytext}
+       ${frame}|${bodytext} i-057cbdb4ac764164b   ${frame}|${bodytext} m4.2xlarge   ${frame}|${bodytext} running   ${frame}|${bodytext} CFN
+
+
+EOM
+}
+
+
 function ec2cli_help_command_list_snapshots(){
     cat <<EOM
 
@@ -95,7 +144,7 @@ function ec2cli_help_command_list_snapshots(){
 
         VALUE                         Description                        Sort Order
        ----------------    ------------------------------------     -----------------------
-        ${accent}date${reset} [DEFAULT]     Sort snapshot list by date               order newest to oldest
+        ${accent}date${reset} [DEFAULT]     Sort snapshot list by create date        order newest to oldest
         ${accent}size${reset}               Sort snapshot list by size of volume     smallest to largest
                            from which snapshot taken
         ${accent}id${reset}                 Sort snapshot list by snapshot id        alphabetical order
@@ -121,7 +170,7 @@ function ec2cli_help_command_list_volumes(){
 
         VALUE                         Description                        Sort Order
         ----------------    ------------------------------------     -----------------------
-        ${accent}date${reset} [DEFAULT]     Sort volume list by date                 order newest to oldest
+        ${accent}date${reset} [DEFAULT]     Sort volume list by create date          order newest to oldest
         ${accent}size${reset}               Sort volume list by size of volume       smallest to largest
                            from which snapshot taken
         ${accent}id${reset}                 Sort volume list by volume id            alphabetical order
