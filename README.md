@@ -18,8 +18,8 @@
 
 ## About this repository
 
-* Purpose:&emsp;&ensp;CLI utilities for use with Amazon Web Services (AWS)
-* Version:<span class="d-inline-block  px-10">2.3.6
+* Purpose:&emsp;&emsp;&emsp;&emsp;&emsp;CLI utilities for use with Amazon Web Services (AWS)
+* Version:<p style="text-indent: 15em;">2.3.6</p>
 * Repo:			https://github.com/fstab50/ec2cli
 * Mirror:		https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 
