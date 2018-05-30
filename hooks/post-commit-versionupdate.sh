@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-# Post commit hook, updates version throughout project
+#
+#   - Summary:   Post commit hook, updates version throughout project
+#   - Location:  .git/hooks
+#   - Filename:  commit-msg
+#
 
 source core/_version.py
 
