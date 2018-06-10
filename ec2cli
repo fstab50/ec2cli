@@ -1949,7 +1949,10 @@ function ec2cli_list_volumes(){
         ARR_TAGVALUE=( $(jq -r '.Volumes[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
 
         MAXCT=${#ARR_VID[*]}    # count snapshots found
-
+        UNATTACHED_CT="0"
+        for entry in ${ARR_STATE[@]}; do
+            if [ "$entry" = "null" ]; then UNATTACHED_CT=$(( $UNATTACHED_CT + 1 )); fi
+        done
         # print and format output
         i=0
         if [ $FULL_CLI ]; then
@@ -2040,7 +2043,8 @@ function ec2cli_list_volumes(){
         ASUM=$(echo $RETURN | awk '{print $1}')
         UNIT=$(echo $RETURN | awk '{print $2}')
         # print footer
-        print_footer "${title}$MAXCT${bodytext} volumes in region [$REGION], total "${title}$ASUM${bodytext}" $UNIT" $total_width
+        print_footer "${title}$MAXCT${bodytext} volumes in region [$REGION], ${title}$UNATTACHED_CT${bodytext} unattached to instances (free). \
+        Total size on disk ${title}$ASUM${bodytext} $UNIT" $total_width
 
         # clean up
         rm .ec2-qv-volumes.tmp .body.tmp .jsonoutput.tmp
