@@ -1956,9 +1956,10 @@ function ec2cli_list_volumes(){
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> .body.tmp
+                      $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
+                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1983,9 +1984,10 @@ function ec2cli_list_volumes(){
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp" >> .body.tmp
+                      $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
+                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -2009,9 +2011,10 @@ function ec2cli_list_volumes(){
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
+                      $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
+                      ${ARR_VTYPE[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
