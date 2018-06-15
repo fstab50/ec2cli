@@ -1708,6 +1708,9 @@ function ec2cli_list_snapshots(){
                     --output json --region $REGION > .jsonoutput.tmp
     fi
 
+    # retrieve account name
+    ACCT_ALIAS="$(account_alias $PROFILE)"
+
     # Sum size of all snapshots (footer)
     if [ $ALL_REGIONS ]; then
         SUM=0
@@ -1735,7 +1738,7 @@ function ec2cli_list_snapshots(){
             total_width="132"
         fi
         # snapshots found, print region identifier
-        printf "\n${title}SNAPSHOTS${bodytext} : $REGION  |  $ast*${bodytext}sorted\n" | indent25
+        printf "\n  ${title}SNAPSHOTS${bodytext} :  $REGION  $sp  Account: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
             print_header "$sp  SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" $total_width  .ec2-qv-snapshots.tmp
@@ -1808,9 +1811,9 @@ function ec2cli_list_snapshots(){
         fi
         # print footer
         if [ $ALL_REGIONS ]; then
-            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots acorss ${title}$REGION_CT${bodytext} regions, total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est)" $total_width
+            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots acorss ${title}$REGION_CT${bodytext} regions, total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
         else
-            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est)" $total_width
+            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
         fi
         rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
     fi
