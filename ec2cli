@@ -1134,6 +1134,9 @@ function ec2cli_list_images(){
         aws ec2 --profile $PROFILE describe-images --region $REGION --output json --owner self > .jsonimages.tmp
     fi
 
+    # retrieve account name
+    ACCT_ALIAS="$(account_alias $PROFILE)"
+
     ARR_IMAGEID=( $(jq -r ".Images[].ImageId" .jsonimages.tmp) )
     MAXCT=${#ARR_IMAGEID[*]}    # values in array
 
@@ -1180,7 +1183,7 @@ function ec2cli_list_images(){
 
     ## print and format output ##
     # header, region identifier
-    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n" | indent18
+    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} $REGION  $sp  Account: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
     # format output
     awk  '{ printf "%-13s %-18s %-8s %-12s %-23s %-10s %-2s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .output.tmp | indent02
