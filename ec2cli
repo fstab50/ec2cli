@@ -66,6 +66,7 @@ FLOAT_DECIMAL="1"             # number of floating point decimal places to outpu
 
 # Initialize ansi colors
 title=$(echo -e ${bold}${white})
+account=$(echo -e ${brightcyan}${bold})   # use for ansi escape color codes
 options=$(echo -e ${white})
 resources=${yellow}
 commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
@@ -245,6 +246,13 @@ function environment_info(){
     fi
     #
     #<-- end function environment_info -->
+}
+
+function account_alias(){
+    ## returns account alias (human-readable name) ##
+    local profile="$1"
+    alias="$(aws iam list-account-aliases --profile $profile | jq .AccountAliases[0])"
+    echo "$(echo $alias | cut -c 2-30 | rev | cut -c 2-30 | rev)"
 }
 
 function authenticated(){
@@ -928,6 +936,9 @@ function ec2cli_list_instances(){
         aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > .jsonoutput.tmp
     fi
 
+    # retrieve account name
+    ACCT_ALIAS="$(account_alias $PROFILE)"
+
     # load fields into respective arrays
     ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
     MAXCT=${#ARR_STATE[*]}    # count instances found
@@ -1003,7 +1014,7 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # print title
-        printf "\n${title}EC2 INSTANCES${bodytext} : $REGION  |  $ast*${bodytext}sorted\n" | indent25
+        printf "\n${title}EC2 INSTANCES${bodytext} :  $REGION  $sp  Account:  ${account}$ACCT_ALIAS${bodytext}  \n" | indent25
 
         if [ $FULL_CLI ]; then
             #print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
@@ -1051,9 +1062,9 @@ function ec2cli_list_instances(){
         fi
         # print footer
         if [ $ALL_REGIONS ]; then
-            print_footer "Total Instances across $REGION_CT regions: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped" $total_width
+            print_footer "Total Instances across $REGION_CT regions: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped  ($ast*${bodytext}sorted)" $total_width
         else
-            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped" $total_width
+            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped   ($ast*${bodytext}sorted)" $total_width
         fi
     else
         ### -- no running instances -- ###
@@ -2167,7 +2178,7 @@ function parse_regioncode(){
     esac
 
     if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
-    
+
     # parameter is a region, validate it
     if [ "$(grep $user_provided "$CONFIG_PATH/$REGION_CONFIGFILE")" ]; then
         # aws region given
