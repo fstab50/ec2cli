@@ -2166,10 +2166,10 @@ function parse_regioncode(){
             ;;
     esac
 
-    # validate against local cache of region codes
-    setup_regioncodes
+    if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
+    
     # parameter is a region, validate it
-    if [ "$(grep $user_provided "$CONFIG_PATH/$REGION_CONFIGFILE")" == "$user_provided" ]; then
+    if [ "$(grep $user_provided "$CONFIG_PATH/$REGION_CONFIGFILE")" ]; then
         # aws region given
         REGION=$user_provided
     else
@@ -2646,11 +2646,11 @@ ec2cli_precheck
 # reset default colors
 #xterm_reset true
 
+# validate regioncode against local cache if not interrogated already
+setup_regioncodes
+
 # parse all cli parameters
 parse_parameters $@
-
-# validate regioncode against local cache if not interrogated already
-if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
 
 # execute
 if [ $DBUGMODE ]; then
