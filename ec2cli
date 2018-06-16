@@ -1444,7 +1444,7 @@ function ec2cli_run_instances(){
     i=0    # counter
     while (( i < $MAXCT )); do
         if [ "${ARR_PORT[$i]}" = "22" ] || [ "${ARR_PORT[$i]}" = "3389" ]; then
-            if [[ ${ARR_IP[$i]} == "$MYCIDR" ]] || [[ ${ARR_IP[$i]} == "0.0.0.0/0" ]]; then
+            if [ "${ARR_IP[$i]}" = "$MYCIDR" ] || [ "${ARR_IP[$i]}" = "0.0.0.0/0" ]; then
                 ACCESS=1
                 i=$MAXCT    # access found, break
             fi
@@ -1457,10 +1457,10 @@ function ec2cli_run_instances(){
 	        # Access validated
 			std_message "Access verified to instance ($TARGET). Proceeding..." INFO
 	        # clean up
-	        rm .myip.tmp .jsonoutput.tmp .secgrp-ids.tmp
+	        rm .jsonoutput.tmp .secgrp-ids.tmp
 	else
 	        # No access from current login client location, clean up
-	        rm .arrayoutput.tmp .text-output1.tmp .myip.tmp .jsonoutput.tmp .secgrp-ids.tmp
+	        rm .arrayoutput.tmp .text-output1.tmp .jsonoutput.tmp .secgrp-ids.tmp
 	        # log, exit
 	        std_error_exit "No ssh or RDP access to instance ($TARGET). Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
 	fi
