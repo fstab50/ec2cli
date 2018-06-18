@@ -66,11 +66,11 @@ FLOAT_DECIMAL="1"             # number of floating point decimal places to outpu
 
 # Initialize ansi colors
 title=$(echo -e ${bold}${white})
-account=$(echo -e ${brightcyan}${bold})   # use for ansi escape color codes
+account=$(echo -e ${orange})   # use for ansi escape color codes
 options=$(echo -e ${white})
 resources=${yellow}
 commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
-regions=$(echo -e ${bluepurple})
+regions=$(echo -e ${brightblue})
 url=$(echo -e ${underline}${brightblue})
 frame=$greenbold_frame
 bodytext=$(echo -e ${reset}${wgray})            # report body text; set to reset for native xterm
@@ -1014,7 +1014,7 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # print title
-        printf "\n${title}EC2 INSTANCES${bodytext} :  $REGION  $sp  Account:  ${account}$ACCT_ALIAS${bodytext}  \n" | indent25
+        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
             #print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
@@ -1057,7 +1057,7 @@ function ec2cli_list_instances(){
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-15s %-2s %-14s %-2s %-33.33s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16, $17, $18}' .body.tmp | indent02
         else
-            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-16s %-2s %-15s %-2s \n", \
+            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-16s %-2s %-15.15s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16}' .body.tmp | indent02
         fi
         # print footer
@@ -1068,7 +1068,7 @@ function ec2cli_list_instances(){
         fi
     else
         ### -- no running instances -- ###
-        printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION\n" | indent18
+        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
         print_header "$sp InstanceId* $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp Tag $sp" $total_width .body.tmp
         #
         # output table of json array
@@ -1089,12 +1089,12 @@ function ec2cli_list_instances(){
         else
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} \
-                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[@]} $sp" >> .body.tmp
+                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
             # print narrow format
-            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9.9s %-2s %-16s %-2s %-23s %-2s %-35.35s %-2s \n", \
+            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9.9s %-2s %-16s %-2s %-23s %-2s %-35.34s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
             # print footer
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
@@ -1567,7 +1567,7 @@ function ec2cli_list_securitygroups(){
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
         # print footer if no snapshots found
-        std_message "${title}0${bodytext} snapshots in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
+        std_message "${title}0${bodytext} security groups in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
     else
         # print and format output
         sp="${frame}|${bodytext}"       # separator
@@ -1579,8 +1579,12 @@ function ec2cli_list_securitygroups(){
         else
             total_width="140"
         fi
+
+        # retrieve account name
+        ACCT_ALIAS="$(account_alias $PROFILE)"
+
         # snapshots found, print region identifier
-        printf "\n${title}SECURITY GROUPS${bodytext} : $REGION\n\n" | indent25
+        printf "\n${title}SECURITY GROUPS${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
             print_header "$sp  GroupName $sp GroupId $sp Ports $sp Ports $sp CidrIp $sp VpcId $sp Tag $sp Description $sp" $total_width  .ec2-qv-securitygroups.tmp
