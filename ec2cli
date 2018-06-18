@@ -1445,10 +1445,11 @@ function ec2cli_run_instances(){
     for port in ${ARR_PORT[@]}; do
         if [ "$port" = "22" ] || [ "$port" = "3389" ]; then
             for ip in ${ARR_IP[@]}; do
-            if [ "$ip" = "$MYCIDR" ] || [ "$ip" = "0.0.0.0/0" ]; then
-                ACCESS=1
-                i=$MAXCT    # access found, break
-            fi
+                if [ "$ip" = "$MYCIDR" ] || [ "$ip" = "0.0.0.0/0" ]; then
+                    ACCESS=1
+                    i=$MAXCT    # access found, break
+                fi
+            done
         fi
         # incr counter
         i=$(( $i + 1 ))
