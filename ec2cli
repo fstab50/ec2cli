@@ -1442,9 +1442,10 @@ function ec2cli_run_instances(){
     MAXCT=${#ARR_PORT[*]}
 
     i=0    # counter
-    while (( i < $MAXCT )); do
-        if [ "${ARR_PORT[$i]}" = "22" ] || [ "${ARR_PORT[$i]}" = "3389" ]; then
-            if [ "${ARR_IP[$i]}" = "$MYCIDR" ] || [ "${ARR_IP[$i]}" = "0.0.0.0/0" ]; then
+    for port in ${ARR_PORT[@]}; do
+        if [ "$port" = "22" ] || [ "$port" = "3389" ]; then
+            for ip in ${ARR_IP[@]}; do
+            if [ "$ip" = "$MYCIDR" ] || [ "$ip" = "0.0.0.0/0" ]; then
                 ACCESS=1
                 i=$MAXCT    # access found, break
             fi
