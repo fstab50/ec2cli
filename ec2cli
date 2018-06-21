@@ -66,10 +66,11 @@ FLOAT_DECIMAL="1"             # number of floating point decimal places to outpu
 
 # Initialize ansi colors
 title=$(echo -e ${bold}${white})
+account=$(echo -e ${orange})   # use for ansi escape color codes
 options=$(echo -e ${white})
 resources=${yellow}
 commands=$(echo -e ${brightcyan})   # use for ansi escape color codes
-regions=$(echo -e ${bluepurple})
+regions=$(echo -e ${brightblue})
 url=$(echo -e ${underline}${brightblue})
 frame=$greenbold_frame
 bodytext=$(echo -e ${reset}${wgray})            # report body text; set to reset for native xterm
@@ -245,6 +246,13 @@ function environment_info(){
     fi
     #
     #<-- end function environment_info -->
+}
+
+function account_alias(){
+    ## returns account alias (human-readable name) ##
+    local profile="$1"
+    alias="$(aws iam list-account-aliases --profile $profile | jq .AccountAliases[0])"
+    echo "$(echo $alias | cut -c 2-30 | rev | cut -c 2-30 | rev)"
 }
 
 function authenticated(){
@@ -928,6 +936,9 @@ function ec2cli_list_instances(){
         aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > .jsonoutput.tmp
     fi
 
+    # retrieve account name
+    ACCT_ALIAS="$(account_alias $PROFILE)"
+
     # load fields into respective arrays
     ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
     MAXCT=${#ARR_STATE[*]}    # count instances found
@@ -1003,7 +1014,7 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # print title
-        printf "\n${title}EC2 INSTANCES${bodytext} : $REGION  |  $ast*${bodytext}sorted\n" | indent25
+        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
             #print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
@@ -1034,7 +1045,7 @@ function ec2cli_list_instances(){
             id | Id | ID | SnapshotId)
                 column=2; cat sort.tmp | sort -k"$column" -n >> .body.tmp;;
             size | Size)
-                column=4; cat sort.tmp | sort -k"$column" -r >> .body.tmp;;
+                column=4; cat sort.tmp | sort -k"$column" >> .body.tmp;;
             runtime)
                 column=15; cat sort.tmp | sort -k$column -n >> .body.tmp;;
         esac
@@ -1046,18 +1057,18 @@ function ec2cli_list_instances(){
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-15s %-2s %-14s %-2s %-33.33s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16, $17, $18}' .body.tmp | indent02
         else
-            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-16s %-2s %-15s %-2s \n", \
+            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18s %-2s %-23s %-2s %-16s %-2s %-15.15s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16}' .body.tmp | indent02
         fi
         # print footer
         if [ $ALL_REGIONS ]; then
-            print_footer "Total Instances across $REGION_CT regions: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped" $total_width
+            print_footer "Total Instances across $REGION_CT regions: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped  ($ast*${bodytext}sorted)" $total_width
         else
-            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped" $total_width
+            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped   ($ast*${bodytext}sorted)" $total_width
         fi
     else
         ### -- no running instances -- ###
-        printf "\n${white}${BOLD}EC2 INSTANCES${UNBOLD}${reset} : $REGION\n" | indent18
+        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
         print_header "$sp InstanceId* $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp Tag $sp" $total_width .body.tmp
         #
         # output table of json array
@@ -1078,12 +1089,12 @@ function ec2cli_list_instances(){
         else
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} \
-                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[@]} $sp" >> .body.tmp
+                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
             # print narrow format
-            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9.9s %-2s %-16s %-2s %-23s %-2s %-35.35s %-2s \n", \
+            awk  '{ printf "%-2s %-22s %-2s %-12s %-2s %-9.9s %-2s %-16s %-2s %-23s %-2s %-35.34s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
             # print footer
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
@@ -1122,6 +1133,9 @@ function ec2cli_list_images(){
     else
         aws ec2 --profile $PROFILE describe-images --region $REGION --output json --owner self > .jsonimages.tmp
     fi
+
+    # retrieve account name
+    ACCT_ALIAS="$(account_alias $PROFILE)"
 
     ARR_IMAGEID=( $(jq -r ".Images[].ImageId" .jsonimages.tmp) )
     MAXCT=${#ARR_IMAGEID[*]}    # values in array
@@ -1169,7 +1183,7 @@ function ec2cli_list_images(){
 
     ## print and format output ##
     # header, region identifier
-    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) :${UNBOLD}${reset} $REGION\n" | indent18
+    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} $REGION  $sp  Account: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
     # format output
     awk  '{ printf "%-13s %-18s %-8s %-12s %-23s %-10s %-2s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .output.tmp | indent02
@@ -1416,8 +1430,7 @@ function ec2cli_run_instances(){
 	        --query 'Reservations[].Instances[].SecurityGroups[*].GroupId' > .secgrp-ids.tmp
 
 	# discover local ip
-	dig +short myip.opendns.com @resolver1.opendns.com > .myip.tmp
-    MYCIDR="$(cat .myip.tmp)/32"
+	MYCIDR="$(dig +short myip.opendns.com @resolver1.opendns.com)/32"
 
     # grab security group details
     aws ec2 --profile $PROFILE describe-security-groups \
@@ -1429,12 +1442,14 @@ function ec2cli_run_instances(){
     MAXCT=${#ARR_PORT[*]}
 
     i=0    # counter
-    while (( i < $MAXCT )); do
-        if [[ ${ARR_PORT[$i]} = 22 ]]; then
-            if [[ ${ARR_IP[$i]} == "$MYCIDR" ]] || [[ ${ARR_IP[$i]} == "0.0.0.0/0" ]]; then
-                ACCESS=1
-                i=$MAXCT    # access found, break
-            fi
+    for port in ${ARR_PORT[@]}; do
+        if [ "$port" = "22" ] || [ "$port" = "3389" ]; then
+            for ip in ${ARR_IP[@]}; do
+                if [ "$ip" = "$MYCIDR" ] || [ "$ip" = "0.0.0.0/0" ]; then
+                    ACCESS=1
+                    i=$MAXCT    # access found, break
+                fi
+            done
         fi
         # incr counter
         i=$(( $i + 1 ))
@@ -1442,14 +1457,14 @@ function ec2cli_run_instances(){
 
 	if [[ $ACCESS = 1 ]]; then
 	        # Access validated
-			std_message "SSH access verified to instance ($TARGET). Proceeding..." INFO
+			std_message "Access verified to instance ($TARGET). Proceeding..." INFO
 	        # clean up
-	        rm .myip.tmp .jsonoutput.tmp .secgrp-ids.tmp
+	        rm .jsonoutput.tmp .secgrp-ids.tmp
 	else
 	        # No access from current login client location, clean up
-	        rm .arrayoutput.tmp .text-output1.tmp .myip.tmp .jsonoutput.tmp .secgrp-ids.tmp
+	        rm .arrayoutput.tmp .text-output1.tmp .jsonoutput.tmp .secgrp-ids.tmp
 	        # log, exit
-	        std_error_exit "No ssh access to instance ($TARGET). Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
+	        std_error_exit "No ssh or RDP access to instance ($TARGET). Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
 	fi
 
 	#
@@ -1552,20 +1567,24 @@ function ec2cli_list_securitygroups(){
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
         # print footer if no snapshots found
-        std_message "${title}0${bodytext} snapshots in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
+        std_message "${title}0${bodytext} security groups in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
     else
         # print and format output
         sp="${frame}|${bodytext}"       # separator
 
-        if (( $(tput cols) > "170" )); then
+        if (( $(tput cols) >= "172" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
-            total_width="173"
+            total_width="167"
         else
-            total_width="145"
+            total_width="140"
         fi
+
+        # retrieve account name
+        ACCT_ALIAS="$(account_alias $PROFILE)"
+
         # snapshots found, print region identifier
-        printf "\n${title}SECURITY GROUPS${bodytext} : $REGION\n\n" | indent25
+        printf "\n${title}SECURITY GROUPS${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
             print_header "$sp  GroupName $sp GroupId $sp Ports $sp Ports $sp CidrIp $sp VpcId $sp Tag $sp Description $sp" $total_width  .ec2-qv-securitygroups.tmp
@@ -1631,10 +1650,10 @@ function ec2cli_list_securitygroups(){
 
         if [ $FULL_CLI ]; then
             # print and format output
-            awk '{ printf "%-2s %-30.29s %-2s %-12s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-37.37s %-2s %-25.25s %-2s \n", \
+            awk '{ printf "%-2s %-28.27s %-2s %-12s %-2s %-5s %-2s %-5s %-2s %-19s %-2s %-13s %-2s %-34.33s %-2s %-26.26s %-2s \n", \
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-securitygroups.tmp | indent02
         else
-            awk '{ printf "%-2s %-26.25s %-2s %-12s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-40.40s %-2s \n", \
+            awk '{ printf "%-2s %-26.25s %-2s %-12s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-35.34s %-2s \n", \
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .ec2-qv-securitygroups.tmp | indent02
         fi
         # print footer
@@ -1694,6 +1713,9 @@ function ec2cli_list_snapshots(){
                     --output json --region $REGION > .jsonoutput.tmp
     fi
 
+    # retrieve account name
+    ACCT_ALIAS="$(account_alias $PROFILE)"
+
     # Sum size of all snapshots (footer)
     if [ $ALL_REGIONS ]; then
         SUM=0
@@ -1721,7 +1743,7 @@ function ec2cli_list_snapshots(){
             total_width="132"
         fi
         # snapshots found, print region identifier
-        printf "\n${title}SNAPSHOTS${bodytext} : $REGION  |  $ast*${bodytext}sorted\n" | indent25
+        printf "\n  ${title}SNAPSHOTS${bodytext} :  $REGION  $sp  Account: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
             print_header "$sp  SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" $total_width  .ec2-qv-snapshots.tmp
@@ -1794,9 +1816,9 @@ function ec2cli_list_snapshots(){
         fi
         # print footer
         if [ $ALL_REGIONS ]; then
-            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots acorss ${title}$REGION_CT${bodytext} regions, total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est)" $total_width
+            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots acorss ${title}$REGION_CT${bodytext} regions, total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
         else
-            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est)" $total_width
+            print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
         fi
         rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
     fi
@@ -1949,16 +1971,20 @@ function ec2cli_list_volumes(){
         ARR_TAGVALUE=( $(jq -r '.Volumes[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
 
         MAXCT=${#ARR_VID[*]}    # count snapshots found
-
+        UNATTACHED_CT="0"
+        for entry in ${ARR_STATE[@]}; do
+            if [ "$entry" = "null" ]; then UNATTACHED_CT=$(( $UNATTACHED_CT + 1 )); fi
+        done
         # print and format output
         i=0
         if [ $FULL_CLI ]; then
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> .body.tmp
+                      $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
+                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1983,9 +2009,10 @@ function ec2cli_list_volumes(){
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp" >> .body.tmp
+                      $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
+                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -2009,9 +2036,10 @@ function ec2cli_list_volumes(){
             # output table of json array
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_VID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "-"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
+                      $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_IID[$i]} $sp ${ARR_VTYPE[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
+                      $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
+                      ${ARR_VTYPE[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -2037,7 +2065,8 @@ function ec2cli_list_volumes(){
         ASUM=$(echo $RETURN | awk '{print $1}')
         UNIT=$(echo $RETURN | awk '{print $2}')
         # print footer
-        print_footer "${title}$MAXCT${bodytext} volumes in region [$REGION], total "${title}$ASUM${bodytext}" $UNIT" $total_width
+        print_footer "${title}$MAXCT${bodytext} volumes in region [$REGION], ${title}$UNATTACHED_CT${bodytext} unattached to instances (free). \
+        Total size on disk ${title}$ASUM${bodytext} $UNIT" $total_width
 
         # clean up
         rm .ec2-qv-volumes.tmp .body.tmp .jsonoutput.tmp
@@ -2159,10 +2188,10 @@ function parse_regioncode(){
             ;;
     esac
 
-    # validate against local cache of region codes
-    setup_regioncodes
+    if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
+
     # parameter is a region, validate it
-    if [ "$(grep $user_provided "$CONFIG_PATH/$REGION_CONFIGFILE")" == "$user_provided" ]; then
+    if [ "$(grep $user_provided "$CONFIG_PATH/$REGION_CONFIGFILE")" ]; then
         # aws region given
         REGION=$user_provided
     else
@@ -2639,11 +2668,11 @@ ec2cli_precheck
 # reset default colors
 #xterm_reset true
 
+# validate regioncode against local cache if not interrogated already
+setup_regioncodes
+
 # parse all cli parameters
 parse_parameters $@
-
-# validate regioncode against local cache if not interrogated already
-if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
 
 # execute
 if [ $DBUGMODE ]; then
