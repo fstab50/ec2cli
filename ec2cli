@@ -2166,14 +2166,19 @@ function setup_regioncodes(){
         fi
         std_logger "[INFO]: Region code config file ($regioncodes) found, age $(($age/24/60/60)) days"
         std_logger "[INFO]: $(cat $regioncodes | wc -l) Regions identified"
-    elif [ "$num_codes" = "0" ]; then
+    elif [ "$num_codes" -lt "14" ]; then
         recreate_flag="true"
     fi
 
     if [ ! -f "$CONFIG_PATH/$REGION_CONFIGFILE" ] || [ "$recreate_flag" ]; then
         std_logger "[INFO]: (re)creating REGION_CONFIGFILE ($CONFIG_PATH/$REGION_CONFIGFILE)"
-        JSON_REGIONS=$(aws ec2 --profile $PROFILE describe-regions --output json)
-        echo $JSON_REGIONS | jq -r .Regions[].RegionName > "$CONFIG_PATH/$REGION_CONFIGFILE"
+        # verify authentication using default profile
+        if authenticated $PROFILE; then
+            JSON_REGIONS=$(aws ec2 --profile $PROFILE describe-regions --output json)
+            echo $JSON_REGIONS | jq -r .Regions[].RegionName > "$CONFIG_PATH/$REGION_CONFIGFILE"
+        else
+            cp $pkg_path/core/regions.list "$CONFIG_PATH/$REGION_CONFIGFILE"
+        fi
     fi
     REGIONFILE_CHECK="true"
     return 0
