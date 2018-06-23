@@ -2145,7 +2145,7 @@ function setup_regioncodes(){
     local age
     local mtime
     local allowable_age_secs
-    local recreate_flag=""
+    local recreate_flag
     local now=$(date -u +%s)
     local regioncodes="$CONFIG_PATH/$REGION_CONFIGFILE"
     local num_codes="$(cat $regioncodes 2>/dev/null | wc -l)"
@@ -2162,14 +2162,15 @@ function setup_regioncodes(){
             std_logger "[INFO]: Regioncode file age: $(( $age / 24 / 60 / 60 )) days"
             std_logger "[INFO]: Allowable file age: $REFRESH_REGIONCODES days"
             std_logger "[INFO]: Refresh region codes set to True"
-            recreate_flag="True"
+            recreate_flag="true"
         fi
         std_logger "[INFO]: Region code config file ($regioncodes) found, age $(($age/24/60/60)) days"
         std_logger "[INFO]: $(cat $regioncodes | wc -l) Regions identified"
     elif [ "$num_codes" = "0" ]; then
-        recreate_flag="True"
+        recreate_flag="true"
     fi
-    if [ ! -f "$CONFIG_PATH/$REGION_CONFIGFILE" ] || [ $recreate_flag ]; then
+
+    if [ ! -f "$CONFIG_PATH/$REGION_CONFIGFILE" ] || [ "$recreate_flag" ]; then
         std_logger "[INFO]: (re)creating REGION_CONFIGFILE ($CONFIG_PATH/$REGION_CONFIGFILE)"
         JSON_REGIONS=$(aws ec2 --profile $PROFILE describe-regions --output json)
         echo $JSON_REGIONS | jq -r .Regions[].RegionName > "$CONFIG_PATH/$REGION_CONFIGFILE"
@@ -2668,8 +2669,8 @@ ec2cli_precheck
 # reset default colors
 #xterm_reset true
 
-# validate regioncode against local cache if not interrogated already
-setup_regioncodes
+# temporily assign name
+PROFILE="default"
 
 # parse all cli parameters
 parse_parameters $@
