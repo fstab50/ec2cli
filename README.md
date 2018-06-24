@@ -19,7 +19,7 @@
 ## About this repository
 
 * Purpose: 		CLI utilities for use with Amazon Web Services (AWS)
-* Version:	2.3.10
+* Version:	2.3.11
 * Repo: 		https://github.com/fstab50/ec2cli
 * Mirror:		https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 
@@ -295,66 +295,28 @@ You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-q
 
 List command displays AWS resource details for your AWS default region if no region specified. If an alternate region given as a parameter, displays resource details for the specified region.
 
-```bash
-$ ec2cli -n list   # list vpc nextwork details, AWS default aws region (us-west-2)
-```
-
-![](./images/ec2vpc.png)
-
-```bash
-$ ec2cli -n list eu-west-1    # list vpc nextwork details, alternate region (eu-west-1)
-```
-
-![](./images/ec2vpc_altregion.png)
-
-```bash
-$ ec2cli -b    # list subnet details, AWS default region (us-west-2)
-               # if no COMMAND given, command defaults to 'list'
-```
-
-![](./images/ec2sub.png)
-
-```bash
-$ ec2cli -b eu-west-1    # list subnet details, alternate region (eu-west-1)
-```
-
-![](./images/ec2sub_altregion.png)
 
 ```bash
 $ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
 ```
-
-![](./images/ec2i.png)
-
-```bash
-$ ec2cli -i    # list (running) ec2 instances, AWS default region (us-west-2)
-```
-
-![](./images/ec2i_running-instances.png)
+[![instances](./images/ec2cli-list-instances.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-instances.png)
 
 ```bash
 $ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
 ```
 
-![](./images/ec2v.png)
+[![volumes](./images/ec2cli-list-volumes.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-volumes.png)
+
 
 ```bash
 $ ec2cli -s    # list snapshots, AWS default region (us-west-2)
 ```
-
-![](./images/ec2s.png)
+[![snapshots](./images/ec2cli-list-snapshots.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-snapshots.png)
 
 ```bash
 $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 ```
-
-![](./images/ec2sg.png)
-
-```bash
-$ ec2cli -g us-east-1    # list security group details, alt region (us-east-1)
-```
-
-![](./images/ec2sg_altregion.png)
+[![securitygroups](./images/ec2cli-list-securitygroups.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-securitygroups.png)
 
 [back to the top](#top)
 
