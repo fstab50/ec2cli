@@ -1627,18 +1627,21 @@ function ec2cli_list_securitygroups(){
         i=0
         if [ $FULL_CLI ]; then
             while (( i < $MAXCT )); do
-                echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
-                      $sp "$( if [ $(echo ${ARR_TPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )" $sp \
-                      ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) = "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
+                      $sp "$( if [ $(echo ${ARR_TPORT[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )"  \
+                      $sp "$( if [ $(echo ${ARR_CIDR[$i]}) = "null" ]; then echo "-"; else echo "${ARR_CIDR[$i]}"; fi )" $sp ${ARR_VPC[$i]} \
+                      $sp "$( if [ $(echo ${ARR_TAGKEY[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}"; fi )"  \
+                      $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
         else
             while (( i < $MAXCT )); do
                 while (( i < $MAXCT )); do
-                    echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
-                          $sp "$( if [ $(echo ${ARR_TPORT[$i]}) == "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )" $sp \
-                          ${ARR_CIDR[$i]} $sp ${ARR_VPC[$i]} $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
+                    echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) = "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
+                          $sp "$( if [ $(echo ${ARR_TPORT[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )" \
+                          $sp "$( if [ $(echo ${ARR_CIDR[$i]}) = "null" ]; then echo "-"; else echo "${ARR_CIDR[$i]}"; fi )" $sp ${ARR_VPC[$i]} \
+                          $sp "$( if [ $(echo ${ARR_TAGKEY[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}"; fi )" $sp" >> .body.tmp
                     # incr ct
                     i=$(( $i+1 ))
                 done
