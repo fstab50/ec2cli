@@ -316,16 +316,11 @@ $ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
 [![instances](./images/ec2cli-list-instances.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-instances.png)
 
 ```bash
-$ ec2cli -i    # list (running) ec2 instances, AWS default region (us-west-2)
-```
-
-![](./images/ec2i_running-instances.png)
-
-```bash
 $ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
 ```
 
-![](./images/ec2v.png)
+[![volumes](./images/ec2cli-list-volumes.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-volumes.png)
+
 
 ```bash
 $ ec2cli -s    # list snapshots, AWS default region (us-west-2)
