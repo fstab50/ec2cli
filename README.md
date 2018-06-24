@@ -341,8 +341,7 @@ $ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
 ```bash
 $ ec2cli -s    # list snapshots, AWS default region (us-west-2)
 ```
-
-![](./images/ec2s.png)
+[![snapshots](./images/ec2cli-list-snapshots.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-snapshots.png)
 
 ```bash
 $ ec2cli -g    # list security group details, AWS default region (us-west-2)
