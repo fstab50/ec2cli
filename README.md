@@ -348,7 +348,7 @@ $ ec2cli -s    # list snapshots, AWS default region (us-west-2)
 $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 ```
 
-![](./images/ec2sg.png)
+![](./images/ec2cli-list-securitygroups.png)
 
 ```bash
 $ ec2cli -g us-east-1    # list security group details, alt region (us-east-1)
