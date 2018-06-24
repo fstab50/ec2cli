@@ -324,7 +324,7 @@ $ ec2cli -b eu-west-1    # list subnet details, alternate region (eu-west-1)
 $ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
 ```
 
-![](./images/ec2i.png)
+[![instances](./images/ec2cli-list-instances.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-instances.png)
 
 ```bash
 $ ec2cli -i    # list (running) ec2 instances, AWS default region (us-west-2)
