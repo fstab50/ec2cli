@@ -145,7 +145,7 @@ function ec2cli_help(){
 
           If region code omitted, defaults to AWS default region
 
-        For additional help, see ${url}https://bitbucket.org/blakeca00/ec2cli/overview${bodytext}
+        For additional help, see ${url}https://github.com/fstab50/ec2cli${bodytext}
 
 
 EOM
