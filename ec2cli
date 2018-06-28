@@ -1552,7 +1552,7 @@ function ec2cli_list_securitygroups(){
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
         REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
-            aws ec2 --profile $PROFILE describe-secdurity-groups \
+            aws ec2 --profile $PROFILE describe-security-groups \
                 --region $region --output json >> .jsonoutput.tmp; done &
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
