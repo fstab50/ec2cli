@@ -1738,12 +1738,12 @@ function ec2cli_list_snapshots(){
         # print and format output
         sp="${frame}|${bodytext}"       # separator
 
-        if (( $(tput cols) >= "160" )); then
+        if (( $(tput cols) >= "170" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
-            total_width="154"
+            total_width="164"
         else
-            total_width="132"
+            total_width="142"
         fi
         # snapshots found, print region identifier
         printf "\n  ${title}SNAPSHOTS${bodytext} :  $REGION  $sp  Account: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
@@ -1762,9 +1762,10 @@ function ec2cli_list_snapshots(){
         ARR_STATE=( $(jq -r '.Snapshots[].State' .jsonoutput.tmp) )
         ARR_PROG=( $(jq -r '.Snapshots[].Progress' .jsonoutput.tmp) )
         ARR_ENCRYPT=( $(jq -r '.Snapshots[].Encrypted' .jsonoutput.tmp) )
-        ARR_DESC=( $(jq -r '.Snapshots[].Description' .jsonoutput.tmp | cut -c 1-20) )
+        ARR_DESC=( $(jq -r '.Snapshots[].Description' .jsonoutput.tmp) )
         # limit length of tag fields to 20 chars
-        ARR_TAG=( $(jq -r '.Snapshots[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+        ARR_TAGKEY=( $(jq -r '.Snapshots[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-15) )
+        ARR_TAGVALUE=( $(jq -r '.Snapshots[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-15) )
 
 
         MAXCT=${#ARR_ID[*]}    # count snapshots found
@@ -1775,7 +1776,7 @@ function ec2cli_list_snapshots(){
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
                       ${ARR_STATE[$i]} $sp ${ARR_PROG[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_VID[$i]} $sp ${ARR_TAG[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                      ${ARR_VID[$i]} $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1811,10 +1812,10 @@ function ec2cli_list_snapshots(){
         ESUM="${BOLD}$(echo $RETURN | awk '{print $1}')${UNBOLD}"
         EUNIT=$(echo $RETURN | awk '{print $2}')
         if [ $FULL_CLI ]; then
-            awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-9s %-2s %-22s %-2s %-20s %-2s %-20s %-2s \n", \
+            awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-9s %-2s %-22s %-2s %-30.29s %-2s %-20s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19}' .ec2-qv-snapshots.tmp | indent02
         else
-            awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-20s %-2s \n", \
+            awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-30.29s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-snapshots.tmp | indent02
         fi
         # print footer
