@@ -952,10 +952,10 @@ function ec2cli_list_instances(){
 
     # print and format output
     sp="${frame}|${bodytext}"       # separator
-    if (( $(tput cols) >= "175" )); then
+    if (( $(tput cols) >= "178" )); then
         FULL_CLI="True"
         std_logger "[INFO]: FULL_CLI set to True, Full width output"
-        total_width="170"
+        total_width="173"
     else
         total_width="139"
     fi
@@ -1054,7 +1054,7 @@ function ec2cli_list_instances(){
         # print and format output
         #
         if [ $FULL_CLI ]; then
-            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-18.18s %-2s %-23s %-2s %-15s %-2s %-14s %-2s %-33.33s %-2s \n", \
+            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-15s %-2s %-14s %-2s %-33.33s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16, $17, $18}' .body.tmp | indent02
         else
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-16s %-2s %-15.15s %-2s \n", \
