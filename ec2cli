@@ -1462,7 +1462,7 @@ function ec2cli_run_instances(){
 	        rm .jsonoutput.tmp .secgrp-ids.tmp
 	else
 	        # No access from current login client location, clean up
-	        rm .arrayoutput.tmp .text-output1.tmp .jsonoutput.tmp .secgrp-ids.tmp
+	        .jsonoutput.tmp .secgrp-ids.tmp
 	        # log, exit
 	        std_error_exit "No ssh or RDP access to instance ($TARGET). Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
 	fi
@@ -1494,7 +1494,9 @@ function ec2cli_run_instances(){
 	        i=$(( i-1 ))
 	    done
     fi
-
+    # clean up
+    rm .arrayoutput.tmp .text-output1.tmp
+    
 	#
 	# Log in --------------------------
 	#
@@ -1519,7 +1521,7 @@ function ec2cli_run_instances(){
 	if [[ $OS == "windows" ]]; then
 			# windows instance, validate deps & log in via RDP
             # clean up
-            rm .arrayoutput.tmp .text-output1.tmp .jsonoutput.tmp
+            .jsonoutput.tmp
 			# windows login
             ec2cli_rdp-login $TARGET $IPADDRESS
 	else
@@ -1531,7 +1533,7 @@ function ec2cli_run_instances(){
 		ssh -i $SSH_KEYS/$KEY $SSH_USER@$IPADDRESS
 
 		# clean up and exit
-		rm .arrayoutput.tmp .text-output1.tmp .jsonoutput.tmp
+		rm .jsonoutput.tmp
     	exit 0
 	fi
     #
