@@ -1014,7 +1014,7 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # print title
-        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        printf "\n\t\t\t  ${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n"
 
         if [ $FULL_CLI ]; then
             #print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
@@ -1068,7 +1068,7 @@ function ec2cli_list_instances(){
         fi
     else
         ### -- no running instances -- ###
-        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
         print_header "$sp InstanceId* $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp Tag $sp" $total_width .body.tmp
         #
         # output table of json array
@@ -1183,7 +1183,7 @@ function ec2cli_list_images(){
 
     ## print and format output ##
     # header, region identifier
-    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} $REGION  $sp  Account: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} $REGION  $sp  ACCOUNT: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
     # format output
     awk  '{ printf "%-13s %-18s %-8s %-12s %-23s %-10s %-2s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .output.tmp | indent02
@@ -1586,7 +1586,7 @@ function ec2cli_list_securitygroups(){
         ACCT_ALIAS="$(account_alias $PROFILE)"
 
         # snapshots found, print region identifier
-        printf "\n${title}SECURITY GROUPS${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}Account${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        printf "\n${title}SECURITY GROUPS${bodytext} : ${regions}$REGION${bodytext}\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
             print_header "$sp  GroupName $sp GroupId $sp Ports $sp Ports $sp CidrIp $sp VpcId $sp Tag $sp Description $sp" $total_width  .ec2-qv-securitygroups.tmp
@@ -1748,7 +1748,7 @@ function ec2cli_list_snapshots(){
             total_width="142"
         fi
         # snapshots found, print region identifier
-        printf "\n  ${title}SNAPSHOTS${bodytext} :  $REGION  $sp  Account: ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        printf "\n${title}SNAPSHOTS${bodytext} : $REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
             print_header "$sp  SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" $total_width  .ec2-qv-snapshots.tmp
