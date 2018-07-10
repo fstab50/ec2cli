@@ -1838,11 +1838,69 @@ function ec2cli_list_subnets(){
     local TOTAL
     local REGION=$1
 
-    # print region identifier
-    printf "\n${white}${BOLD}SUBNETS${UNBOLD}${reset} : $REGION\n\n" | indent18
-    # print header
-    echo -ne "Name SubnetId Public CIDR-Block #IPs AvailZone Default\n \
-    ------------- --------------- ------ --------------- ---- ---------- -------\n" > .ec2-qv.tmp
+    # pull json info, all instances in region
+    if [ $ALL_REGIONS ]; then
+        # load array from local list of regions
+        REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
+        REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
+        for region in ${REGIONS[@]}; do \
+            aws ec2 --profile $PROFILE describe-subnets \
+                --region $region --output json >> .jsonoutput.tmp; done &
+        delay_spinner "  Please wait, retrieving data from AWS..."
+        clear
+    else
+        aws ec2 --profile $PROFILE describe-subnets \
+                --output json --region $REGION > .jsonoutput.tmp
+    fi
+
+    # number of groups
+    SUM=$(jq -r '.Subnets[].CidrBlock' .jsonoutput.tmp | wc -l)
+
+
+    if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
+    then
+        # print footer if no snapshots found
+        std_message "${title}0${bodytext} subnets in region [$REGION]" "INFO"  | indent10
+    else
+        # print and format output
+        sp="${frame}|${bodytext}"       # separator
+
+        if (( $(tput cols) >= "170" )); then
+            FULL_CLI="True"
+            std_logger "[INFO]: FULL_CLI set to True, Full width output"
+            total_width="164"
+        else
+            total_width="142"
+        fi
+
+        # retrieve account name
+        ACCT_ALIAS="$(account_alias $PROFILE)"
+
+        # subnets found, print region identifier
+        printf "\n${title}SUBNETS${bodytext} : $REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+
+        if [ $FULL_CLI ]; then
+            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp '#IPs' $sp AvailZone $sp Default $sp" $total_width  .ec2-qv.tmp
+        else
+            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp #IPs $sp AvailZone $sp" $total_width  .ec2-qv.tmp
+        fi
+    fi
+
+    # parse json
+    ARR_TAGKEY=( $(jq -r '.Subnets[].Tags[0].Key' .jsonoutput.tmp) )
+    ARR_TAGVALUE=( $(jq -r '.Subnets[].Tags[0].Value' .jsonoutput.tmp) )
+    ARR_ID=( $(jq -r '.Subnets[].SubnetId' .jsonoutput.tmp) )
+    ARR_MAP=( $(jq -r '.Subnets[].MapPublicIpOnLaunch' .jsonoutput.tmp) )
+    ARR_CIDR=( $(jq -r '.Subnets[].CidrBlock' .jsonoutput.tmp) )
+    ARR_CT=( $(jq -r '.Subnets[].AvailableIpAddressCount' .jsonoutput.tmp) )
+    ARR_AZ=( $(jq -r '.Subnets[].AvailabilityZone' .jsonoutput.tmp) )
+    ARR_DEFAULT=( $(jq -r '.Subnets[].DefaultForAz' .jsonoutput.tmp) )
+
+
+    # print and format output
+    awk  '{ printf "%-15s %-17s %-7s %-16s %-6s %-12s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7}' .ec2-qv.tmp | indent02
+
     # output from aws
     aws ec2 --profile $PROFILE describe-subnets \
         --output text \
@@ -1854,14 +1912,10 @@ function ec2cli_list_subnets(){
             CidrBlock, \
             AvailableIpAddressCount, \
             AvailabilityZone, \
-            DefaultForAz]" | sort -k +4n >> .ec2-qv.tmp
-    # count total
-    TOTAL=$(cat .ec2-qv.tmp | grep "subnet-" | wc -l)
-    # print and format output
-    awk  '{ printf "%-15s %-17s %-7s %-16s %-6s %-12s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7}' .ec2-qv.tmp | indent02
+            DefaultForAz]" | column -t
+
     # print footer
-    printf "\nTotal Subnets, [$REGION]: ${white}${BOLD}$TOTAL${UNBOLD}${reset}\n\n" | indent15
+    printf "\nTotal Subnets, [$REGION]: ${white}${BOLD}$SUM${UNBOLD}${reset}\n\n" | indent15
     # clean up
     rm .ec2-qv.tmp
     #
