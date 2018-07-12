@@ -2550,7 +2550,8 @@ function parse_parameters(){
                     fi
                     # provision for help submenu
                     if [ "$1" = "help" ]; then
-                        FUNCTION_CALL="HELP"
+                        FUNCTION_CALL="ec2cli_help_command_list_tags"
+                        shift 1
                     else
                         case $COMMAND in
                             list)
@@ -2761,6 +2762,9 @@ elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_instances" ]; then
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_snapshots" ]; then
     source $pkg_path/core/help_menus.lib
     ec2cli_help_command_list_snapshots
+elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_tags" ]; then
+    source $pkg_path/core/help_menus.lib
+    ec2cli_help_command_list_tags
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_volumes" ]; then
     source $pkg_path/core/help_menus.lib
     ec2cli_help_command_list_volumes
