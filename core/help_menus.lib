@@ -34,9 +34,9 @@ function help_submenu(){
 function ec2cli_help_command_attach(){
     cat <<EOM
 
-    COMMAND : ${BOLD}${white}attach${UNBOLD}${reset}
+  COMMAND : ${BOLD}${white}attach${UNBOLD}${reset}
 
-    SYNTAX  : $ ec2cli OPTION attach [REGION]
+  SYNTAX  : $ ec2cli OPTION attach [REGION]
 
         The ${BOLD}${white}attach${UNBOLD}${reset} command can be used with the following options:
             -v, --volumes      Attach (Detach) EBS Volume to (from) an existing instance
@@ -47,9 +47,9 @@ EOM
 function ec2cli_help_command_create(){
     cat <<EOM
 
-    COMMAND : ${BOLD}${white}create${UNBOLD}${reset}
+  COMMAND : ${BOLD}${white}create${UNBOLD}${reset}
 
-    SYNTAX  : $ ec2cli OPTION create [REGION]
+  SYNTAX  : $ ec2cli OPTION create [REGION]
 
         The ${BOLD}${white}create${UNBOLD}${reset} command can be used with the following options:
             -a, --images       Create an Amazon Machine Image (AMI) from an EC2 instance
@@ -62,9 +62,9 @@ EOM
 function ec2cli_help_command_list(){
     cat <<EOM
 
-    COMMAND : ${BOLD}${white}list${UNBOLD}${reset}
+  COMMAND : ${BOLD}${white}list${UNBOLD}${reset}
 
-    SYNTAX  : $ ec2cli OPTION list [REGION]
+  SYNTAX  : $ ec2cli OPTION list [REGION]
 
         The ${BOLD}${white}list${UNBOLD}${reset} command can be used with the following OPTIONS:
             -a, --images       List an Amazon Machine Image (AMI) from an EC2 instance
@@ -83,11 +83,11 @@ EOM
 function ec2cli_help_command_list_instances(){
     cat <<EOM
 
-    ${title}COMMAND${reset}:
+  ${title}COMMAND${reset}:
 
               -i | --instances list
 
-    ${title}SYNOPSIS${reset}:
+  ${title}SYNOPSIS${reset}:
 
               $ ${yellow}ec2cli${accent} --instances list ${reset}[REGION] [${accent}--sort ${reset}<value>]
 
@@ -101,7 +101,7 @@ function ec2cli_help_command_list_instances(){
         ${accent}id${reset}                 Sort instance list by instance id        alphabetical order
 
 
-    ${title}EXAMPLE${reset}:
+  ${title}EXAMPLE${reset}:
 
 
                 $ ${yellow}ec2cli${reset} --i list eu-west-1 --sort size
@@ -154,14 +154,45 @@ EOM
 }
 
 
+function ec2cli_help_command_list_tags(){
+    cat <<EOM
+
+  ${title}COMMAND${reset}:
+
+            -t | --tags list
+
+  ${title}SYNOPSIS${reset}:
+
+            $ ${yellow}ec2cli${accent} --tags list ${reset}[REGION] [RESOURCE_ID]
+
+
+      RESOURCE_ID can be an id from one of the following classes
+      of Aamzon EC2 resources:
+
+
+         ${accent}ID FORMAT${bodytext}                ${accent}Description${bodytext}
+         ----------------------   ------------------------------------
+      o  i-016b1ed9525798efc${reset}      EC2 Instance id
+      o  vol-052eeec48dac6c33e${reset}    EBS Volume id
+      o  ami-14eccb82${reset}             Elastic NetworkInterface id
+      o  securitygroup${reset}            SecurityGroup id
+      o  snapshot${reset}                 EBS Snapshot id
+      o  subnet-5dc8e323${reset}          Subnet id
+      o  vpc-bcdefg12${reset}             Virtual Private Cloud (VPC) id
+
+
+EOM
+}
+
+
 function ec2cli_help_command_list_volumes(){
     cat <<EOM
 
-    ${title}COMMAND${reset}:
+  ${title}COMMAND${reset}:
 
               -v | --volumes list
 
-    ${title}SYNOPSIS${reset}:
+  ${title}SYNOPSIS${reset}:
 
               $ ${yellow}ec2cli${accent} --volumes list ${reset}[REGION] [${accent}--sort ${reset}<value>]
 
@@ -182,9 +213,9 @@ EOM
 function ec2cli_help_command_run(){
     cat <<EOM
 
-    COMMAND : ${BOLD}${white}run${UNBOLD}${reset}
+  COMMAND : ${BOLD}${white}run${UNBOLD}${reset}
 
-    SYNTAX  : $ ec2cli OPTION run [REGION]
+  SYNTAX  : $ ec2cli OPTION run [REGION]
 
         The ${BOLD}${white}run${UNBOLD}${reset} command can be used with the following options:
             -i, --instances    Run/ Login to EC2 instances in specified region
