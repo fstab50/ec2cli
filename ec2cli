@@ -1947,7 +1947,7 @@ function ec2cli_list_subnets(){
         fi
 
         # clean up
-        rm .ec2-qv.tmp .body.tmp
+        rm .jsonoutput.tmp .ec2-qv.tmp .body.tmp
     fi
     #
     # <-- end function ec2cli_list_subnets -->
