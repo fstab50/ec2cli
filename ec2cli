@@ -1849,16 +1849,14 @@ function ec2cli_list_subnets(){
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
-        aws ec2 --profile $PROFILE describe-subnets \
-                --output json --region $REGION > .jsonoutput.tmp
+        aws ec2 --profile $PROFILE describe-subnets --output json --region $REGION > .jsonoutput.tmp
     fi
 
     # number of groups
     SUM=$(jq -r '.Subnets[].CidrBlock' .jsonoutput.tmp | wc -l)
 
 
-    if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
-    then
+    if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]; then
         # print footer if no snapshots found
         std_message "${title}0${bodytext} subnets in region [$REGION]" "INFO"  | indent10
     else
@@ -1868,7 +1866,7 @@ function ec2cli_list_subnets(){
         if (( $(tput cols) >= "170" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
-            total_width="164"
+            total_width="161"
         else
             total_width="142"
         fi
@@ -1880,75 +1878,75 @@ function ec2cli_list_subnets(){
         printf "\n${title}SUBNETS${bodytext} : $REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
-            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp '#IPs' $sp AvailZone $sp Default $sp" $total_width  .ec2-qv.tmp
+            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp IPs $sp AvailZone $sp Default $sp" $total_width  .ec2-qv.tmp
         else
-            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp #IPs $sp AvailZone $sp" $total_width  .ec2-qv.tmp
+            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp IPs $sp AvailZone $sp" $total_width  .ec2-qv.tmp
         fi
+
+        # parse json
+        ARR_NAME=( $(jq -r '.Subnets[].Tags[0].Value' .jsonoutput.tmp) )
+        ARR_ID=( $(jq -r '.Subnets[].SubnetId' .jsonoutput.tmp) )
+        ARR_MAP=( $(jq -r '.Subnets[].MapPublicIpOnLaunch' .jsonoutput.tmp) )
+        ARR_CIDR=( $(jq -r '.Subnets[].CidrBlock' .jsonoutput.tmp) )
+        ARR_CT=( $(jq -r '.Subnets[].AvailableIpAddressCount' .jsonoutput.tmp) )
+        ARR_AZ=( $(jq -r '.Subnets[].AvailabilityZone' .jsonoutput.tmp) )
+        ARR_DEFAULT=( $(jq -r '.Subnets[].DefaultForAz' .jsonoutput.tmp) )
+        ARR_TAGKEY=( $(jq -r '.Subnets[].Tags[0].Key' .jsonoutput.tmp) )
+        #ARR_TAGVALUE=( $(if $(jq -r '.Subnets[].Tags[1].Value' .jsonoutput.tmp 2>/dev/null); then) )
+
+        MAXCT=${#ARR_ID[*]}    # count snapshots found
+
+        # output table of json array
+        i=0
+        if [ $FULL_CLI ]; then
+            while (( i < $MAXCT )); do
+                echo "$sp $( if $(echo ${ARR_NAME[$i]}) == null; then echo "-"; else echo "${ARR_NAME[$i]}"; fi ) \
+                      $sp ${ARR_ID[$i]} $sp ${ARR_MAP[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_CT[$i]}  \
+                      $sp ${ARR_AZ[$i]} $sp "$( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi )" \
+                      $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+        else
+            while (( i < $MAXCT )); do
+                echo "$sp $( if $(echo ${ARR_NAME[$i]}) == null; then echo "-"; else echo "${ARR_NAME[$i]}"; fi ) \
+                      $sp ${ARR_ID[$i]} $sp ${ARR_MAP[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_CT[$i]}  \
+                      $sp ${ARR_AZ[$i]} $sp $( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi ) \
+                      $sp" >> .body.tmp
+                # incr ct
+                i=$(( $i+1 ))
+            done
+        fi
+
+        if [ ! $sort_column ]; then
+            sort_column="ID"
+        fi
+        case $sort_column in
+            id | Id | ID | SnapshotId)
+                column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
+            size | Size)
+                column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
+            date)
+                column=5; cat .body.tmp | sort -k6 -r >> .ec2-qv.tmp;;
+        esac
+
+        if [ $FULL_CLI ]; then
+            awk  '{printf "%-2s %-25.24s %-2s %-16s %-2s %-7s %-12s %-19s %-2s %-7s %-2s %-13s %-2s %-9.8s %-2s %-40.39s %-2s\n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv.tmp | indent02
+        else
+            awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-30.29s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv.tmp | indent02
+        fi
+        # print footer
+        if [ $ALL_REGIONS ]; then
+            print_footer "${title}$MAXCT${bodytext} subnets across ${title}$REGION_CT${bodytext} regions" $total_width
+        else
+            print_footer "${title}$MAXCT${bodytext} subnets in region [$REGION]" $total_width
+        fi
+
+        # clean up
+        rm .ec2-qv.tmp .body.tmp
     fi
-
-    # parse json
-    ARR_NAME=( $(jq -r '.Subnets[].Tags[0].Value' .jsonoutput.tmp) )
-    ARR_ID=( $(jq -r '.Subnets[].SubnetId' .jsonoutput.tmp) )
-    ARR_MAP=( $(jq -r '.Subnets[].MapPublicIpOnLaunch' .jsonoutput.tmp) )
-    ARR_CIDR=( $(jq -r '.Subnets[].CidrBlock' .jsonoutput.tmp) )
-    ARR_CT=( $(jq -r '.Subnets[].AvailableIpAddressCount' .jsonoutput.tmp) )
-    ARR_AZ=( $(jq -r '.Subnets[].AvailabilityZone' .jsonoutput.tmp) )
-    ARR_DEFAULT=( $(jq -r '.Subnets[].DefaultForAz' .jsonoutput.tmp) )
-    ARR_TAGKEY=( $(jq -r '.Subnets[].Tags[1].Key' .jsonoutput.tmp) )
-    ARR_TAGVALUE=( $(jq -r '.Subnets[].Tags[1].Value' .jsonoutput.tmp 2>/dev/null) )
-
-    MAXCT=${#ARR_ID[*]}    # count snapshots found
-
-    # output table of json array
-    i=0
-    if [ $FULL_CLI ]; then
-        while (( i < $MAXCT )); do
-            echo "$sp $( if $(echo ${ARR_NAME[$i]}) == null; then echo "-"; else echo "${ARR_NAME[$i]}"; fi ) \
-                  $sp ${ARR_ID[$i]} $sp ${ARR_MAP[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_CT[$i]}  \
-                  $sp ${ARR_AZ[$i]} $sp $( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi ) \
-                  $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
-            # incr ct
-            i=$(( $i+1 ))
-        done
-    else
-        while (( i < $MAXCT )); do
-            echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
-                  ${ARR_STATE[$i]} $sp ${ARR_PROG[$i]} $sp
-                  ${ARR_VID[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
-            # incr ct
-            i=$(( $i+1 ))
-        done
-    fi
-
-    if [ ! $sort_column ]; then
-        sort_column="ID"
-    fi
-    case $sort_column in
-        id | Id | ID | SnapshotId)
-            column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
-        size | Size)
-            column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
-        date)
-            column=5; cat .body.tmp | sort -k6 -r >> .ec2-qv.tmp;;
-    esac
-
-
-    if [ $FULL_CLI ]; then
-        awk  '{printf "%-2s %-25.24s %-2s %-16s %-2s %-7s %-12s %-19s %-2s %-7s %-2s %-13s %-2s %-9.8s %-2s %-40.39s %-2s\n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv.tmp | indent02
-    else
-        awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-30.29s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv.tmp | indent02
-    fi
-    # print footer
-    if [ $ALL_REGIONS ]; then
-        print_footer "${title}$MAXCT${UNBOLD}${bodytext} subnets acorss ${title}$REGION_CT${bodytext} regions, total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} (est, $ast*${bodytext}sorted)" $total_width
-    else
-        print_footer "${title}$MAXCT${UNBOLD}${bodytext} subnets in region [$REGION]" $total_width
-    fi
-
-    # clean up
-    rm .ec2-qv.tmp .body.tmp
     #
     # <-- end function ec2cli_list_subnets -->
     #
