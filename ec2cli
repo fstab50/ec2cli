@@ -1926,8 +1926,8 @@ function ec2cli_list_subnets(){
         case $sort_column in
             id | Id | ID | SnapshotId)
                 column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
-            size | Size)
-                column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
+            ip | IPs | ips | num_ip)
+                column=10; cat .body.tmp | sort -k"$column" -r -n >> .ec2-qv.tmp;;
             date)
                 column=5; cat .body.tmp | sort -k6 -r >> .ec2-qv.tmp;;
         esac
