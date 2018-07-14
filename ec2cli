@@ -1863,12 +1863,12 @@ function ec2cli_list_subnets(){
         # print and format output
         sp="${frame}|${bodytext}"       # separator
 
-        if (( $(tput cols) >= "166" )); then
+        if (( $(tput cols) >= "168" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
-            total_width="161"
+            total_width="163"
         else
-            total_width="118"
+            total_width="120"
         fi
 
         # retrieve account name
@@ -1933,10 +1933,10 @@ function ec2cli_list_subnets(){
         esac
 
         if [ $FULL_CLI ]; then
-            awk  '{printf "%-2s %-25.24s %-2s %-16s %-2s %-7s %-12s %-19s %-2s %-7s %-2s %-13s %-2s %-9.8s %-2s %-40.39s %-2s\n", \
+            awk  '{printf "%-2s %-25.24s %-2s %-16s %-2s %-7s %-12s %-19s %-2s %-7s %-2s %-15s %-2s %-9.8s %-2s %-40.39s %-2s\n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv.tmp | indent02
         else
-            awk  '{printf "%-2s %-25.24s %-2s %-16s %-2s %-7s %-12s %-19s %-2s %-7s %-2s %-13s %-2s %-9.8s %-2s \n", \
+            awk  '{printf "%-2s %-25.24s %-2s %-16s %-2s %-7s %-12s %-19s %-2s %-7s %-2s %-15s %-2s %-9.8s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .ec2-qv.tmp | indent02
         fi
         # print footer
