@@ -1900,7 +1900,7 @@ function ec2cli_list_subnets(){
         i=0
         if [ $FULL_CLI ]; then
             while (( i < $MAXCT )); do
-                echo "$sp $( if $(echo ${ARR_NAME[$i]}) == null; then echo "-"; else echo "${ARR_NAME[$i]}"; fi ) \
+                echo "$sp $(if $(echo ${ARR_NAME[$i]}) == "null"; then echo "-"; else echo "${ARR_NAME[$i]}"; fi) \
                       $sp ${ARR_ID[$i]} $sp ${ARR_MAP[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_CT[$i]}  \
                       $sp ${ARR_AZ[$i]} $sp "$( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi )" \
                       $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
