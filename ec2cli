@@ -1863,12 +1863,12 @@ function ec2cli_list_subnets(){
         # print and format output
         sp="${frame}|${bodytext}"       # separator
 
-        if (( $(tput cols) >= "170" )); then
+        if (( $(tput cols) >= "166" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
             total_width="161"
         else
-            total_width="142"
+            total_width="118"
         fi
 
         # retrieve account name
@@ -1878,9 +1878,9 @@ function ec2cli_list_subnets(){
         printf "\n${title}SUBNETS${bodytext} : $REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
 
         if [ $FULL_CLI ]; then
-            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp IPs $sp AvailZone $sp Default $sp" $total_width  .ec2-qv.tmp
+            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp IPs $sp AvailZone $sp Default $sp TagKey:Value" $total_width  .ec2-qv.tmp
         else
-            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp IPs $sp AvailZone $sp" $total_width  .ec2-qv.tmp
+            print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp IPs $sp AvailZone $sp Default $sp" $total_width  .ec2-qv.tmp
         fi
 
         # parse json
@@ -1891,8 +1891,9 @@ function ec2cli_list_subnets(){
         ARR_CT=( $(jq -r '.Subnets[].AvailableIpAddressCount' .jsonoutput.tmp) )
         ARR_AZ=( $(jq -r '.Subnets[].AvailabilityZone' .jsonoutput.tmp) )
         ARR_DEFAULT=( $(jq -r '.Subnets[].DefaultForAz' .jsonoutput.tmp) )
-        ARR_TAGKEY=( $(jq -r '.Subnets[].Tags[0].Key' .jsonoutput.tmp) )
-        #ARR_TAGVALUE=( $(if $(jq -r '.Subnets[].Tags[1].Value' .jsonoutput.tmp 2>/dev/null); then) )
+        ARR_TAGKEY=( $(jq -r '.Subnets[].Tags[1].Key' .jsonoutput.tmp) )
+        ARR_TAGVALUE=( $(jq -r '.Subnets[].Tags[1].Value' .jsonoutput.tmp) )
+
 
         MAXCT=${#ARR_ID[*]}    # count snapshots found
 
@@ -1900,19 +1901,20 @@ function ec2cli_list_subnets(){
         i=0
         if [ $FULL_CLI ]; then
             while (( i < $MAXCT )); do
-                echo "$sp $(if $(echo ${ARR_NAME[$i]}) == "null"; then echo "-"; else echo "${ARR_NAME[$i]}"; fi) \
+                echo "$sp $(if [ "${ARR_NAME[$i]}" = "null" ]; then echo "-"; else echo "${ARR_NAME[$i]}"; fi) \
                       $sp ${ARR_ID[$i]} $sp ${ARR_MAP[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_CT[$i]}  \
                       $sp ${ARR_AZ[$i]} $sp "$( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi )" \
-                      $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
+                      $sp $(if [ "${ARR_TAGKEY[$i]}" = "null" ]; then echo "-"; else echo "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}"; fi) \
+                      $sp" >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
         else
             while (( i < $MAXCT )); do
-                echo "$sp $( if $(echo ${ARR_NAME[$i]}) == null; then echo "-"; else echo "${ARR_NAME[$i]}"; fi ) \
+                echo "$sp $(if [ "${ARR_NAME[$i]}" = "null" ]; then echo "-"; else echo "${ARR_NAME[$i]}"; fi) \
                       $sp ${ARR_ID[$i]} $sp ${ARR_MAP[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_CT[$i]}  \
-                      $sp ${ARR_AZ[$i]} $sp $( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi ) \
-                      $sp" >> .body.tmp
+                      $sp ${ARR_AZ[$i]} $sp "$( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi )" \
+                      $sp " >> .body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1934,8 +1936,8 @@ function ec2cli_list_subnets(){
             awk  '{printf "%-2s %-25.24s %-2s %-16s %-2s %-7s %-12s %-19s %-2s %-7s %-2s %-13s %-2s %-9.8s %-2s %-40.39s %-2s\n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv.tmp | indent02
         else
-            awk  '{printf "%-2s %-23s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-5s %-2s %-10s %-2s %-22s %-2s %-30.29s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv.tmp | indent02
+            awk  '{printf "%-2s %-25.24s %-2s %-16s %-2s %-7s %-12s %-19s %-2s %-7s %-2s %-13s %-2s %-9.8s %-2s \n", \
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .ec2-qv.tmp | indent02
         fi
         # print footer
         if [ $ALL_REGIONS ]; then
