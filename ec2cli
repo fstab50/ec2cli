@@ -1895,7 +1895,7 @@ function ec2cli_list_subnets(){
     ARR_AZ=( $(jq -r '.Subnets[].AvailabilityZone' .jsonoutput.tmp) )
     ARR_DEFAULT=( $(jq -r '.Subnets[].DefaultForAz' .jsonoutput.tmp) )
     ARR_TAGKEY=( $(jq -r '.Subnets[].Tags[1].Key' .jsonoutput.tmp) )
-    ARR_TAGVALUE=( $(jq -r '.Subnets[].Tags[1].Value' .jsonoutput.tmp) )
+    ARR_TAGVALUE=( $(jq -r '.Subnets[].Tags[1].Value' .jsonoutput.tmp 2>/dev/null) )
 
     MAXCT=${#ARR_ID[*]}    # count snapshots found
 
@@ -1946,19 +1946,6 @@ function ec2cli_list_subnets(){
     else
         print_footer "${title}$MAXCT${UNBOLD}${bodytext} subnets in region [$REGION]" $total_width
     fi
-
-    # output from aws
-    aws ec2 --profile $PROFILE describe-subnets \
-        --output text \
-        --region $REGION \
-        --query "Subnets[*]. \
-            [Tags[0].Value, \
-            SubnetId, \
-            MapPublicIpOnLaunch, \
-            CidrBlock, \
-            AvailableIpAddressCount, \
-            AvailabilityZone, \
-            DefaultForAz]" | column -t
 
     # clean up
     rm .ec2-qv.tmp .body.tmp
