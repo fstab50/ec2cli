@@ -1352,6 +1352,7 @@ function ec2cli_run_instances(){
     # alternative ec2 default usernames
     declare -a usernames
     usernames=(
+            "ec2-user"
             "ubuntu"
             "centos"
             "admin"
@@ -1544,13 +1545,16 @@ function ec2cli_run_instances(){
 
 		# update log and login
 		std_logger "INFO: Linux Instance ($TARGET) started. "
-		ssh -i $SSH_KEYS/$KEY $SSH_USER@$IPADDRESS 2>$TMPDIR/denied
-        if [ "$(cat $TMPDIR/denied)" ]; then
-            for user in ${usernames[@]}; do
+        break=0
+        for user in ${usernames[@]}; do
+            if [ "$break" -eq "0" ]; then
                 ssh -i $SSH_KEYS/$KEY $user@$IPADDRESS 2>/dev/null
-            done
-            rm $TMPDIR/denied
-        fi
+                if [ "$?" -eq 0 ]; then
+                    break=1
+                fi
+            fi
+        done
+
 		# clean up and exit
 		rm .jsonoutput.tmp
     	exit 0
