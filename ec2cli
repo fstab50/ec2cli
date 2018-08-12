@@ -1326,6 +1326,13 @@ function ec2cli_rdp-login(){
 }
 
 function ec2cli_run_instances(){
+    ##
+    ##  Use to login to ec2 instances stopped or running
+    ##    - will attempt to locate .pem key file in SSH_KEYS dir
+    ##    - if found will ssh into instance using "ec2-user"
+    ##    - ec2-user (AmazonLinux, Redhat) fails,
+    ##      will try ubuntu and centos usernames
+    ##
 	# vars
 	local ACCESS                # flag if ssh access from login location
     local IPADDRESS       		# public IP of instance
@@ -1340,8 +1347,16 @@ function ec2cli_run_instances(){
 	local TARGET                # instance to be started/ login
 	local tmpID           		# temp holder for instance ID
 	local VALID           		# loop break
-    local i                     # loop counter
+    local i
 
+    # alternative ec2 default usernames
+    declare -a usernames
+    usernames=(
+            "ec2-user"
+            "ubuntu"
+            "centos"
+            "admin"
+        )
     #
 	# choose instance -----------------
 	#
@@ -1367,7 +1382,7 @@ function ec2cli_run_instances(){
         # no instances in region
         std_logger "INFO: function ec2cli_run_instances: attempt to run instances"
         std_message "No EC2 instances found in region $REGION" INFO
-        return
+        return 0
     fi
 
     # header
@@ -1530,7 +1545,15 @@ function ec2cli_run_instances(){
 
 		# update log and login
 		std_logger "INFO: Linux Instance ($TARGET) started. "
-		ssh -i $SSH_KEYS/$KEY $SSH_USER@$IPADDRESS
+        break=0
+        for user in ${usernames[@]}; do
+            if [ "$break" -eq "0" ]; then
+                ssh -i $SSH_KEYS/$KEY $user@$IPADDRESS 2>/dev/null
+                if [ "$?" -eq 0 ]; then
+                    break=1
+                fi
+            fi
+        done
 
 		# clean up and exit
 		rm .jsonoutput.tmp
@@ -1926,8 +1949,8 @@ function ec2cli_list_subnets(){
         case $sort_column in
             id | Id | ID | SnapshotId)
                 column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
-            size | Size)
-                column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
+            ip | IPs | ips | num_ip)
+                column=10; cat .body.tmp | sort -k"$column" -r -n >> .ec2-qv.tmp;;
             date)
                 column=5; cat .body.tmp | sort -k6 -r >> .ec2-qv.tmp;;
         esac
