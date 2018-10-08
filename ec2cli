@@ -89,7 +89,7 @@ function ec2cli_help(){
                               ${bodytext}Help | ${title}ec2cli${bodytext}
                               _____________
 
-      ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
+    ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
 
               $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
@@ -97,6 +97,8 @@ function ec2cli_help(){
                      -b | --subnets
                      -g | --sgroups
                      -s | --snapshots
+                     -t | --tags
+                     -v | --volumes
                      -n | --vpcs
                     [-A | --all     ]
                     [-d | --debug   ]
@@ -105,7 +107,7 @@ function ec2cli_help(){
                     [-s | --sort  {size | id | date} ]
                     [-V | --version ]
 
-      ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
+    ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
           ${options}-A${bodytext},${options} --all${bodytext}          Analyze resources in all AWS Regions
           ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose logging & messaging
           ${options}-h${bodytext},${options} --help${bodytext}         Display this help menu
@@ -113,7 +115,7 @@ function ec2cli_help(){
           ${options}-S${bodytext},${options} --sort${bodytext}         Sort by size, id, date
           ${options}-V${bodytext},${options} --version${bodytext}      Print version info
 
-      ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
+    ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
           ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Images (AMI)
           ${resources}-b${bodytext},${resources} --subnets      ${bodytext}Virtual Private Cloud (VPC) Subnets
           ${resources}-g${bodytext},${resources} --sgroups      ${bodytext}Security Group Details
@@ -125,13 +127,13 @@ function ec2cli_help(){
           ${resources}-t${bodytext},${resources} --tags         ${bodytext}Tags Details for EC2 Services
           ${resources}-v${bodytext},${resources} --volumes      ${bodytext}Elastic Block Store (EBS) Volumes
 
-      ${white}${BOLD}COMMANDS${UNBOLD}${bodytext}:
+    ${white}${BOLD}COMMANDS${UNBOLD}${bodytext}:
           ${cyan}list               ${bodytext}List aws resource details [DEFAULT]
           ${cyan}attach             ${bodytext}Attach/ Detach aws resource
           ${cyan}create             ${bodytext}Create new aws resource
           ${cyan}run                ${bodytext}Run/ start existing aws resource
 
-      ${white}${BOLD}REGIONCODES${UNBOLD}${bodytext}:
+    ${white}${BOLD}REGIONCODES${UNBOLD}${bodytext}:
           ${regions}ap-northeast-1     ${bodytext}Asia Pacific (Tokyo, Japan)
           ${regions}ap-northeast-2     ${bodytext}Asia Pacific (Seoul, Korea)
           ${regions}ap-south-1         ${bodytext}Asia Pacific (Mumbai, India)
