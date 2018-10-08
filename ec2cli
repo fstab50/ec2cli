@@ -166,6 +166,7 @@ function std_logger(){
     echo "$(date +'%b %d %T') $host $pkg - $VERSION - $msg" >> "$ec2cli_log"
 }
 
+
 function std_message(){
     local msg="$1"
     local format="$3"
@@ -185,11 +186,13 @@ function std_message(){
     fi
 }
 
+
 function std_error(){
     local msg="$1"
     std_logger "[ERROR]: $msg"
     echo -e "\n${yellow}[ ${red}ERROR${yellow} ]$reset  $msg\n" | indent04
 }
+
 
 function std_warn(){
     local msg="$1"
@@ -203,12 +206,14 @@ function std_warn(){
     fi
 }
 
+
 function std_error_exit(){
     local msg="$1"
     local status="$2"
     std_error "$msg"
     exit $status
 }
+
 
 function environment_info(){
     local msg_header=$1
@@ -248,12 +253,14 @@ function environment_info(){
     #<-- end function environment_info -->
 }
 
+
 function account_alias(){
     ## returns account alias (human-readable name) ##
     local profile="$1"
     alias="$(aws iam list-account-aliases --profile $profile | jq .AccountAliases[0])"
     echo "$(echo $alias | cut -c 2-30 | rev | cut -c 2-30 | rev)"
 }
+
 
 function authenticated(){
     ## validates authentication using iam user or role ##
@@ -275,6 +282,7 @@ function authenticated(){
     fi
 }
 
+
 function set_tmpdir(){
     ## set fs pointer to writeable temp location ##
     local df=$(which df)
@@ -289,6 +297,7 @@ function set_tmpdir(){
         cd $TMPDIR
     fi
 }
+
 
 function ec2cli_precheck(){
     local df=$(which df)
@@ -368,6 +377,7 @@ function ec2cli_precheck(){
     # <-- end function ec2cli_precheck -->
     #
 }
+
 
 function ec2cli_precheck-windows(){
 	#
@@ -574,6 +584,7 @@ function ec2cli_attach_volume(){
     #
 }
 
+
 function ec2cli_create_images(){
     # vars
     local REGION=$1         # aws region
@@ -722,6 +733,7 @@ function ec2cli_create_images(){
     #
 }
 
+
 function ec2cli_create_snapshot(){
     # vars
     local i                 # counter
@@ -845,6 +857,7 @@ function ec2cli_create_snapshot(){
     #
 }
 
+
 function ec2cli_create_tag(){
     local region="$1"
     local resource_id="$2"
@@ -894,6 +907,7 @@ function ec2cli_create_tag(){
     #
 }
 
+
 function ec2cli_list_instances(){
     # vars
     local TOTAL                                 # region EC2 instance count
@@ -904,7 +918,7 @@ function ec2cli_list_instances(){
     local EPOCHLT                               # LAUNCHTIME in epoch seconds
     local RUNSECS                               # runtime in sec
     local MAXCT                                 # max length of array (json object)
-    local total_width="145"                     # max width of cli output
+    local total_width="141"                     # max width of cli output
     local total_width=$(( $(tput cols) - 4 ))
 
     if [ "$export" = "true" ]; then
@@ -952,10 +966,10 @@ function ec2cli_list_instances(){
 
     # print and format output
     sp="${frame}|${bodytext}"       # separator
-    if (( $(tput cols) >= "178" )); then
+    if (( $(tput cols) >= "174" )); then
         FULL_CLI="True"
         std_logger "[INFO]: FULL_CLI set to True, Full width output"
-        total_width="173"
+        total_width="169"
     else
         total_width="139"
     fi
@@ -1054,7 +1068,7 @@ function ec2cli_list_instances(){
         # print and format output
         #
         if [ $FULL_CLI ]; then
-            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-15s %-2s %-14s %-2s %-33.33s %-2s \n", \
+            awk  '{ printf "%-2s %-20s %-2s %-11s %-2s %-9.9s %-2s %-21.21s %-2s %-22s %-2s %-15s %-2s %-13s %-2s %-33.33s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16, $17, $18}' .body.tmp | indent02
         else
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-16s %-2s %-15.15s %-2s \n", \
@@ -1108,6 +1122,7 @@ function ec2cli_list_instances(){
     # <-- end function ec2cli_list_instances -->
     #
 }
+
 
 function ec2cli_list_images(){
     # vars
@@ -1197,6 +1212,7 @@ function ec2cli_list_images(){
     #
 }
 
+
 function ec2cli_parse-instance-tag(){
     # vars
     local i             # counter
@@ -1238,6 +1254,7 @@ function ec2cli_parse-instance-tag(){
     # <-- end function ec2cli_parse-instance-tag -->
     #
 }
+
 
 function ec2cli_rdp-login(){
 	# vars
@@ -1324,6 +1341,7 @@ function ec2cli_rdp-login(){
     # <-- end function ec2cli_rdp-login -->
     #
 }
+
 
 function ec2cli_run_instances(){
     ##
@@ -1856,6 +1874,7 @@ function ec2cli_list_snapshots(){
     #
 }
 
+
 function ec2cli_list_subnets(){
     # vars
     local TOTAL
@@ -1977,6 +1996,7 @@ function ec2cli_list_subnets(){
     #
 }
 
+
 function ec2cli_list_tags(){
     # vars
     local region="$1"
@@ -2015,6 +2035,7 @@ function ec2cli_list_tags(){
     # <-- end function ec2cli_list_tags -->
     #
 }
+
 
 function ec2cli_list_volumes(){
     # vars
@@ -2190,6 +2211,7 @@ function ec2cli_list_volumes(){
     #
 }
 
+
 function ec2cli_list_vpcs(){
     # vars
     local region="$1"
@@ -2254,6 +2276,7 @@ function ec2cli_list_vpcs(){
     #
 }
 
+
 function setup_regioncodes(){
     ## writeout region codes to config file, every REFRESH_REGIONCODES freq ##
     local age
@@ -2297,6 +2320,7 @@ function setup_regioncodes(){
     REGIONFILE_CHECK="true"
     return 0
 }
+
 
 function parse_regioncode(){
     ## retrieve codes for all valid AWS Regions globally ##
@@ -2423,7 +2447,7 @@ function parse_parameters(){
                     ;;
                 -p | --profile)
                     if [ $2 ]; then
-                        PROFILE="$2"
+                        PROFILE="$(profilename_prefix $2)"
                     else
                         std_warn "You must provide a profile name when using --profile parameter"
                     fi
@@ -2748,7 +2772,7 @@ function parse_parameters(){
             esac
         done
         if [ ! $PROFILE ]; then
-            PROFILE="default"
+            PROFILE="$(profilename_prefix default)"
             std_logger "[INFO]: PROFILE default to: default"
         fi
 
@@ -2766,6 +2790,27 @@ function parse_parameters(){
     # <-- end function ec2cli_parse_parameters -->
 }
 
+
+function profilename_prefix(){
+    ##
+    ##  Returns temporary credentials found for a role
+    ##
+    ##  Note:  temp credentials must be generated
+    ##         prior to use; otherwise, this function
+    ##         will return the profilename "as is"
+    ##
+    local profilename="$1"
+    if [ "$(grep "gcreds-$profilename" ~/.aws/credentials)" ]; then
+        PROFILE="gcreds-$profilename"
+        echo "gcreds-$profilename"
+    else
+        PROFILE="$profilename"
+        echo "$profilename"
+    fi
+    return 0
+}
+
+
 function xterm_reset(){
     ## resets default xterm colors (temporary) ##
     local set_colors="$1"
@@ -2778,6 +2823,7 @@ function xterm_reset(){
         export PS1=$PS1_ORIGINAL
     fi
 }
+
 
 #
 # START (MAIN) ----------------------------------------------------------------
@@ -2824,6 +2870,8 @@ elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_volumes" ]; then
     ec2cli_help_command_list_volumes
 else
     # execute operations which require authentication to AWS
+    PROFILE="$(profilename_prefix $PROFILE)"
+
     if authenticated $PROFILE; then
         # authenicated to aws successful
         if { [ "$OPTION" = "--tags" ] || [ "$OPTION" = "-t" ]; } && [ "$COMMAND" = "list" ]; then
