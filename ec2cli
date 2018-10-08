@@ -93,32 +93,37 @@ function ec2cli_help(){
 
               $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
+                     -i | --instances
+                     -b | --subnets
+                     -g | --sgroups
+                     -s | --snapshots
+                     -n | --vpcs
                     [-A | --all     ]
                     [-d | --debug   ]
                     [-h | --help    ]
-                    [-p | --profile <value> ]
+                    [-p | --profile  <value> ]
+                    [-s | --sort  {size | id | date} ]
                     [-V | --version ]
 
       ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
-          ${options}-A${bodytext},${options} --all${bodytext}          Retrieve resources across all AWS Regions
-          ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose log output, stdout messaging
-          ${options}-h${bodytext},${options} --help${bodytext}         Display help
-          ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role from the local
-                             awscli config used to run ec2cli
-          ${options}-S${bodytext},${options} --sort${bodytext}         Sort by value provided, size | id | date
-          ${options}-V${bodytext},${options} --version${bodytext}      Print package version, dependency versions
+          ${options}-A${bodytext},${options} --all${bodytext}          Analyze resources in all AWS Regions
+          ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose logging & messaging
+          ${options}-h${bodytext},${options} --help${bodytext}         Display this help menu
+          ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role
+          ${options}-S${bodytext},${options} --sort${bodytext}         Sort by size, id, date
+          ${options}-V${bodytext},${options} --version${bodytext}      Print version info
 
       ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
-          ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Image (AMI) details (regional)
-          ${resources}-b${bodytext},${resources} --subnets      ${bodytext}Virtual Private Cloud (VPC) Subnet details (regional)
-          ${resources}-g${bodytext},${resources} --sgroups      ${bodytext}Security Group details (regional)
-          ${resources}-i${bodytext},${resources} --instances    ${bodytext}EC2 Instance details (regional)
-          ${resources}-n${bodytext},${resources} --vpc          ${bodytext}Virtual Private Cloud (VPC) Network details (regional)
-          ${resources}-N${bodytext},${resources} --network      ${bodytext}All network details (regional)
-          ${resources}-s${bodytext},${resources} --snapshots    ${bodytext}Snapshot details (regional)
+          ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Images (AMI)
+          ${resources}-b${bodytext},${resources} --subnets      ${bodytext}Virtual Private Cloud (VPC) Subnets
+          ${resources}-g${bodytext},${resources} --sgroups      ${bodytext}Security Group Details
+          ${resources}-i${bodytext},${resources} --instances    ${bodytext}EC2 Instance Details
+          ${resources}-n${bodytext},${resources} --vpc          ${bodytext}Virtual Private Cloud (VPC) Networks
+          ${resources}-N${bodytext},${resources} --network      ${bodytext}VPC, Subnet, & Security Groups
+          ${resources}-s${bodytext},${resources} --snapshots    ${bodytext}EBS Snapshot Details
           ${resources}-P${bodytext},${resources} --spot         ${bodytext}Spot Market Pricing (all regions)
-          ${resources}-t${bodytext},${resources} --tags         ${bodytext}Tags details for EC2 sub services (all regions)
-          ${resources}-v${bodytext},${resources} --volumes      ${bodytext}Elastic Block Store (EBS) Volume details (regional)
+          ${resources}-t${bodytext},${resources} --tags         ${bodytext}Tags Details for EC2 Services
+          ${resources}-v${bodytext},${resources} --volumes      ${bodytext}Elastic Block Store (EBS) Volumes
 
       ${white}${BOLD}COMMANDS${UNBOLD}${bodytext}:
           ${cyan}list               ${bodytext}List aws resource details [DEFAULT]
