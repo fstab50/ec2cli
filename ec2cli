@@ -2772,7 +2772,7 @@ function parse_parameters(){
             esac
         done
         if [ ! $PROFILE ]; then
-            PROFILE="$(profilename_prefix default"
+            PROFILE="$(profilename_prefix default)"
             std_logger "[INFO]: PROFILE default to: default"
         fi
 
