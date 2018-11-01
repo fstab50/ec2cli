@@ -86,26 +86,25 @@ backcolor=$(echo -e ${brightgreen})
 function ec2cli_help(){
   cat <<EOM
 
-                              ${bodytext}Help | ${title}ec2cli${bodytext}
-                              _____________
+                    ${title}ec2cli${bodytext} help contents
 
     ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
 
-              $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
+          $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
-                     -i | --instances
-                     -b | --subnets
-                     -g | --sgroups
-                     -s | --snapshots
-                     -t | --tags
-                     -v | --volumes
-                     -n | --vpcs
-                    [-A | --all     ]
-                    [-d | --debug   ]
-                    [-h | --help    ]
-                    [-p | --profile  <value> ]
-                    [-s | --sort  {size | id | date} ]
-                    [-V | --version ]
+                       -i | --instances
+                       -b | --subnets
+                       -g | --sgroups
+                       -s | --snapshots
+                       -t | --tags
+                       -v | --volumes
+                       -n | --vpcs
+                      [-A | --all     ]
+                      [-d | --debug   ]
+                      [-h | --help    ]
+                      [-p | --profile  <value> ]
+                      [-s | --sort  {size | id | date} ]
+                      [-V | --version ]
 
     ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
           ${options}-A${bodytext},${options} --all${bodytext}          Analyze resources in all AWS Regions
