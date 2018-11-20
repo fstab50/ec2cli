@@ -86,47 +86,52 @@ backcolor=$(echo -e ${brightgreen})
 function ec2cli_help(){
   cat <<EOM
 
-                              ${bodytext}Help | ${title}ec2cli${bodytext}
-                              _____________
+                  ${title}ec2cli${bodytext} help contents
 
-      ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
+    ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
 
-              $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
+        $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
-                    [-A | --all     ]
-                    [-d | --debug   ]
-                    [-h | --help    ]
-                    [-p | --profile <value> ]
-                    [-V | --version ]
+                       -i | --instances
+                       -b | --subnets
+                       -g | --sgroups
+                       -s | --snapshots
+                       -t | --tags
+                       -v | --volumes
+                       -n | --vpcs
+                      [-A | --all     ]
+                      [-d | --debug   ]
+                      [-h | --help    ]
+                      [-p | --profile  <value> ]
+                      [-s | --sort  {size | id | date} ]
+                      [-V | --version ]
+    ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
+          ${options}-A${bodytext},${options} --all${bodytext}          Analyze resources in all AWS Regions
+          ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose logging & messaging
+          ${options}-h${bodytext},${options} --help${bodytext}         Display this help menu
+          ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role
+          ${options}-S${bodytext},${options} --sort${bodytext}         Sort by size, id, date
+          ${options}-V${bodytext},${options} --version${bodytext}      Print version info
 
-      ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
-          ${options}-A${bodytext},${options} --all${bodytext}          Retrieve resources across all AWS Regions
-          ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose log output, stdout messaging
-          ${options}-h${bodytext},${options} --help${bodytext}         Display help
-          ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role from the local
-                             awscli config used to run ec2cli
-          ${options}-S${bodytext},${options} --sort${bodytext}         Sort by value provided, size | id | date
-          ${options}-V${bodytext},${options} --version${bodytext}      Print package version, dependency versions
-
-      ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
-          ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Image (AMI) details (regional)
-          ${resources}-b${bodytext},${resources} --subnets      ${bodytext}Virtual Private Cloud (VPC) Subnet details (regional)
-          ${resources}-g${bodytext},${resources} --sgroups      ${bodytext}Security Group details (regional)
-          ${resources}-i${bodytext},${resources} --instances    ${bodytext}EC2 Instance details (regional)
-          ${resources}-n${bodytext},${resources} --vpc          ${bodytext}Virtual Private Cloud (VPC) Network details (regional)
-          ${resources}-N${bodytext},${resources} --network      ${bodytext}All network details (regional)
-          ${resources}-s${bodytext},${resources} --snapshots    ${bodytext}Snapshot details (regional)
+    ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
+          ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Images (AMI)
+          ${resources}-b${bodytext},${resources} --subnets      ${bodytext}Virtual Private Cloud (VPC) Subnets
+          ${resources}-g${bodytext},${resources} --sgroups      ${bodytext}Security Group Details
+          ${resources}-i${bodytext},${resources} --instances    ${bodytext}EC2 Instance Details
+          ${resources}-n${bodytext},${resources} --vpc          ${bodytext}Virtual Private Cloud (VPC) Networks
+          ${resources}-N${bodytext},${resources} --network      ${bodytext}VPC, Subnet, & Security Groups
+          ${resources}-s${bodytext},${resources} --snapshots    ${bodytext}EBS Snapshot Details
           ${resources}-P${bodytext},${resources} --spot         ${bodytext}Spot Market Pricing (all regions)
-          ${resources}-t${bodytext},${resources} --tags         ${bodytext}Tags details for EC2 sub services (all regions)
-          ${resources}-v${bodytext},${resources} --volumes      ${bodytext}Elastic Block Store (EBS) Volume details (regional)
+          ${resources}-t${bodytext},${resources} --tags         ${bodytext}Tags Details for EC2 Services
+          ${resources}-v${bodytext},${resources} --volumes      ${bodytext}Elastic Block Store (EBS) Volumes
 
-      ${white}${BOLD}COMMANDS${UNBOLD}${bodytext}:
+    ${white}${BOLD}COMMANDS${UNBOLD}${bodytext}:
           ${cyan}list               ${bodytext}List aws resource details [DEFAULT]
           ${cyan}attach             ${bodytext}Attach/ Detach aws resource
           ${cyan}create             ${bodytext}Create new aws resource
           ${cyan}run                ${bodytext}Run/ start existing aws resource
 
-      ${white}${BOLD}REGIONCODES${UNBOLD}${bodytext}:
+    ${white}${BOLD}REGIONCODES${UNBOLD}${bodytext}:
           ${regions}ap-northeast-1     ${bodytext}Asia Pacific (Tokyo, Japan)
           ${regions}ap-northeast-2     ${bodytext}Asia Pacific (Seoul, Korea)
           ${regions}ap-south-1         ${bodytext}Asia Pacific (Mumbai, India)
@@ -474,7 +479,7 @@ function ec2cli_attach_volume(){
         echo ""
         read -p "${yellow}  Enter # of choice or hit return for default [0]: ${reset}" CHOICE
         echo ""
-            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+            if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
             # invalid user entry
                     echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
             else
@@ -529,7 +534,7 @@ function ec2cli_attach_volume(){
             echo ""
             read -p "${yellow}  Enter # of choice or hit return for default [0]: ${reset}" CHOICE
             echo ""
-            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+            if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
                     # invalid user entry
                     echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
             else
@@ -654,7 +659,7 @@ function ec2cli_create_images(){
             echo ""
 
             # assign instance to choice
-            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+            if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
                     # invalid user entry
                     echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
                     ### FIXME:  Fails if enter integer with 2 digits ###
@@ -797,7 +802,7 @@ function ec2cli_create_snapshot(){
                 echo ""
 
                 # assign instance to choice
-                if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+                if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
                         # invalid user entry
                         echo "You must enter an integer number between 0 and $(( $MAXCT-1 )) or quit."
                         ### FIXME:  Fails if enter integer with 2 digits ###
@@ -1096,7 +1101,7 @@ function ec2cli_list_instances(){
                 i=$(( $i+1 ))
             done
             # print full format
-            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-68.67s %-2s \n", \
+            awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-64.64s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
             # print footer
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
@@ -1298,7 +1303,7 @@ function ec2cli_rdp-login(){
         	read -p "${yellow}  Enter # RDP window resolution or hit return for relative size [90%]: ${reset}" CHOICE
 	        echo ""
 
-        	if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+        	if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
 				# invalid user entry
                 echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
         	else
@@ -1429,8 +1434,10 @@ function ec2cli_run_instances(){
 	        read -p "${yellow}  Enter instance # to start/ log in [quit]: ${reset}" CHOICE
 	        echo ""
 
+            echo "You selected: $CHOICE"
+
 	        # assign instance to choice
-	        if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+	        if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
 	                # invalid user entry
 	                echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
 	                ### FIXME:  Fails if enter integer with 2 digits ###
