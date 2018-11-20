@@ -86,11 +86,11 @@ backcolor=$(echo -e ${brightgreen})
 function ec2cli_help(){
   cat <<EOM
 
-                    ${title}ec2cli${bodytext} help contents
+                  ${title}ec2cli${bodytext} help contents
 
     ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
 
-          $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
+        $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
                        -i | --instances
                        -b | --subnets
@@ -105,7 +105,6 @@ function ec2cli_help(){
                       [-p | --profile  <value> ]
                       [-s | --sort  {size | id | date} ]
                       [-V | --version ]
-
     ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
           ${options}-A${bodytext},${options} --all${bodytext}          Analyze resources in all AWS Regions
           ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose logging & messaging
