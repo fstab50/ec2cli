@@ -480,7 +480,7 @@ function ec2cli_attach_volume(){
         echo ""
         read -p "${yellow}  Enter # of choice or hit return for default [0]: ${reset}" CHOICE
         echo ""
-            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+            if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
             # invalid user entry
                     echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
             else
@@ -535,7 +535,7 @@ function ec2cli_attach_volume(){
             echo ""
             read -p "${yellow}  Enter # of choice or hit return for default [0]: ${reset}" CHOICE
             echo ""
-            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+            if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
                     # invalid user entry
                     echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
             else
@@ -660,7 +660,7 @@ function ec2cli_create_images(){
             echo ""
 
             # assign instance to choice
-            if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+            if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
                     # invalid user entry
                     echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
                     ### FIXME:  Fails if enter integer with 2 digits ###
@@ -803,7 +803,7 @@ function ec2cli_create_snapshot(){
                 echo ""
 
                 # assign instance to choice
-                if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+                if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
                         # invalid user entry
                         echo "You must enter an integer number between 0 and $(( $MAXCT-1 )) or quit."
                         ### FIXME:  Fails if enter integer with 2 digits ###
@@ -1304,7 +1304,7 @@ function ec2cli_rdp-login(){
         	read -p "${yellow}  Enter # RDP window resolution or hit return for relative size [90%]: ${reset}" CHOICE
 	        echo ""
 
-        	if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+        	if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
 				# invalid user entry
                 echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
         	else
@@ -1435,8 +1435,10 @@ function ec2cli_run_instances(){
 	        read -p "${yellow}  Enter instance # to start/ log in [quit]: ${reset}" CHOICE
 	        echo ""
 
+            echo "You selected: $CHOICE"
+
 	        # assign instance to choice
-	        if [[ -n ${CHOICE//[0-$(( $MAXCT-1 ))]/} ]]; then
+	        if [[ $CHOICE -lt 0 ]] && [[ $CHOICE -ge $(( $MAXCT )) ]]; then
 	                # invalid user entry
 	                echo "You must enter an integer number between 0 and $(( $MAXCT-1 ))."
 	                ### FIXME:  Fails if enter integer with 2 digits ###
