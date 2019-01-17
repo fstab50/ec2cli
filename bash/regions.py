@@ -15,6 +15,7 @@ import inspect
 import datetime
 from botocore.exceptions import ClientError
 from pyaws.session import boto3_session
+from pyaws.utils import export_json_object
 
 try:
     from configparser import ConfigParser
@@ -101,10 +102,11 @@ def read(fname):
     return open(os.path.join(basedir, fname)).read()
 
 
-
 # --- main --------------------------------------------------------------------------------
 
+
 PROFILE = None
+
 
 # globals
 if len(sys.argv) > 1:
@@ -116,7 +118,9 @@ if PROFILE is None:
 if os.path.exists(REFERENCE) and file_age(REFERENCE, 'days') < MAX_AGE_DAYS:
     r = read(REFERENCE)
     regions = [x for x in r.split('\n') if x]
+    sys.exit(print_array(regions))
 else:
     regions = get_regions(profile=PROFILE)
-
-sys.exit(print_array(regions))
+    print_array(regions)
+    export_json_object(regions, REFERENCE)
+    sys.exit(0)
