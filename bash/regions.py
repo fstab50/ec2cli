@@ -26,7 +26,7 @@ except Exception:
 
 CONFIG_DIR = os.getenv('HOME') + '/' + '.config/ec2cli'
 REFERENCE = CONFIG_DIR + '/' + 'regions.list'
-MAX_AGE_DAYS = 2
+MAX_AGE_DAYS = 3
 
 
 # --- declarations  --------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ def get_regions(profile=None):
 
 def print_array(args):
     for x in args:
-        print(x + ' ', end='')
+        print(x.strip() + ' ', end='')
 
 
 def shared_credentials_location():
@@ -102,6 +102,15 @@ def read(fname):
     return open(os.path.join(basedir, fname)).read()
 
 
+def write_file(object, filepath):
+    try:
+        with open(filepath, 'w') as f1:
+            for i in object:
+                f1.write(i + '\n')
+    except OSError as e:
+        print('Error: {}'.format(e))
+
+
 # --- main --------------------------------------------------------------------------------
 
 
@@ -122,5 +131,5 @@ if os.path.exists(REFERENCE) and file_age(REFERENCE, 'days') < MAX_AGE_DAYS:
 else:
     regions = get_regions(profile=PROFILE)
     print_array(regions)
-    export_json_object(regions, REFERENCE)
+    write_file(regions, REFERENCE)
     sys.exit(0)
