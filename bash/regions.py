@@ -23,7 +23,9 @@ except Exception:
     sys.exit(1)
 
 
-REFERENCE = os.getcwd() + '/' + 'regions.list'
+REFERENCE = 'regions.list'
+print(REFERENCE)
+sys.exit()
 MAX_AGE_DAYS = 2            #
 
 
@@ -112,8 +114,8 @@ if len(sys.argv) > 1:
 if PROFILE is None:
     PROFILE = 'default'
 
-if file_age(REFERENCE, 'days') < MAX_AGE_DAYS:
-    r = read(REFERNCE)
+if os.path.exists(REFERENCE) and file_age(REFERENCE, 'days') < MAX_AGE_DAYS:
+    r = read(REFERENCE)
     regions = [x for x in r.split('\n') if x]
 else:
     regions = get_regions(profile=PROFILE)
