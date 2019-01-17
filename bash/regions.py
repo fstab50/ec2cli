@@ -12,6 +12,7 @@ Returns:
 import os
 import sys
 import inspect
+import datetime
 from botocore.exceptions import ClientError
 from pyaws.session import boto3_session
 
@@ -22,7 +23,34 @@ except Exception:
     sys.exit(1)
 
 
+REFERENCE = os.getcwd() + '/' + 'regions.list'
+MAX_AGE_DAYS = 2            #
+
+
 # --- declarations  --------------------------------------------------------------------------------
+
+
+def file_age(filepath, unit='seconds'):
+    """
+    Summary.
+
+        Calculates file age in seconds
+
+    Args:
+        :filepath (str): path to file
+        :unit (str): unit of time measurement returned.
+    Returns:
+        age (int)
+    """
+    ctime = os.path.getctime(filepath)
+    dt = datetime.datetime.fromtimestamp(ctime)
+    now = datetime.datetime.utcnow()
+    delta = now - dt
+    if unit == 'days':
+        return round(delta.days, 2)
+    elif unit == 'hours':
+        round(delta.seconds / 3600, 2)
+    return round(delta.seconds, 2)
 
 
 def get_regions(profile=None):
@@ -41,8 +69,8 @@ def get_regions(profile=None):
 
 
 def print_array(args):
-        for x in args:
-            print(x + ' ', end='')
+    for x in args:
+        print(x + ' ', end='')
 
 
 def shared_credentials_location():
@@ -67,6 +95,12 @@ def print_profiles(config, args):
     return True
 
 
+def read(fname):
+    basedir = os.path.dirname(sys.argv[0])
+    return open(os.path.join(basedir, fname)).read()
+
+
+
 # --- main --------------------------------------------------------------------------------
 
 PROFILE = None
@@ -78,5 +112,10 @@ if len(sys.argv) > 1:
 if PROFILE is None:
     PROFILE = 'default'
 
-regions = get_regions(profile=PROFILE)
+if file_age(REFERENCE, 'days') < MAX_AGE_DAYS:
+    r = read(REFERNCE)
+    regions = [x for x in r.split('\n') if x]
+else:
+    regions = get_regions(profile=PROFILE)
+
 sys.exit(print_array(regions))
