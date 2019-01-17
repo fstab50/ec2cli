@@ -23,10 +23,9 @@ except Exception:
     sys.exit(1)
 
 
-REFERENCE = 'regions.list'
-print(REFERENCE)
-sys.exit()
-MAX_AGE_DAYS = 2            #
+CONFIG_DIR = os.getenv('HOME') + '/' + '.config/ec2cli'
+REFERENCE = CONFIG_DIR + '/' + 'regions.list'
+MAX_AGE_DAYS = 2
 
 
 # --- declarations  --------------------------------------------------------------------------------
