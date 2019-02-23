@@ -23,64 +23,6 @@
 # SOFTWARE.
 
 
-function current_branch(){
-    ##
-    ##  returns current working branch
-    ##
-    echo "$(git branch 2>/dev/null | grep '\*' | awk '{print $2}')"
-}
-
-
-function _code_subcommands(){
-    ##
-    ##  returns list of all files changed; relative paths
-    ##
-    local branch1="master"
-    local branch2=$(current_branch)
-    local root=$(_git_root)
-
-    declare -a changed
-    changed=$(git diff --name-only $branch1..$branch2 | xargs -I '{}' realpath --relative-to=. $root/'{}')
-    echo "${changed[@]}"
-}
-
-
-function _git_root(){
-    ##
-    ##  determines full path to current git project root
-    ##
-    echo "$(git rev-parse --show-toplevel 2>/dev/null)"
-}
-
-
-function _local_branches(){
-    ##
-    ##  returns an array of git branches listed by the
-    ##  local git repository
-    ##
-    declare -a local_branches
-
-    local_branches=(  $(git branch 2>/dev/null |  grep -v remotes | cut -c 3-50)  )
-    echo "${local_branches[@]}"
-    #
-    # <--- end function _clean_subcommands --->
-}
-
-
-function _remote_branchnames(){
-    ##
-    ##  returns an array of git branches listed by the
-    ##  remote repository
-    ##
-    declare -a remotes
-
-    remotes=(  $(git branch -a 2>/dev/null |  grep remotes | tail -n +2 | awk -F '/' '{print $NF}')  )
-    echo "${remotes[@]}"
-    #
-    # <--- end function _clean_subcommands --->
-}
-
-
 function _complete_alternatebranch_commands(){
     ##
     ##  Prints all local or remote branches
@@ -104,7 +46,7 @@ function _complete_alternatebranch_commands(){
 
 function _complete_ec2cli_commands(){
     local cmds="$1"
-    local split='5'       # times to split screen width
+    local split='6'       # times to split screen width
     local ct="0"
     local IFS=$' \t\n'
     local formatted_cmds=( $(compgen -W "${cmds}" -- "${COMP_WORDS[1]}") )
@@ -154,6 +96,57 @@ function _complete_commitlog_subcommands(){
 }
 
 
+function _complete_region_subcommands(){
+    local cmds="$1"
+    local split='6'       # times to split screen width
+    local ct="0"
+    local IFS=$' \t\n'
+    local formatted_cmds=( $(compgen -W "${cmds}" -- "${cur}") )
+
+    for i in "${!formatted_cmds[@]}"; do
+        formatted_cmds[$i]="$(printf '%*s' "-$(($COLUMNS/$split))"  "${formatted_cmds[$i]}")"
+    done
+
+    COMPREPLY=( "${formatted_cmds[@]}")
+    return 0
+    #
+    # <-- end function _complete_region_subcommands -->
+}
+
+
+function _numargs(){
+    ##
+    ## Returns count of number of parameter args passed
+    ##
+    local parameters="$1"
+    local numargs
+
+    for i in $(echo $parameters); do
+        numargs=$(( $numargs + 1 ))
+    done
+    printf -- '%s\n' "$numargs"
+    return 0
+}
+
+
+function _parse_compwords(){
+    ##
+    ##  Interogate compwords to discover which of the  5 horsemen are missing
+    ##
+    compwords=("${!1}")
+    four=("${!2}")
+
+    declare -a missing_words
+
+    for key in "${four[@]}"; do
+        if [[ ! "$(echo "${compwords[@]}" | grep ${key##*-})" ]]; then
+            missing_words=( "${missing_words[@]}" "$key" )
+        fi
+    done
+    printf -- '%s\n' "${missing_words[@]}"
+}
+
+
 function _ec2cli_completions(){
     ##
     ##  Completion structures for ec2cli exectuable
@@ -178,12 +171,30 @@ function _ec2cli_completions(){
     numoptions=0
 
     # option strings
-    options='--debug --images --instances --sgroups --subnets --help --profile --region --snapshots --tags --version --volumes --vpc'
+    options='--debug --help --profile --region --version'
+    resources='--images --instances --sgroups --subnets --snapshots --tags --volumes --vpcs'
     commands='attach create list run'
-    norepo_commands='--help --version'
 
 
     case "${initcmd}" in
+
+        '--images' | '--instances' | '--format' | '--profile' | '--region')
+            ##
+            ##  Return compreply with any of the 5 comp_words that
+            ##  not already present on the command line
+            ##
+            declare -a horsemen
+            horsemen=(  '--details' '--image' '--filename' '--format' '--profile' '--region' )
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@])
+            numargs=$(_numargs "$subcommands")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
+                _complete_4_horsemen_subcommands "${subcommands}"
+            else
+                COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            fi
+            return 0
+            ;;
 
         '--sort')
             return 0
@@ -191,7 +202,7 @@ function _ec2cli_completions(){
     esac
     case "${cur}" in
 
-        '--version')
+        '--version' | '--help')
             return 0
             ;;
 
@@ -199,17 +210,34 @@ function _ec2cli_completions(){
             _complete_ec2cli_commands "${commands}"
             return 0
             ;;
-
-        '--commit-log')
-            _complete_commitlog_subcommands "${commitlog_subcommands}"
-            return 0
-            ;;
     esac
     case "${prev}" in
 
+        'attach' | 'create' | 'list' | 'run')
+            ##
+            ##  Return compreply with any of the 5 comp_words that
+            ##  not already present on the command line
+            ##
+            declare -a horsemen
+            horsemen=(  '--profile' '--region' '--sort' '--all')
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@])
+            numargs=$(_numargs "$subcommands")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
+                _complete_4_horsemen_subcommands "${subcommands}"
+            else
+                COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            fi
+            return 0
+            ;;
+
+        '--instances' | '--images' | '--snapshots' | '--sgroups' | '--subnets' | '--volumes')
+            COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
+            ;;
+
         '--profile')
             python3=$(which python3)
-            iam_users=$($python3 "$config_dir/iam_identities.py")
+            iam_users=$($python3 "$config_dir/iam_users.py")
 
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
                 # display full completion subcommands
