@@ -98,11 +98,11 @@ function _complete_alternatebranch_commands(){
     COMPREPLY=( "${formatted_cmds[@]}")
     return 0
     #
-    # <-- end function _complete_branchdiff_commands -->
+    # <-- end function _complete_ec2cli_commands -->
 }
 
 
-function _complete_branchdiff_commands(){
+function _complete_ec2cli_commands(){
     local cmds="$1"
     local split='5'       # times to split screen width
     local ct="0"
@@ -116,7 +116,7 @@ function _complete_branchdiff_commands(){
     COMPREPLY=( "${formatted_cmds[@]}")
     return 0
     #
-    # <-- end function _complete_branchdiff_commands -->
+    # <-- end function _complete_ec2cli_commands -->
 }
 
 
@@ -154,12 +154,19 @@ function _complete_commitlog_subcommands(){
 }
 
 
-function _branchdiff_completions(){
+function _ec2cli_completions(){
     ##
-    ##  Completion structures for branchdiff exectuable
+    ##  Completion structures for ec2cli exectuable
     ##
-    local numargs numoptions cur prev prevcmd
+    local commands                  #  commandline parameters (--*)
+    local subcommands               #  subcommands are parameters provided after a command
+    local image_subcommands         #  parameters provided after --image command
+    local numargs                   #  integer count of number of commands, subcommands
+    local cur                       #  completion word at index position 0 in COMP_WORDS array
+    local prev                      #  completion word at index position -1 in COMP_WORDS array
+    local initcmd                   #  completion word at index position -2 in COMP_WORDS array
 
+    config_dir="$HOME/.config/ec2cli"
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     initcmd="${COMP_WORDS[COMP_CWORD-2]}"
@@ -171,44 +178,16 @@ function _branchdiff_completions(){
     numoptions=0
 
     # option strings
-    commands='--branch --code --commit-log --debug --help --repository-url --version'
-    commitlog_subcommands='detail help history summary'
-    operations='--branch --code'
+    options='--debug --images --instances --sgroups --subnets --help --profile --region --snapshots --tags --version --volumes --vpc'
+    commands='attach create list run'
     norepo_commands='--help --version'
 
 
     case "${initcmd}" in
 
-        '--branch')
-            if [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-code')" ] && [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-debug')" ]; then
-                return 0
-
-            elif [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-code')" ]; then
-                COMPREPLY=( $(compgen -W "--debug" -- ${cur}) )
-                return 0
-
-            elif [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-debug')" ]; then
-                COMPREPLY=( $(compgen -W "--code" -- ${cur}) )
-                return 0
-
-            else
-                COMPREPLY=( $(compgen -W "--code --debug" -- ${cur}) )
-                return 0
-            fi
+        '--sort')
+            return 0
             ;;
-
-        '--code')
-            if [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-branch')" ]; then
-                return 0
-            else
-                COMPREPLY=( $(compgen -W "--branch" -- ${cur}) )
-                return 0
-            fi
-            ;;
-
-        '--commit-log')
-           return 0
-           ;;
     esac
     case "${cur}" in
 
@@ -216,28 +195,51 @@ function _branchdiff_completions(){
             return 0
             ;;
 
-        'branchdiff')
-            _complete_branchdiff_commands "${commands}"
+        'ec2cli')
+            _complete_ec2cli_commands "${commands}"
             return 0
             ;;
 
         '--commit-log')
-             _complete_commitlog_subcommands "${commitlog_subcommands}"
-            #COMPREPLY=( $(compgen -W "${commitlog_subcommands}" -- ${cur}) )
+            _complete_commitlog_subcommands "${commitlog_subcommands}"
             return 0
             ;;
     esac
     case "${prev}" in
 
-        '--branch')
-            remote_branches=$(_remote_branchnames)
-            #_complete_alternatebranch_commands "${local_branchnames}"
-            COMPREPLY=( $(compgen -W "${remote_branches}" -- ${cur}) )
+        '--profile')
+            python3=$(which python3)
+            iam_users=$($python3 "$config_dir/iam_identities.py")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
+                # display full completion subcommands
+                _complete_profile_subcommands "${iam_users}"
+            else
+                COMPREPLY=( $(compgen -W "${iam_users}" -- ${cur}) )
+            fi
             return 0
             ;;
 
-        '--code')
+        '--version' | '--help')
+            return 0
+            ;;
 
+        '--region' | "--re*")
+            ##  complete AWS region codes
+            python3=$(which python3)
+            regions=$($python3 "$config_dir/regions.py")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
+
+                _complete_region_subcommands "${regions}"
+
+            else
+                COMPREPLY=( $(compgen -W "${regions}" -- ${cur}) )
+            fi
+            return 0
+            ;;
+
+        '--tags')
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
                 # display full completion subcommands
                 _complete_code_subcommands "$(_code_subcommands)"
@@ -248,50 +250,13 @@ function _branchdiff_completions(){
             return 0
             ;;
 
-        '--debug')
-            if [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-branch')" ] && [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-code')" ]; then
-                return 0
-
-            elif [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-branch')" ]; then
-                COMPREPLY=( $(compgen -W "--code" -- ${cur}) )
-                return 0
-
-            elif [ "$(echo "${COMP_WORDS[@]}" | grep '\-\-code')" ]; then
-                COMPREPLY=( $(compgen -W "--branch" -- ${cur}) )
-                return 0
-            fi
-            ;;
-
-        '--commit-log')
+        "ec2cli")
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
-                # display full completion subcommands
-                _complete_commitlog_subcommands "${commitlog_subcommands}"
+
+                _complete_ec2cli_commands "${options}"
+
             else
-                COMPREPLY=( $(compgen -W "${commitlog_subcommands}" -- ${cur}) )
-            fi
-            return 0
-            ;;
-
-        '--version' | '--help' | '--repository-url')
-            return 0
-            ;;
-
-        'detail' | 'history' | 'summary')
-            # --commit-log subcommands completed; stop
-            return 0
-            ;;
-
-        "branchdiff")
-            if [ "$(_git_root)" ]; then
-                if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
-
-                    _complete_branchdiff_commands "${commands}"
-
-                else
-                    COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
-                fi
-            else
-                COMPREPLY=( $(compgen -W "${norepo_commands}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${options}" -- ${cur}) )
             fi
             return 0
             ;;
@@ -299,4 +264,4 @@ function _branchdiff_completions(){
 
     COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
 
-} && complete -F _branchdiff_completions branchdiff
+} && complete -F _ec2cli_completions ec2cli
