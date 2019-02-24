@@ -133,8 +133,10 @@ function _parse_compwords(){
     ##
     ##  Interogate compwords to discover which of the  5 horsemen are missing
     ##
+    local add_resources=true
     compwords=("${!1}")
     four=("${!2}")
+    onlybone=("${!3}")
 
     declare -a missing_words
 
@@ -143,6 +145,14 @@ function _parse_compwords(){
             missing_words=( "${missing_words[@]}" "$key" )
         fi
     done
+    for key in "${onlybone[@]}"; do
+        if [[ ! "$(echo "${missing_words[@]}" | grep ${key##*-})" ]]; then
+            add_resources=false
+        fi
+    done
+    if [[ "$add_resources" = "true" ]]; then
+        missing_words=( "${onlybone[@]}"  "${missing_words[@]}" )
+    fi
     printf -- '%s\n' "${missing_words[@]}"
 }
 
@@ -178,14 +188,15 @@ function _ec2cli_completions(){
 
     case "${initcmd}" in
 
-        '--images' | '--instances' | '--format' | '--profile' | '--region')
+        '--profile' | '--region')
             ##
             ##  Return compreply with any of the 5 comp_words that
             ##  not already present on the command line
             ##
-            declare -a horsemen
-            horsemen=(  '--details' '--image' '--filename' '--format' '--profile' '--region' )
-            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@])
+            declare -a horsemen singletons
+            horsemen=(  '--profile' '--region' '--sort' '--all')
+            singletons=( "${resources}" )
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
             numargs=$(_numargs "$subcommands")
 
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
@@ -218,9 +229,10 @@ function _ec2cli_completions(){
             ##  Return compreply with any of the 5 comp_words that
             ##  not already present on the command line
             ##
-            declare -a horsemen
+            declare -a horsemen singletons
             horsemen=(  '--profile' '--region' '--sort' '--all')
-            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@])
+            singletons=( "${resources}" )
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
             numargs=$(_numargs "$subcommands")
 
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
@@ -281,10 +293,10 @@ function _ec2cli_completions(){
         "ec2cli")
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
 
-                _complete_ec2cli_commands "${options}"
+                _complete_ec2cli_commands "${options} ${resources}"
 
             else
-                COMPREPLY=( $(compgen -W "${options}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${options} ${resources}" -- ${cur}) )
             fi
             return 0
             ;;
