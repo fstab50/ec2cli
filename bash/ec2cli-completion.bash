@@ -279,6 +279,12 @@ function _ec2cli_completions(){
             return 0
             ;;
 
+        '--sort')
+            COMPREPLY=( $(compgen -W "size id date" -- ${cur}) )
+            return 0
+            ;;
+
+
         '--tags')
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
                 # display full completion subcommands
