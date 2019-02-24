@@ -103,6 +103,7 @@ function ec2cli_help(){
                       [-d | --debug   ]
                       [-h | --help    ]
                       [-p | --profile  <value> ]
+                      [-r | --region  ]
                       [-s | --sort  {size | id | date} ]
                       [-V | --version ]
     ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
@@ -110,6 +111,7 @@ function ec2cli_help(){
           ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose logging & messaging
           ${options}-h${bodytext},${options} --help${bodytext}         Display this help menu
           ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role
+          ${options}-r${bodytext},${options} --region${bodytext}       AWS region code (ex: us-east-1)
           ${options}-S${bodytext},${options} --sort${bodytext}         Sort by size, id, date
           ${options}-V${bodytext},${options} --version${bodytext}      Print version info
 
@@ -2344,7 +2346,7 @@ function parse_regioncode(){
     # parameter is a region, validate it
     if [ "$(grep $user_provided "$CONFIG_PATH/$REGION_CONFIGFILE")" ]; then
         # aws region given
-        REGION=$user_provided
+        return 0
     else
         # bad regioncode
         std_error_exit "Invalid AWS region code [ $1 ]. See ec2cli --help. Exiting (code $E_BADARG)" $E_BADARG
@@ -2606,6 +2608,7 @@ function parse_parameters(){
                         esac
                     fi
                 	;;
+
                 -N | --network | --networks | --Network | --Networks)
         			#
         			# display all network details for region
@@ -2619,6 +2622,14 @@ function parse_parameters(){
                         shift 1
                     fi
         			;;
+
+                -r | --region)
+                    if parse_regioncode "$2"; then
+                        REGION="$2"
+                        shift 2
+                    fi
+                    ;;
+
                 -t | --tags)
                     #
                     # Display details of all EC2 tags for region
