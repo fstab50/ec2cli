@@ -15,6 +15,7 @@ Summary.
 import os
 import sys
 import inspect
+from pyaws.utils import stdout_message
 
 try:
     from configparser import ConfigParser
@@ -51,10 +52,14 @@ def awscli_profiles():
     if os.path.isfile(config_file):
         config.read(config_file)
     else:
+        stdout_message(
+            message='awscli configuration file not found on local filesystem. Exit',
+            prefix='WARN'
+        )
         sys.exit(1)
 
     for profile in config.sections():
-        if 'role_arn' in config[profile].keys() or 'aws_security_token' in config[profile].keys():
+        if 'role_arn' in config[profile].keys():
             config.pop(profile)
     return config
 
