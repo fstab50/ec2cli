@@ -249,7 +249,7 @@ function _ec2cli_completions(){
 
         '--profile')
             python3=$(which python3)
-            iam_users=$($python3 "$config_dir/iam_users.py")
+            iam_users=$($python3 "$config_dir/iam_identities.py")
 
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
                 # display full completion subcommands
