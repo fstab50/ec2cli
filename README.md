@@ -44,7 +44,7 @@ While I realize that accomplishing the same functionality is easier with the AWS
 
 _Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
 
-[![instances](./images/ec2cli-list-instances.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-instances.png)
+[![instances](./images/ec2cli-list-instances.png)](https://s3-us-east-2.amazonaws.com/http-imagestore/ec2cli/ec2cli-list-instances.png)
 
 (See [Screenshots](#screenshots) section below)
 
@@ -58,7 +58,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 	$ ec2cli --help     
 ```
 
-[![help](./images/ec2cli-help.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-help.png)
+[![help](./images/ec2cli-help.png)](https://s3.us-east-2.amazonaws.com/http-imagestore/ec2cli/ec2cli-help.png)
 
 
 ### Notes: ###
@@ -220,7 +220,7 @@ After completing the above Installation and Configuration sections, verify your 
 	$ ec2cli --version
 ```
 
-[![version](./images/ec2cli-version.png)]((https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-version.png))
+[![version](./images/ec2cli-version.png)]((https://s3.us-east-2.amazonaws.com/http-imagestore/ec2cli/ec2cli-version.png))
 
 **Note**: Python and Kernel versions will depend upon your system parameters
 
@@ -299,24 +299,24 @@ List command displays AWS resource details for your AWS default region if no reg
 ```bash
 $ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
 ```
-[![instances](./images/ec2cli-list-instances.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-instances.png)
+[![instances](./images/ec2cli-list-instances.png)](https://s3.us-east-2.amazonaws.com/http-imagestore/ec2cli/ec2cli-list-instances.png)
 
 ```bash
 $ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
 ```
 
-[![volumes](./images/ec2cli-list-volumes.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-volumes.png)
+[![volumes](./images/ec2cli-list-volumes.png)](https://s3.us-east-2.amazonaws.com/http-imagestore/ec2cli/ec2cli-list-volumes.png)
 
 
 ```bash
 $ ec2cli -s    # list snapshots, AWS default region (us-west-2)
 ```
-[![snapshots](./images/ec2cli-list-snapshots.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-snapshots.png)
+[![snapshots](./images/ec2cli-list-snapshots.png)](https://s3.us-east-2.amazonaws.com/http-imagestore/ec2cli/ec2cli-list-snapshots.png)
 
 ```bash
 $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 ```
-[![securitygroups](./images/ec2cli-list-securitygroups.png)](https://rawgithub.com/fstab50/ec2cli/master/images/ec2cli-list-securitygroups.png)
+[![securitygroups](./images/ec2cli-list-securitygroups.png)](https://s3.us-east-2.amazonaws.com/http-imagestore/ec2cli/ec2cli-list-securitygroups.png)
 
 [back to the top](#top)
 
