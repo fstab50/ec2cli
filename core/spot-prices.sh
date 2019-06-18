@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 #
 #_________________________________________________________________________
 #                                                                         |
@@ -41,6 +42,7 @@ REGION=$AWS_DEFAULT_REGION    # set region from global env var
 pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
 ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
+CONFIG_DIR="$HOME/.config/ec2cli"
 
 declare -a C_TYPE
 declare -a D_TYPE
@@ -67,9 +69,26 @@ source $pkg_path/std_functions.sh
 config_dir=$(cat $EC2_REPO/core/pkgconfig.json | jq -r .config_dir)
 std_logger "config_dir set ($config_dir)" "INFO" $ec2cli_log
 
+# colors
+byl=$(echo -e ${brightyellow2})
+bcy=$(echo -e ${brightcyan})
+bpl=$(echo -e ${bluepurple})
+bbl=$(echo -e ${brightblue})
+
+indexcolor=${bbl}
+sizecolor=${bpl}
+
 #
 # functions  ------------------------------------------------------------------
 #
+
+
+function _git_root(){
+    ##
+    ##  determines full path to current git project root
+    ##
+    echo "$(git rev-parse --show-toplevel 2>/dev/null)"
+}
 
 
 function precheck(){
@@ -128,7 +147,7 @@ function precheck(){
     fi
 
     # set fs pointer to writeable temp location in memory if possible
-    set_tmpdir
+    #set_tmpdir
 
 }
 
@@ -319,16 +338,22 @@ rm .type.tmp
 # choose instance size  (uses ./config/sizes.txt)
 declare -a sizes
 
-mapfile -t sizes < <(cat ../config/sizes.txt)
 
+
+for s in $(cat "$CONFIG_DIR/sizes.txt"); do
+    sizes=( "${sizes[@]}"  "$s" )
+done
+
+i=0
 for s in "${sizes[@]}"; do
-    printf -- '\t%s\n' "$s"
+    printf -- '\t%s)  %s\n' "${indexcolor}$i${bodytext}" "${sizecolor}$s${bodytext}"
+    i=$(( $i + 1 ))
 done
 
 std_message "Choose EC2 Spot Instance Size" "INFO"
 read -p "            Size number [skip]:  " choice
 
-if [ -z choice ]; then
+if [ -z "$choice" ]; then
     SIZE='all'
     std_message "You chose to display all sizes" "OK"
 else
