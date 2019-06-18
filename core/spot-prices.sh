@@ -319,6 +319,8 @@ rm .type.tmp
 # below this section has failures - create full table for the region
 # until fixed.
 
+if [ "$TYPE" = "SUSE" ]; then TYPE='SUSE Linux'; fi
+
 aws ec2 describe-spot-price-history  \
     --profile $PROFILE \
     --region $REGION \
