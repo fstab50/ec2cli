@@ -314,6 +314,28 @@ print_separator $total_width
 # clean up
 rm .type.tmp
 
+##########################################################################
+
+# choose instance size  (uses ./config/sizes.txt)
+declare -a sizes
+
+mapfile -t sizes < <(cat ../config/sizes.txt)
+
+for s in "${sizes[@]}"; do
+    printf -- '\t%s\n' "$s"
+done
+
+std_message "Choose EC2 Spot Instance Size" "INFO"
+read -p "            Size number [skip]:  " choice
+
+if [ -z choice ]; then
+    SIZE='all'
+    std_message "You chose to display all sizes" "OK"
+else
+    SIZE="${sizes[$choice]}"
+    std_message "You chose to size $SIZE" "OK"
+fi
+
 
 ### STUB-IN FUNCTIONALITY ################################################
 # below this section has failures - create full table for the region
@@ -321,12 +343,26 @@ rm .type.tmp
 
 if [ "$TYPE" = "SUSE" ]; then TYPE='SUSE Linux'; fi
 
-aws ec2 describe-spot-price-history  \
+
+if [ "$SIZE" = 'all' ]; then
+    aws ec2 describe-spot-price-history  \
+        --profile $PROFILE \
+        --region $REGION \
+        --start-time "$NOW" \
+        --product-description "$TYPE" \
+        --output table
+
+else
+
+    aws ec2 describe-spot-price-history  \
     --profile $PROFILE \
     --region $REGION \
     --start-time "$NOW" \
     --product-description "$TYPE" \
+    --instance-types "$SIZE" \
     --output table
+
+fi
 
 exit 0
 
