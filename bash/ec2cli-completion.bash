@@ -182,7 +182,7 @@ function _ec2cli_completions(){
 
     # option strings
     options='--debug --help --profile --region --version'
-    resources='--images --instances --sgroups --subnets --snapshots --tags --volumes --vpcs'
+    resources='--images --instances --sgroups --spot --subnets --snapshots --tags --volumes --vpcs'
     commands='attach create list run'
 
 
@@ -279,11 +279,15 @@ function _ec2cli_completions(){
             return 0
             ;;
 
+        '--spot')
+            # display EC2 Spot price information
+            return 0
+            ;;
+
         '--sort')
             COMPREPLY=( $(compgen -W "size id date" -- ${cur}) )
             return 0
             ;;
-
 
         '--tags')
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
