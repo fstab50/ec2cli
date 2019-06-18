@@ -301,7 +301,6 @@ function print_header(){
     #if (( $(tput cols) > 480 )); then
     #    printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
     #else
-        printf "%-10s %*s" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
     #fi
     echo -e "${bodytext}" >> $reportfile
     echo -ne ${title} >> $reportfile
@@ -325,9 +324,9 @@ function print_footer(){
 
 function print_separator(){
     ## prints single bar separator of width ##
-    local width="$1"
-    echo -e "${frame}"
-    printf "%-10s %*s" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02
+    local twidth="$1"
+    local frame=$(echo -e "${frame}")
+    printf '%*s\n' "$twidth" '' | tr ' ' ${frame}_${bodytext}
     echo -e "${bodytext}\n"
 
 }

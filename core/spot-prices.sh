@@ -153,8 +153,11 @@ i=1
 for region in ${ARR_REGIONS[@]}; do
     # set region location description
     case "$region" in
+        eu-north-1)
+            LOCATION="Europe (Stockholm, Sweeden)"
+            ;;
         eu-west-1)
-            LOCATION="Europe (Ireland)"
+            LOCATION="Europe (Ireland, UK)"
             ;;
         eu-west-2)
             LOCATION="Europe (London, UK)"
@@ -205,22 +208,23 @@ for region in ${ARR_REGIONS[@]}; do
     echo ""\($i\): "$region" $LOCATION"" >> .arrayoutput.tmp
     i=$(( i+1 ))
 done
+
 MAXCT=$(( $i - 1 ))
-# print header
-total_width="60"
-echo ""
-echo -e "${title}     EC2 SPOT MARKET\n" | indent15
+
+echo -e "\n${title}     EC2 SPOT MARKET\n" | indent15
 echo -e "${bold}${orange}Amazon Web Services ${white}Regions Worldwide${bodytext}\n" | indent10
 
-print_header "\nRegionCode Location" $total_width header.tmp
+# print header
+total_width='60'
+print_header "RegionCode Location" "$total_width" .header.tmp
 
 # print choices
-awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' header.tmp | indent02
-echo -e "\n"
+awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' .header.tmp | indent02
+printf -- '\n'
 awk '{printf "%-5s %-19s %-2s %-2s %-2s %-2s %-2s \n\n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
-print_separator $total_width
+print_separator "$total_width"
 # clean up
-rm .regions.json header.tmp .arrayoutput.tmp
+rm .regions.json .header.tmp .arrayoutput.tmp
 
 
 # enter loop to validate range and type of user entry
@@ -256,7 +260,7 @@ while [ $VALID -eq 0 ]; do
 	fi
 done
 
-print_separator $total_width
+print_separator "$total_width"
 
 #
 ###  choose Operating System ##############################################
