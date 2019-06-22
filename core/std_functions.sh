@@ -299,13 +299,12 @@ function print_header(){
     local reportfile="$3"
     #
     #if (( $(tput cols) > 480 )); then
-    #    printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
+    printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
     #else
     #fi
-    echo -e "${bodytext}" >> $reportfile
-    echo -ne ${title} >> $reportfile
+    echo -e "${bodytext}${title}" >> $reportfile
     echo -e "${frame}" >> $reportfile
-    printf '%*s' "$width" '' | tr ' ' _  | indent02 >> $reportfile
+    printf "${frame}%*s" "$width" '' | tr ' ' _  | indent02 >> $reportfile
     echo -e "${bodytext}" >> $reportfile
 }
 
