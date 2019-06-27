@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 #
 #_________________________________________________________________________
 #                                                                         |
@@ -41,6 +42,7 @@ REGION=$AWS_DEFAULT_REGION    # set region from global env var
 pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
 ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
+CONFIG_DIR="$HOME/.config/ec2cli"
 
 declare -a C_TYPE
 declare -a D_TYPE
@@ -67,9 +69,26 @@ source $pkg_path/std_functions.sh
 config_dir=$(cat $EC2_REPO/core/pkgconfig.json | jq -r .config_dir)
 std_logger "config_dir set ($config_dir)" "INFO" $ec2cli_log
 
+# colors
+byl=$(echo -e ${brightyellow2})
+bcy=$(echo -e ${brightcyan})
+bpl=$(echo -e ${bluepurple})
+bbl=$(echo -e ${brightblue})
+
+indexcolor=${bbl}
+sizecolor=${bpl}
+
 #
 # functions  ------------------------------------------------------------------
 #
+
+
+function _git_root(){
+    ##
+    ##  determines full path to current git project root
+    ##
+    echo "$(git rev-parse --show-toplevel 2>/dev/null)"
+}
 
 
 function precheck(){
@@ -128,7 +147,7 @@ function precheck(){
     fi
 
     # set fs pointer to writeable temp location in memory if possible
-    set_tmpdir
+    #set_tmpdir
 
 }
 
@@ -153,8 +172,11 @@ i=1
 for region in ${ARR_REGIONS[@]}; do
     # set region location description
     case "$region" in
+        eu-north-1)
+            LOCATION="Europe (Stockholm, Sweeden)"
+            ;;
         eu-west-1)
-            LOCATION="Europe (Ireland)"
+            LOCATION="Europe (Ireland, UK)"
             ;;
         eu-west-2)
             LOCATION="Europe (London, UK)"
@@ -205,22 +227,23 @@ for region in ${ARR_REGIONS[@]}; do
     echo ""\($i\): "$region" $LOCATION"" >> .arrayoutput.tmp
     i=$(( i+1 ))
 done
+
 MAXCT=$(( $i - 1 ))
-# print header
-total_width="60"
-echo ""
-echo -e "${title}     EC2 SPOT MARKET\n" | indent15
+
+echo -e "\n${title}     EC2 SPOT MARKET\n" | indent15
 echo -e "${bold}${orange}Amazon Web Services ${white}Regions Worldwide${bodytext}\n" | indent10
 
-print_header "\nRegionCode Location" $total_width header.tmp
+# print header
+total_width='60'
+print_header "RegionCode Location" "$total_width" .header.tmp
 
 # print choices
-awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' header.tmp | indent02
-echo -e "\n"
+awk '{printf "%-23s %-2s %-30s\n", $1, $2, $3}' .header.tmp | indent02
+printf -- '\n'
 awk '{printf "%-5s %-19s %-2s %-2s %-2s %-2s %-2s \n\n", $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp | indent02
-print_separator $total_width
+print_separator "$total_width"
 # clean up
-rm .regions.json header.tmp .arrayoutput.tmp
+rm .regions.json .header.tmp .arrayoutput.tmp
 
 
 # enter loop to validate range and type of user entry
@@ -256,7 +279,7 @@ while [ $VALID -eq 0 ]; do
 	fi
 done
 
-print_separator $total_width
+print_separator "$total_width"
 
 #
 ###  choose Operating System ##############################################
@@ -310,17 +333,61 @@ print_separator $total_width
 # clean up
 rm .type.tmp
 
+##########################################################################
+
+# choose instance size  (uses ./config/sizes.txt)
+declare -a sizes
+
+
+
+for s in $(cat "$CONFIG_DIR/sizes.txt"); do
+    sizes=( "${sizes[@]}"  "$s" )
+done
+
+i=0
+for s in "${sizes[@]}"; do
+    printf -- '\t%s)  %s\n' "${indexcolor}$i${bodytext}" "${sizecolor}$s${bodytext}"
+    i=$(( $i + 1 ))
+done
+
+std_message "Choose EC2 Spot Instance Size" "INFO"
+read -p "            Size number [skip]:  " choice
+
+if [ -z "$choice" ]; then
+    SIZE='all'
+    std_message "You chose to display all sizes" "OK"
+else
+    SIZE="${sizes[$choice]}"
+    std_message "You chose to size $SIZE" "OK"
+fi
+
 
 ### STUB-IN FUNCTIONALITY ################################################
 # below this section has failures - create full table for the region
 # until fixed.
 
-aws ec2 describe-spot-price-history  \
+if [ "$TYPE" = "SUSE" ]; then TYPE='SUSE Linux'; fi
+
+
+if [ "$SIZE" = 'all' ]; then
+    aws ec2 describe-spot-price-history  \
+        --profile $PROFILE \
+        --region $REGION \
+        --start-time "$NOW" \
+        --product-description "$TYPE" \
+        --output table
+
+else
+
+    aws ec2 describe-spot-price-history  \
     --profile $PROFILE \
     --region $REGION \
     --start-time "$NOW" \
     --product-description "$TYPE" \
+    --instance-types "$SIZE" \
     --output table
+
+fi
 
 exit 0
 
