@@ -300,10 +300,8 @@ function print_header(){
     #
     #if (( $(tput cols) > 480 )); then
     printf "%-10s %*s\n" $(echo -e ${frame}) "$(($width - 1))" '' | tr ' ' _ | indent02 > $reportfile
-    #else
-    #fi
     echo -e "${bodytext}${title}" >> $reportfile
-    echo -e "${frame}" >> $reportfile
+    #echo -e "${frame}" >> $reportfile
     printf "${frame}%*s" "$width" '' | tr ' ' _  | indent02 >> $reportfile
     echo -e "${bodytext}" >> $reportfile
 }
