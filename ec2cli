@@ -1472,7 +1472,8 @@ function ec2cli_run_instances(){
 	        --query 'Reservations[].Instances[].SecurityGroups[*].GroupId' > .secgrp-ids.tmp
 
 	# discover local ip
-	MYCIDR="$(dig +short myip.opendns.com @resolver1.opendns.com)/32"
+    PUBLIC_IP=$(curl -s https://ipinfo.io/ip)
+    MYCIDR="$PUBLIC_IP/32"
 
     # grab security group details
     aws ec2 --profile $PROFILE describe-security-groups \
@@ -1504,7 +1505,7 @@ function ec2cli_run_instances(){
 	        rm .jsonoutput.tmp .secgrp-ids.tmp
 	else
 	        # No access from current login client location, clean up
-	        .jsonoutput.tmp .secgrp-ids.tmp
+	        rm .jsonoutput.tmp .secgrp-ids.tmp
 	        # log, exit
 	        std_error_exit "No ssh or RDP access to instance ($TARGET). Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
 	fi
