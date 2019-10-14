@@ -1706,10 +1706,10 @@ function ec2cli_list_securitygroups(){
 
         if [ $FULL_CLI ]; then
             # print and format output
-            awk '{ printf "%-2s %-26.27s %-2s %-21s %-2s %-5s %-2s %-5s %-2s %-19s %-2s %-13s %-2s %-29.29s %-2s %-26.26s %-2s \n", \
+            awk '{ printf "%-2s %-27.27s %-2s %-21s %-2s %-5s %-2s %-5s %-2s %-19s %-2s %-13s %-2s %-29.29s %-2s %-26.26s %-2s \n", \
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-securitygroups.tmp | indent02
         else
-            awk '{ printf "%-2s %-26.25s %-2s %-21s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-29.29s %-2s \n", \
+            awk '{ printf "%-2s %-26.26s %-2s %-21s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-29.29s %-2s \n", \
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .ec2-qv-securitygroups.tmp | indent02
         fi
         # print footer
