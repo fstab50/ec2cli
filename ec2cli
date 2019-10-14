@@ -1628,16 +1628,16 @@ function ec2cli_list_securitygroups(){
         if (( $(tput cols) >= "172" )); then
             FULL_CLI="True"
             std_logger "[INFO]: FULL_CLI set to True, Full width output"
-            total_width="167"
+            total_width="169"
         else
-            total_width="140"
+            total_width="143"
         fi
 
         # retrieve account name
         ACCT_ALIAS="$(account_alias $PROFILE)"
 
         # snapshots found, print region identifier
-        printf "\n${title}SECURITY GROUPS${bodytext} : ${regions}$REGION${bodytext}\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        printf -- '\n%128s\t%18s%105s\n' "${title}SECURITY GROUPS${bodytext} :  ${regions}$REGION${bodytext}" "$sp" "${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}"
 
         if [ $FULL_CLI ]; then
             print_header "$sp  GroupName $sp GroupId $sp Ports $sp Ports $sp CidrIp $sp VpcId $sp Tag $sp Description $sp" $total_width  .ec2-qv-securitygroups.tmp
@@ -1706,10 +1706,10 @@ function ec2cli_list_securitygroups(){
 
         if [ $FULL_CLI ]; then
             # print and format output
-            awk '{ printf "%-2s %-28.27s %-2s %-12s %-2s %-5s %-2s %-5s %-2s %-19s %-2s %-13s %-2s %-34.33s %-2s %-26.26s %-2s \n", \
+            awk '{ printf "%-2s %-26.27s %-2s %-21s %-2s %-5s %-2s %-5s %-2s %-19s %-2s %-13s %-2s %-29.29s %-2s %-26.26s %-2s \n", \
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-securitygroups.tmp | indent02
         else
-            awk '{ printf "%-2s %-26.25s %-2s %-12s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-35.34s %-2s \n", \
+            awk '{ printf "%-2s %-26.25s %-2s %-21s %-2s %-6s %-2s %-7s %-2s %-19s %-2s %-13s %-2s %-29.29s %-2s \n", \
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .ec2-qv-securitygroups.tmp | indent02
         fi
         # print footer
