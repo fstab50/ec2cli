@@ -261,7 +261,8 @@ while [ $VALID -eq 0 ]; do
 		VALID=1   # exit loop
 	elif [ "$CHOICE" = "q" ]; then
         exit 0
-    elif [[ ! "$CHOICE" =~ ^[1-9]+$ ]]; then
+    elif (( "$CHOICE" =< 0 )) && (( "$CHOICE" >= "$MAXCT" )) ; then
+    #elif [[ ! "$CHOICE" =~ ^[1-9]+$ ]]; then
         # CHOICE is a value, check type and range
         # contains chars
         echo -e "Your entry must be an integer between 1 and $(( $MAXCT )) or hit return."
