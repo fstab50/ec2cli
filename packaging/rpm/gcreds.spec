@@ -1,11 +1,11 @@
 #
-#   RPM spec: gcreds, 2018 Sept 18
+#   RPM spec: ec2cli, 2018 Sept 18
 #
-%define name        gcreds
+%define name        ec2cli
 %define version     MAJOR_VERSION
 %define release     MINOR_VERSION
 %define _bindir     usr/local/bin
-%define _libdir     usr/local/lib/gcreds
+%define _libdir     usr/local/lib/ec2cli
 %define _compdir    etc/bash_completion.d
 %define _yumdir     etc/yum.repos.d
 %define _logdir     var/log
@@ -21,7 +21,7 @@ Summary:        Create and Manage Amazon STS Role Credentials for Amazon Web Ser
 Group:          Development/Tools
 BuildArch:      noarch
 License:        GPL
-URL:            https://gcreds.readthedocs.io
+URL:            https://ec2cli.readthedocs.io
 Source:         %{name}-%{version}.%{release}.tar.gz
 Prefix:         /usr
 Requires:      DEPLIST
@@ -35,15 +35,15 @@ Requires: epel-release procps jq awscli hostname util-linux coreutils curl bc ba
 %endif
 
 %description
-gcreds requests temporary credentials from Amazon's Security Token Service, STS
+ec2cli requests temporary credentials from Amazon's Security Token Service, STS
 (http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html), for roles that
 normally require multi-factor credentials authentication in order to authenticate users.
 -
-A primary use case for gcreds is the generation of a temporary set of AWS access credentials
+A primary use case for ec2cli is the generation of a temporary set of AWS access credentials
 for programmatic use by automation tools running on your local machine.
 -
-gcreds manages temporary credentials it generates to prevent corruption of your local awscli
-config. When generating new temporary credentials, gcreds will automatically clear expired
+ec2cli manages temporary credentials it generates to prevent corruption of your local awscli
+config. When generating new temporary credentials, ec2cli will automatically clear expired
 credentials from your local awscli config to prevent duplicate sets of credentials.
 
 
@@ -61,14 +61,14 @@ install -m 0755 -d $RPM_BUILD_ROOT/%{_libdir}
 install -m 0755 -d $RPM_BUILD_ROOT/%{_logdir}
 install -m 0755 -d $RPM_BUILD_ROOT/%{_compdir}
 install -m 0755 -d $RPM_BUILD_ROOT/%{_yumdir}
-install -m 0755 gcreds $RPM_BUILD_ROOT/%{_bindir}/gcreds
+install -m 0755 ec2cli $RPM_BUILD_ROOT/%{_bindir}/ec2cli
 install -m 0644 std_functions.sh $RPM_BUILD_ROOT/%{_libdir}/std_functions.sh
 install -m 0644 colors.sh $RPM_BUILD_ROOT/%{_libdir}/colors.sh
 install -m 0644 colors.py $RPM_BUILD_ROOT/%{_libdir}/colors.py
 install -m 0644 iam_users.py $RPM_BUILD_ROOT/%{_libdir}/iam_users.py
 install -m 0644 precheck-accounts.py $RPM_BUILD_ROOT/%{_libdir}/precheck-accounts.py
 install -m 0644 version.py $RPM_BUILD_ROOT/%{_libdir}/version.py
-install -m 0644 gcreds-completion.bash $RPM_BUILD_ROOT/%{_compdir}/gcreds-completion.bash
+install -m 0644 ec2cli-completion.bash $RPM_BUILD_ROOT/%{_compdir}/ec2cli-completion.bash
 
 
 %files
@@ -76,7 +76,7 @@ install -m 0644 gcreds-completion.bash $RPM_BUILD_ROOT/%{_compdir}/gcreds-comple
 /%{_libdir}
 /%{_compdir}
 /%{_yumdir}
-/%{_bindir}/gcreds
+/%{_bindir}/ec2cli
 %exclude /%{_libdir}/*.pyc
 %exclude /%{_libdir}/*.pyo
 
@@ -88,9 +88,9 @@ BIN_PATH=/usr/local/bin
 ##  finalize file ownership & permissions  ##
 
 # log file
-touch /var/log/gcreds.log
-chown root:root /var/log/gcreds.log
-chmod 0666 /var/log/gcreds.log
+touch /var/log/ec2cli.log
+chown root:root /var/log/ec2cli.log
+chmod 0666 /var/log/ec2cli.log
 
 
 ##   ensure /usr/local/bin for python executables in PATH   ##
@@ -143,13 +143,13 @@ if [[ -f '/etc/bash_completion' ]]; then
     . /etc/bash_completion
 
 elif [[ -d '/etc/bash_completion.d' ]]; then
-    . /etc/bash_completion.d/gcreds-completion.bash
+    . /etc/bash_completion.d/ec2cli-completion.bash
 
 elif [[ -f '/usr/share/bash-completion/bash_completion' ]]; then
     . /usr/share/bash-completion/bash_completion
 
-elif [[ -f '/usr/local/etc/bash_completion.d/gcreds-completion.bash' ]]; then
-    . /usr/local/etc/bash_completion.d/gcreds-completion.bash
+elif [[ -f '/usr/local/etc/bash_completion.d/ec2cli-completion.bash' ]]; then
+    . /usr/local/etc/bash_completion.d/ec2cli-completion.bash
 fi
 
 

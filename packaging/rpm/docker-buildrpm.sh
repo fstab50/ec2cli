@@ -132,7 +132,7 @@ function rpm_contents(){
     ##
     ##  Displays detailed view of all rpm contents
     ##
-    local rpmfile="/home/builder/rpmbuild/RPMS/noarch/gcreds-*.rpm"
+    local rpmfile="/home/builder/rpmbuild/RPMS/noarch/ec2cli-*.rpm"
     local contents="/home/builder/rpmbuild/RPMS/rpm-contents.txt"
     local rst="$(echo -e ${reset})"
 
@@ -305,18 +305,18 @@ if [ ! -d $BUILDDIR ]; then
 fi
 
 # place spec file
-cp ~/gcreds.spec $BUILDDIR/SPECS/
+cp ~/ec2cli.spec $BUILDDIR/SPECS/
 std_message "cp specfile to build dir. Contents of target dir: $(ls -lh $BUILDDIR/SPECS)" "INFO" $LOG_FILE
 
 # create sources
-cp ~/gcreds*.tar.gz $BUILDDIR/SOURCES/
+cp ~/ec2cli*.tar.gz $BUILDDIR/SOURCES/
 std_message "cp TARfile to build dir. Contents of target dir: $(ls -lh $BUILDDIR/SOURCES)" "INFO" $LOG_FILE
 
 cd ~/rpmbuild
 std_message "Changed to rpmbuild working directory. (PWD: $PWD)" "INFO" $LOG_FILE
 
 # build rpm
-rpmbuild -ba SPECS/gcreds.spec
+rpmbuild -ba SPECS/ec2cli.spec
 std_message "executed rpmbuild" "INFO" $LOG_FILE
 
 # output rpm contents
