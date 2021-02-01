@@ -1,0 +1,22 @@
+Package: gcreds
+Version: 0.0.0
+Section: devel
+Priority: optional
+Maintainer: Blake Huber <blakeca00@gmail.com>
+Bugs: https://bitbucket.org/blakeca00/gcreds/issues
+Installed-Size: 124 kB
+Build-Depends: debhelper (>=9)
+Depends:  bash (>= 4.2), bc (>=1.0), curl, coreutils, debianutils, hostname, util-linux, bash-completion, procps, jq
+Download-Size: 40 kB
+Standards-Version: 3.9.6
+Architecture: amd64
+Description: Generate and manage Amazon Security Token Service (STS) credentials
+  .
+  gcreds is a Utility for the generation and management of Amazon STS
+  temporary credentials.
+  .
+  gcreds can be used to generate STS temporary credentials for multiple
+  accounts at once.  gcreds main purpose is to generate temporary
+  credentials and then refesh them for up to 36 hours so that login
+  access to AWS is uninterupted for extended periods.
+Homepage: https://buildpy.readthedocs.io

@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# binary path
+BIN_PATH=/usr/local/bin
+
+##  finalize file ownership & permissions  ##
+
+# log files
+touch /var/log/gcreds.log
+chmod 0666 /var/log/gcreds.log
+
+# main executable
+chown root:root /usr/local/bin/gcreds
+chmod 0755 /usr/local/bin/gcreds
+
+# lib files
+chown root:root -R /usr/local/lib/gcreds
+chmod -R 0644 /usr/local/lib/gcreds/*.sh
+chmod 0755 /usr/local/lib/gcreds
+
+# bash completion files
+chown root:root /etc/bash_completion.d/gcreds-completion.bash
+chmod 0644 /etc/bash_completion.d/gcreds-completion.bash
+
+
+##  enable bash_completion  ##
+
+# Possible Bash completion source file locations:
+# - /etc/bash_completion.d
+# - /usr/local/etc/bash_completion.d
+# - /usr/share/bash-completion/completions
+
+if [ -f '/etc/bash_completion' ]; then
+    . /etc/bash_completion
+
+elif [ -d '/etc/bash_completion.d' ]; then
+    . /etc/bash_completion.d/gcreds-completion.bash
+
+elif [ -f '/usr/share/bash-completion/bash_completion' ]; then
+    . /usr/share/bash-completion/bash_completion
+
+elif [ -f '/usr/local/etc/bash_completion.d/gcreds-completion.bash' ]; then
+    . /usr/local/etc/bash_completion.d/gcreds-completion.bash
+fi
+
+
+exit 0      ## post install end ##

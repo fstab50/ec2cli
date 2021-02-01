@@ -1,0 +1,223 @@
+#!/usr/bin/env bash
+
+# .bashrc
+
+#-------------------------------------------------------------------------------
+#  Non-interactive bypass
+#-------------------------------------------------------------------------------
+
+[ -z "$PS1" ] && return
+
+
+#-------------------------------------------------------------------------------
+#  Sources
+#-------------------------------------------------------------------------------
+
+ENV_LIBRARY="$HOME/git/library-utilities/function-library"
+CONFIG_DIR="$HOME/.config/bash"
+source "$CONFIG_DIR/colors.sh"
+
+OS_INFO=$(sh $CONFIG_DIR/os_distro.sh 2>/dev/null)
+os_family=$(echo $OS_INFO | awk '{print $1}')
+os_release=$(echo $OS_INFO | awk '{print $2}')
+
+
+# ------------------------------------------------------------------------------
+#  function declarations
+# ------------------------------------------------------------------------------
+
+# indent, x spaces
+function indent02() { sed 's/^/  /'; }
+function indent04() { sed 's/^/    /'; }
+function indent10() { sed 's/^/          /'; }
+
+
+function basher() {
+     if [[ $1 = 'run' ]]; then
+         shift
+    	 /usr/bin/docker run -e HIST_FILE=/root/.bash_history \
+    	     -v $HOME/.bash_history:/root/.bash_history "$@"
+     else
+         /usr/bin/docker "$@"
+     fi
+}
+
+
+# autocompletion for python cheat cli app
+function _cheat_autocomplete {
+    sheets=$(cheat -l | cut -d' ' -f1)
+    COMPREPLY=()
+    if [ $COMP_CWORD = 1 ]; then
+	COMPREPLY=(`compgen -W "$sheets" -- $2`)
+    fi
+}
+complete -F _cheat_autocomplete cheat
+
+
+function extract {
+    if [ -z "$1" ]; then
+        # display usage if no parameters given
+        printf -- '\n%s\n\t%s\n' "  ${bd}Usage${rst}:" "${bcy}extract${rst} <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
+        printf -- '\n\t%s\n\n' "${bcy}extract${rst} <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
+        return 1
+     else
+        for n in $@
+        do
+          if [ -f "$n" ] ; then
+              case "${n%,}" in
+                *.tar.bz2|*.tar.gz|*.tar.xz|*.tbz2|*.tgz|*.txz|*.tar)
+                             tar xvf "$n"       ;;
+                *.lzma)      unlzma ./"$n"      ;;
+                *.bz2)       bunzip2 ./"$n"     ;;
+                *.rar)       unrar x -ad ./"$n" ;;
+                *.gz)        gunzip ./"$n"      ;;
+                *.zip)       unzip ./"$n"       ;;
+                *.z)         uncompress ./"$n"  ;;
+                *.7z|*.arj|*.cab|*.chm|*.deb|*.dmg|*.iso|*.lzh|*.msi|*.rpm|*.udf|*.wim|*.xar)
+                             7z x ./"$n"        ;;
+                *.xz)        unxz ./"$n"        ;;
+                *.exe)       cabextract ./"$n"  ;;
+                *)
+                             echo "extract: '$n' - unknown archive method"
+                             return 1
+                             ;;
+              esac
+          else
+              echo "'$n' - file does not exist"
+              return 1
+          fi
+        done
+    fi
+}
+
+
+function motd(){
+    local bin="$1"
+    local os="$2"
+    #
+	if [ "$bin" = "screenfetch" ] &&  [ "$os" = "ubuntu" ]; then
+	    echo -e '\n'
+        screenfetch -A LMDE | indent02
+		# load averages
+        # Parameters:   A,B,C, or D for format, <# spaces 1> <$ spaces 2>
+        # spaces are from LHS
+		sh $CONFIG_DIR/loadavg-flat-layout.sh "D" "34" "19"
+
+    elif [ "$bin" = "neofetch" ] &&  [ "$os" = "ubuntu" ]; then
+        echo -e "\n";
+        neofetch --ascii_distro ubuntu_old  --disk_display barinfo --bar_colors 1 10 | indent02
+        sh $CONFIG_DIR/loadavg-flat-layout.sh "C" "38" "4"
+
+    elif [ "$bin" = "neofetch" ] &&  [ "$os" = "amazonlinux" ]; then
+        # Neofetch motd - Amazon Linux
+        echo -e "\n"; neofetch --disk_display barinfo --bar_colors 1 8 | indent02
+        #    --gtk3 on --install_time on --install_time_format 24h --bold on \
+        #    --ascii_distro Amazon --ascii_colors 208 --colors 208 7 8 7 10 7
+        sh "$CONFIG_DIR/loadavg-flat-layout.sh" "C" 34 0
+    else
+		# run legacy motd
+		sh ~/.config/bash/motd.sh
+	fi
+}
+
+
+# pip command completion
+function _pip_completion(){
+	    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+	                   COMP_CWORD=$COMP_CWORD \
+	                   PIP_AUTO_COMPLETE=1 $1 ) )
+	}
+	complete -o default -F _pip_completion pip
+	complete -o default -F _pip_completion pip3
+
+
+function source_env_scripts(){
+    ## souce shell env scripts ##
+    for script in $(ls $ENV_LIBRARY); do
+        if [[ -e "$ENV_LIBRARY/$script" ]]; then
+            source "$ENV_LIBRARY/$script"
+        fi
+    done
+    #
+    #<-- end function cfcli_source_libraries -->
+}
+# source_env_scripts        #   NOT NEEDED YET, SEE ALIASES
+
+
+# --------------------------------------------------------------------------------
+# User specific variables
+# --------------------------------------------------------------------------------
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+
+# cheat
+export CHEAT_EDITOR="/usr/bin/vim"
+export CHEATCOLORS=true
+
+# display motd
+motd
+
+# AWS Marketplace Owner IDs
+export UBUNTU=099720109477
+export AMAZON=137112412989
+export CENTOS=679593333241
+export REDHAT=679593333241
+
+# Enable cmd completion for aws tools
+complete -C aws_completer aws
+
+
+# --------------------------------------------------------------------------------
+# User specific aliases
+# --------------------------------------------------------------------------------
+
+# User Aliases - bash
+alias v="ls -lh"
+alias va="ls -lhd .*"
+alias vs='ls -lhSr'
+alias vu='vagrant up'
+alias vh='vagrant halt'
+alias du='du -hc --exclude=".git"'
+alias dug='du -hc --exclude=.git'
+alias c='clear'
+alias vi="vim"
+alias df="dfc -T" 	# human readable df output
+alias his='history | tail -n 75'
+alias mutt="mutt -F ~/.mutt/.muttrc"
+alias dockbash='docker run -e HIST_FILE=/root/.bash_history -v=$HOME/.bash_history:/root/.bash_history'
+alias docker=basher
+alias rkhunter='sudo /usr/bin/rkhunter'
+
+# git Aliases
+alias gitb='git branch'
+alias gits='git status'
+
+
+# --------------------------------------------------------------------------------
+#  User PATH
+# --------------------------------------------------------------------------------
+
+# Path
+PATH=$PATH:$HOME/.local/bin:$HOME/bin:$EC2_HOME/bin
+# path exports
+export PATH=$PATH:$HOME/.local/bin
+export PATH=$PATH:$HOME/bin
+export PATH=$PATH:$EC2_REPO
+export PATH=$PATH:$PYTHON
+export PATH=$PATH:$HOME/git/gcreds
+
+
+#-------------------------------------------------------------------------------
+#  Syntax Highlighting
+#-------------------------------------------------------------------------------
+
+# Redhat systems
+LESSOPEN="| $(which highlight) %s --out-format xterm256 --line-numbers --quiet --force --style solarized-light"
+export LESSOPEN
+export LESS=' -R'
+alias less='less -m -g -i -J --underline-special'
+alias more='less'
