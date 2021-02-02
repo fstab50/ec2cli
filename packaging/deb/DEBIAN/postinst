@@ -15,7 +15,7 @@ chmod 0755 /usr/local/bin/ec2cli
 
 # lib files
 chown root:root -R /usr/local/lib/ec2cli
-chmod -R 0644 /usr/local/lib/ec2cli/*.sh
+chmod -R 0644 /usr/local/lib/ec2cli/*.*
 chmod 0755 /usr/local/lib/ec2cli
 
 # bash completion files
