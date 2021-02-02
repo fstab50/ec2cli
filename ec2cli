@@ -29,15 +29,16 @@
 pkg=$(basename $0)
 pkg_path=$(cd $(dirname $0); pwd -P)
 pwd=$(pwd)
-ec2cli_log="$pkg_path/logs/ec2cli.log"
+ec2cli_log="/var/log/ec2cli.log"
+lib_path="/usr/local/lib/$pkg"
 host=$(hostname)
 system=$(uname)
 clear=$(which clear)
 
 # source lib deps
-source $pkg_path/core/_version.py        # package VERSION global var
-source $pkg_path/core/colors.sh
-source $pkg_path/core/std_functions.sh
+source $lib_path/_version.py        # package VERSION global var
+source $lib_path/colors.sh
+source $lib_path/std_functions.sh
 
 VERSION=$__version__
 
