@@ -1,1 +1,1 @@
-gcreds-da-atos
+ec2cli-da-atos

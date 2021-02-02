@@ -2,7 +2,7 @@
 
 PACKAGE="$1"
 BUCKET="$BUCKET"
-PROFILE="gcreds-da-atos"
+PROFILE="ec2cli-da-atos"
 
 
 if [ ${PACKAGE#*amd64} ] == '.deb'; then

@@ -102,7 +102,7 @@ def tear_down():
     if os.path.isfile(awscli):
         config.read(awscli)
         for profile in config.sections():
-            if 'gcreds-dev1' in profile:
+            if 'ec2cli-dev1' in profile:
                 config.pop(profile)
         with open(awscli, 'w') as f1:
             config.write(f1)

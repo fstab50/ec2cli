@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Summary:
-    buildrpm (python3):  gcreds binary operating system package (.rpm, Redhat, Redhat-based systems)
+    buildrpm (python3):  ec2cli binary operating system package (.rpm, Redhat, Redhat-based systems)
 
         - Automatic determination of version to be built
         - Build version can optionally be forced to a specific version
@@ -20,7 +20,7 @@ Author:
 License:
     General Public License v3
     Additional terms may be found in the complete license agreement:
-    https://github.com/fstab50/gcreds
+    https://github.com/fstab50/ec2cli
 
 OS Support:
     - Redhat, CentOS, Fedora, Redhat-based variants
@@ -52,7 +52,7 @@ except Exception:
 
 
 # globals
-PROJECT = 'gcreds'
+PROJECT = 'ec2cli'
 module = os.path.basename(__file__)
 TMPDIR = '/tmp/build'
 VOLMNT = '/tmp/rpm'
@@ -329,7 +329,7 @@ def builddir_structure(param_dict, force, debug):
     Vars:
         :lib_path (str): src path to library modules in project root
         :builddir_path (str): dst path to root of the current build directory
-         (/<path>/gcreds-1.X.X dir)
+         (/<path>/ec2cli-1.X.X dir)
 
     Returns:
         Success | Failure, TYPE: bool
@@ -456,7 +456,7 @@ def build_package(build_root, builddir):
 
         if os.path.exists(builddir):
             os.chdir(builddir)
-            cmd = 'rpmbuild -ba SPECS/gcreds.spec'
+            cmd = 'rpmbuild -ba SPECS/ec2cli.spec'
             stdout_message('Building {}...  '.format(bn + builddir + rst))
             stdout_message(subprocess.getoutput(cmd))
             os.chdir(pwd)
@@ -872,7 +872,7 @@ def main(setVersion, environment, force=False, debug=False):
     """
     # all globals declared here
     global PROJECT_BIN
-    PROJECT_BIN = 'gcreds'
+    PROJECT_BIN = 'ec2cli'
     global PROJECT_ROOT
     PROJECT_ROOT = git_root()
     global SCRIPT_DIR

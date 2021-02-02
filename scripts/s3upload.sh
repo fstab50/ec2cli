@@ -4,7 +4,7 @@
 
 PROFILE='imagestore'
 BUCKET='images.origin'
-KEY='gcreds'
+KEY='ec2cli'
 TMPDIR='/tmp'
 
 
