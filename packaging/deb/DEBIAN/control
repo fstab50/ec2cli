@@ -1,22 +1,18 @@
-Package: gcreds
+Package: ec2cli
 Version: 0.0.0
 Section: devel
 Priority: optional
 Maintainer: Blake Huber <blakeca00@gmail.com>
-Bugs: https://bitbucket.org/blakeca00/gcreds/issues
+Bugs:
 Installed-Size: 124 kB
 Build-Depends: debhelper (>=9)
-Depends:  bash (>= 4.2), bc (>=1.0), curl, coreutils, debianutils, hostname, util-linux, bash-completion, procps, jq
+Depends:  bash (>= 4.2), awscli, curl, coreutils, debianutils, hostname, util-linux, bash-completion, jq
 Download-Size: 40 kB
 Standards-Version: 3.9.6
 Architecture: amd64
-Description: Generate and manage Amazon Security Token Service (STS) credentials
+Description: Manage Amazon Web Services' EC2 machines from the command line.
   .
-  gcreds is a Utility for the generation and management of Amazon STS
-  temporary credentials.
+  EC2cli is a utility which allows one to view and manage EC2 machines,
+  EBS volumes, snapshots, subnets, vpcs, tags, and EC2 spot instances.
   .
-  gcreds can be used to generate STS temporary credentials for multiple
-  accounts at once.  gcreds main purpose is to generate temporary
-  credentials and then refesh them for up to 36 hours so that login
-  access to AWS is uninterupted for extended periods.
-Homepage: https://buildpy.readthedocs.io
+Homepage: https://github.com/fstab50/ec2cli

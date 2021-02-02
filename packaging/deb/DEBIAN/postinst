@@ -6,21 +6,21 @@ BIN_PATH=/usr/local/bin
 ##  finalize file ownership & permissions  ##
 
 # log files
-touch /var/log/gcreds.log
-chmod 0666 /var/log/gcreds.log
+touch /var/log/ec2cli.log
+chmod 0666 /var/log/ec2cli.log
 
 # main executable
-chown root:root /usr/local/bin/gcreds
-chmod 0755 /usr/local/bin/gcreds
+chown root:root /usr/local/bin/ec2cli
+chmod 0755 /usr/local/bin/ec2cli
 
 # lib files
-chown root:root -R /usr/local/lib/gcreds
-chmod -R 0644 /usr/local/lib/gcreds/*.sh
-chmod 0755 /usr/local/lib/gcreds
+chown root:root -R /usr/local/lib/ec2cli
+chmod -R 0644 /usr/local/lib/ec2cli/*.sh
+chmod 0755 /usr/local/lib/ec2cli
 
 # bash completion files
-chown root:root /etc/bash_completion.d/gcreds-completion.bash
-chmod 0644 /etc/bash_completion.d/gcreds-completion.bash
+chown root:root /etc/bash_completion.d/ec2cli-completion.bash
+chmod 0644 /etc/bash_completion.d/ec2cli-completion.bash
 
 
 ##  enable bash_completion  ##
@@ -34,13 +34,13 @@ if [ -f '/etc/bash_completion' ]; then
     . /etc/bash_completion
 
 elif [ -d '/etc/bash_completion.d' ]; then
-    . /etc/bash_completion.d/gcreds-completion.bash
+    . /etc/bash_completion.d/ec2cli-completion.bash
 
 elif [ -f '/usr/share/bash-completion/bash_completion' ]; then
     . /usr/share/bash-completion/bash_completion
 
-elif [ -f '/usr/local/etc/bash_completion.d/gcreds-completion.bash' ]; then
-    . /usr/local/etc/bash_completion.d/gcreds-completion.bash
+elif [ -f '/usr/local/etc/bash_completion.d/ec2cli-completion.bash' ]; then
+    . /usr/local/etc/bash_completion.d/ec2cli-completion.bash
 fi
 
 
