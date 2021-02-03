@@ -39,6 +39,7 @@ clear=$(which clear)
 source $lib_path/version.py        # package VERSION global var
 source $lib_path/colors.sh
 source $lib_path/std_functions.sh
+source $lib_path/exitcodes.sh
 
 VERSION=$__version__
 
