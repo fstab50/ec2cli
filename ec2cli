@@ -36,7 +36,7 @@ system=$(uname)
 clear=$(which clear)
 
 # source lib deps
-source $lib_path/_version.py        # package VERSION global var
+source $lib_path/version.py        # package VERSION global var
 source $lib_path/colors.sh
 source $lib_path/std_functions.sh
 
