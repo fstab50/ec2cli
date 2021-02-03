@@ -1,0 +1,5 @@
+boto3
+distro
+docker
+pyaws
+Pygments
