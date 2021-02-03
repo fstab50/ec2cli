@@ -6,7 +6,7 @@
 #   - Filename:  commit-msg
 #
 
-source core/_version.py
+source core/version.py
 
 VERSION="$__version__"
 DEPRECATED="$(grep 'Version:' README.md | awk -F ':' '{print $2}')"
