@@ -1,10 +1,10 @@
 import os
-from version import __version__ as version
+from version import __version__ as iversion
 from pyaws import logd
 
 
 __author__ = 'Blake Huber'
-__version__ = version
+__version__ = iversion
 __license__ = "MIT"
 __maintainer__ = "Blake Huber"
 __email__ = "blakeca00[AT]gmail.com"
