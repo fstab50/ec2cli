@@ -1,5 +1,5 @@
 import os
-from _version import __version__ as version
+from version import __version__ as version
 from pyaws import logd
 
 
