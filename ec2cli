@@ -941,7 +941,7 @@ function ec2cli_list_instances(){
             path="$choice"
         fi
         std_message "Exporting data to comma separated value (csv) file." "INFO" | indent04
-        python3 $pkg_path/core/csv_generator.py --profile $PROFILE --type instances --region $REGION --filepath $path
+        python3 $lib_path/csv_generator.py --profile $PROFILE --type instances --region $REGION --filepath $path
         return 0
     fi
 
@@ -1752,7 +1752,7 @@ function ec2cli_list_snapshots(){
             path="$choice"
         fi
         std_message "Exporting snapshot data to comma separated value (csv) file." "INFO" | indent04
-        python3 $pkg_path/core/csv_generator.py --profile $PROFILE --type snapshots --region $REGION --filepath $path
+        python3 $lib_path/csv_generator.py --profile $PROFILE --type snapshots --region $REGION --filepath $path
         return 0
     fi
     #
@@ -2325,7 +2325,7 @@ function setup_regioncodes(){
             JSON_REGIONS=$(aws ec2 --profile $PROFILE describe-regions --output json)
             echo $JSON_REGIONS | jq -r .Regions[].RegionName > "$CONFIG_PATH/$REGION_CONFIGFILE"
         else
-            cp $pkg_path/core/regions.list "$CONFIG_PATH/$REGION_CONFIGFILE"
+            cp $lib_path/regions.list "$CONFIG_PATH/$REGION_CONFIGFILE"
         fi
     fi
     REGIONFILE_CHECK="true"
@@ -2754,7 +2754,7 @@ function parse_parameters(){
                     fi
                     ;;
                 help)    # invoke detailed help menu
-                    source $pkg_path/core/help_menus.lib
+                    source $lib_path/help_menus.lib
                     case $COMMAND in
                         attach)
                             ec2cli_help_command_attach
@@ -2874,19 +2874,19 @@ fi
 
 
 if [ "$FUNCTION_CALL" = "HELP" ]; then
-    source $pkg_path/core/help_menus.lib
+    source $lib_path/help_menus.lib
     help_submenu $COMMAND
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_instances" ]; then
-    source $pkg_path/core/help_menus.lib
+    source $lib_path/help_menus.lib
     ec2cli_help_command_list_instances
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_snapshots" ]; then
-    source $pkg_path/core/help_menus.lib
+    source $lib_path/help_menus.lib
     ec2cli_help_command_list_snapshots
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_tags" ]; then
-    source $pkg_path/core/help_menus.lib
+    source $lib_path/help_menus.lib
     ec2cli_help_command_list_tags
 elif [ "$FUNCTION_CALL" = "ec2cli_help_command_list_volumes" ]; then
-    source $pkg_path/core/help_menus.lib
+    source $lib_path/help_menus.lib
     ec2cli_help_command_list_volumes
 else
     # execute operations which require authentication to AWS
@@ -2906,7 +2906,7 @@ else
             ec2cli_list_securitygroups $REGION
 
         elif [ "$FUNCTION_CALL" = "SPOT_MARKET" ]; then
-            sh $pkg_path/core/spot-prices.sh "$PROFILE"
+            sh $lib_path/spot-prices.sh "$PROFILE"
 
         elif [ $EXPORT ]; then
             SORT_COL="false"
@@ -2921,7 +2921,7 @@ fi
 #xterm_reset
 
 # clean up
-rm -fr $pkg_path/core/__pycache__ || true
+rm -fr $lib_path/__pycache__ || true
 
 #
 # END (MAIN) ------------------------------------------------------------------
