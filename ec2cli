@@ -317,14 +317,6 @@ function ec2cli_precheck(){
         std_error_exit "Default shell appears to be something other than bash. Please rerun with bash. Aborting (code $E_BADSHELL)" $E_BADSHELL
     fi
 
-    ## create log dir for ec2cli ##
-    if [[ ! -d $pkg_path/logs ]]; then
-        if ! mkdir -p "$pkg_path/logs"; then
-            echo "$pkg: failed to make log directory: $pkg_path/logs"
-            exit $E_NOLOG
-        fi
-    fi
-
     # if possible, set temp fs location in memory for working calcs
     set_tmpdir
 
