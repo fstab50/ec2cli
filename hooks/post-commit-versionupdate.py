@@ -22,7 +22,7 @@ def packagename(filename):
 
 
 PACKAGE = packagename('DESCRIPTION.rst') or None
-pattern = re.compile('^\*\*Version\*\*')
+pattern = re.compile('^\* Version')
 
 if PACKAGE is None:
     print('Problem executing post-commit-hook (%s). Exit' % __file__)
