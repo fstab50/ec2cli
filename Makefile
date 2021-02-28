@@ -70,6 +70,16 @@ test:     ## Run pytest unittests
 	else bash $(CUR_DIR)/scripts/make-test.sh $(CUR_DIR) $(VENV_DIR) $(MODULE_PATH); fi
 
 
+.PHONY: build-sizes
+build-sizes:	##  Create ec2 sizes.txt if 10 days age. FORCE=true trigger refresh
+	cp $(MODULE_PATH)/version.py $(SCRIPTS)/
+	if [ -d $(VENV_DIR) ]; then . $(VENV_DIR)/bin/activate && \
+	$(PYTHON3_PATH) $(SCRIPTS)/ec2sizes.py $(FORCE); else \
+	$(MAKE) setup-venv && . $(VENV_DIR)/bin/activate && \
+	$(PYTHON3_PATH) $(SCRIPTS)/ec2sizes.py $(FORCE); fi
+	rm -f $(SCRIPTS)/version.py
+
+
 docs: clean setup-venv    ## Generate sphinx documentation
 	. $(VENV_DIR)/bin/activate && \
 	$(PIP_CALL) install -r $(DOC_PATH)/requirements.txt
