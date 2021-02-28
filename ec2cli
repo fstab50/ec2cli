@@ -55,7 +55,7 @@ E_MISC=11                     # exit code if miscellaneous (unspecified) error
 
 # Configuration files, ancillary vars
 CONFIG_DIR="ec2cli"
-CONFIG_ROOT="$lib_path"
+CONFIG_ROOT="$HOME/.config"
 CONFIG_PATH="$CONFIG_ROOT/$CONFIG_DIR"
 CONFIG_PATH_ALT="$HOME/.ec2cli"
 REGION_CONFIGFILE="regions.list"
@@ -331,7 +331,7 @@ function ec2cli_precheck(){
     done
 
     ## check if awscli tools are configured ##
-    metadata=$(cat $CONFIG_PATH/config.json | jq -r .configuration.LOCATION)
+    metadata=$(cat $lib_path/config.json | jq -r .configuration.LOCATION)
     if [ "$metadata" = "AWS" ] || [ "$metadata" = "aws" ]; then
         std_logger "Host detected at Amazon Web Services. Exempt check for awscli configuration" "INFO" $ec2cli_log
     else
