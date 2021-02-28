@@ -31,6 +31,7 @@ else:
     #sys.path.insert(0, os.path.abspath(PACKAGE))
     # copy version file to repository root for import parsing:
     copyfile('core/version.py', '_version.py')
+    sys.exit(0)
     from _version import __version__
     os.remove('_version.py')
     #sys.path.pop(0)
