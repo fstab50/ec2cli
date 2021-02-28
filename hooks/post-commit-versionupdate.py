@@ -28,12 +28,12 @@ if PACKAGE is None:
     print('Problem executing post-commit-hook (%s). Exit' % __file__)
     sys.exit(1)
 else:
-    sys.path.insert(0, os.path.abspath(PACKAGE))
+    #sys.path.insert(0, os.path.abspath(PACKAGE))
     # copy version file to repository root for import parsing:
     copyfile('core/version.py', '_version.py')
     from _version import __version__
     os.remove('_version.py')
-    sys.path.pop(0)
+    #sys.path.pop(0)
 
 
 try:
