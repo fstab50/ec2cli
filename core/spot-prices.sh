@@ -43,7 +43,7 @@ pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
 lib_path="/usr/local/lib/ec2cli"
 ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
-CONFIG_DIR="$lib_path/config"
+CONFIG_DIR="$lib_path"
 
 declare -a C_TYPE
 declare -a D_TYPE
