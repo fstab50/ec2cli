@@ -55,7 +55,7 @@ E_MISC=11                     # exit code if miscellaneous (unspecified) error
 
 # Configuration files, ancillary vars
 CONFIG_DIR="ec2cli"
-CONFIG_ROOT="$HOME/.config"
+CONFIG_ROOT="$lib_path"
 CONFIG_PATH="$CONFIG_ROOT/$CONFIG_DIR"
 CONFIG_PATH_ALT="$HOME/.ec2cli"
 REGION_CONFIGFILE="regions.list"
