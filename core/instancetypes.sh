@@ -15,7 +15,7 @@ E_DEPENDENCY=1			# exit code if missing deps
 NOW=$(date +"%Y-%m-%d")
 pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
-lib_path="/usr/local/lib/$pkg"
+lib_path="/usr/local/lib/ec2cli"
 ec2cli_log="/var/log/ec2cli.log"
 
 # Configuration files, ancillary vars
