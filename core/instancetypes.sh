@@ -15,7 +15,8 @@ E_DEPENDENCY=1			# exit code if missing deps
 NOW=$(date +"%Y-%m-%d")
 pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
-ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
+lib_path="/usr/local/lib/$pkg"
+ec2cli_log="/var/log/ec2cli.log"
 
 # Configuration files, ancillary vars
 CONFIG_DIR="ec2cli"
@@ -30,13 +31,13 @@ INDEXURL="https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/index.json"
 DELAY=$(( 5*24*60*60 ))    # 5 days in seconds
 
 # source config file location
-config_dir=$(cat $pkg_path/pkgconfig.json | jq -r .config_dir)
+config_dir=$(cat $lib_path/pkgconfig.json | jq -r .config_dir)
 
 # source colors library
-source $pkg_path/colors.sh
+source $lib_path/colors.sh
 
 # source standard functions
-source $pkg_path/std_functions.sh
+source $lib_path/std_functions.sh
 nc=$(tput sgr0)           # no color
 
 
