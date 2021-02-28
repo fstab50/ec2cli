@@ -29,7 +29,7 @@
 pkg=$(basename $0)
 pkg_path=$(cd $(dirname $0); pwd -P)
 pwd=$(pwd)
-ec2cli_log="/var/log/ec2cli.log"
+ec2cli_log="/var/log/$pkg.log"
 lib_path="/usr/local/lib/$pkg"
 host=$(hostname)
 system=$(uname)
