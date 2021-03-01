@@ -597,10 +597,10 @@ function ec2cli_create_images(){
     local VALID             # loop break
 
     # pull json info, all instances in region
-    aws ec2 describe-instances --region $REGION --profile $PROFILE --output json > .jsonoutput.tmp
+    aws ec2 describe-instances --region $REGION --profile $PROFILE --output json > $TMPDIR/.jsonoutput.tmp
 
     # load fields into respective arrays
-    ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
+    ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' $TMPDIR/.jsonoutput.tmp) )
     MAXCT=${#ARR_STATE[*]}          # count instances found
 
     # test for 0 instances in region
@@ -612,17 +612,17 @@ function ec2cli_create_images(){
     fi
 
     # instances > 0, parse remainder of json object
-    ARR_IP=( $(jq -r '.Reservations[].Instances[].PublicIpAddress' .jsonoutput.tmp) )
-    ARR_LT=( $(jq -r '.Reservations[].Instances[].LaunchTime' .jsonoutput.tmp) )
-    ARR_ID=( $(jq -r '.Reservations[].Instances[].InstanceId' .jsonoutput.tmp) )
-    ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' .jsonoutput.tmp) )
-    ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' .jsonoutput.tmp) )
+    ARR_IP=( $(jq -r '.Reservations[].Instances[].PublicIpAddress' $TMPDIR/.jsonoutput.tmp) )
+    ARR_LT=( $(jq -r '.Reservations[].Instances[].LaunchTime' $TMPDIR/.jsonoutput.tmp) )
+    ARR_ID=( $(jq -r '.Reservations[].Instances[].InstanceId' $TMPDIR/.jsonoutput.tmp) )
+    ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' $TMPDIR/.jsonoutput.tmp) )
+    ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' $TMPDIR/.jsonoutput.tmp) )
     # limit security grp name to 15 chars
     ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' \
-            .jsonoutput.tmp | cut -c 1-15) )
+            $TMPDIR/.jsonoutput.tmp | cut -c 1-15) )
     # limit length of tag fields to 20 chars. NOTE: ARRAY ASSIGNMENT NOT WORKING CORRECTLY
     ARR_TAG=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' \
-            .jsonoutput.tmp | cut -c 1-20) )
+            $TMPDIR/.jsonoutput.tmp | cut -c 1-20) )
 
     # > 0 instances in region, print region identifier
     printf "\n${white}${BOLD}EC2 Instances${UNBOLD}${reset} : $REGION\n\n" | indent18
@@ -680,7 +680,7 @@ function ec2cli_create_images(){
         --output json > .jsoninstance.tmp
     NOW=$(date +"%Y-%m-%dT%H:%M:%S")    # date + 24 hr time
     TIME=$(date +"%H.%M.%S")            # 24 hr time stamp
-    TAGS=( $(jq -r '.Reservations[].Instances[].Tags[].Key' .jsoninstance.tmp) )
+    TAGS=( $(jq -r '.Reservations[].Instances[].Tags[].Key' $TMPDIR/.jsoninstance.tmp) )
 
     # search thru array of tags assoc with this instances
     NAME=""             # initialize
@@ -689,7 +689,7 @@ function ec2cli_create_images(){
     for key in ${TAGS[*]}; do
         # get Name, map to description
         if [ $key == "Name" ] || [ $key == "name" ]; then
-            DESCRIPTION="$(jq -r ".Reservations[].Instances[].Tags[$i].Value" .jsoninstance.tmp)""($INSTANCEID)"
+            DESCRIPTION="$(jq -r ".Reservations[].Instances[].Tags[$i].Value" $TMPDIR/.jsoninstance.tmp)""($INSTANCEID)"
         fi
         # get description
         #if [ $key == "Description" ] || [ $key == "description" ]; then
