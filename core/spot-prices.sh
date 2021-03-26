@@ -42,7 +42,7 @@ REGION=$AWS_DEFAULT_REGION    # set region from global env var
 pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
 lib_path="/usr/local/lib/ec2cli"
-ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
+ec2cli_log="/var/log/ec2cli.log"
 CONFIG_DIR="$lib_path"
 
 declare -a C_TYPE
