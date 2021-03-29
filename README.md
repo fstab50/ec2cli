@@ -18,10 +18,10 @@
 
 ## About this repository
 
-* Purpose: 		CLI utilities for use with Amazon Web Services (AWS)
-* Version:	
-* Repo: 		https://github.com/fstab50/ec2cli
-* Mirror:		https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+* Purpose: 	2.4.9	2.4.9CLI utilities for use with Amazon Web Services (AWS)
+* Version:	2.4.9
+* Repo: 	2.4.9	2.4.9https://github.com/fstab50/ec2cli
+* Mirror:	2.4.9	2.4.9https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 
 * * *
 
@@ -55,7 +55,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 ## Usage ##
 
 ```bash
-	$ ec2cli --help     
+	2.4.9$ ec2cli --help     
 ```
 
 [![help](./images/ec2cli-help.png)](https://images.awspros.world/ec2cli/ec2cli-help.png)
@@ -95,39 +95,39 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 * **General Dependencies**
 
-	- Writable directory where utilities are located
-	- One of the following python versions: 2.6.5, 2.7.X+, 3.3.X+, 3.4.X+
-	- Installation Amazon CLI tools (awscli, see below this section)
-	- awk, see your dist repo
-	- sed, see your dist repo  
+	2.4.9- Writable directory where utilities are located
+	2.4.9- One of the following python versions: 2.6.5, 2.7.X+, 3.3.X+, 3.4.X+
+	2.4.9- Installation Amazon CLI tools (awscli, see below this section)
+	2.4.9- awk, see your dist repo
+	2.4.9- sed, see your dist repo  
 
 * **jq, JSON Parser**.  Install `jq` from your local distribution repository.  
 
     ```bash
-	$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
+	2.4.9$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
     ```
 
     ```bash
-	$ sudo yum install jq        # RedHat, Fedora, CentOS
+	2.4.9$ sudo yum install jq        # RedHat, Fedora, CentOS
     ```
 
 * **Environment variables**:
 
-	- Setup the following global environment variables by adding each to your	.bashrc or .bash_profile (substitute your respective values)
+	2.4.9- Setup the following global environment variables by adding each to your	2.4.9.bashrc or .bash_profile (substitute your respective values)
 
     ```bash                              
-    	# .bashrc / .bash_profile
+    	2.4.9# .bashrc / .bash_profile
 
-    	export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
-    	export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
-    	export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
+    	2.4.9export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
+    	2.4.9export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
+    	2.4.9export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
 
     ```
 
 * **Python Package Manager**. If you do not currently have it, install [pip](http://www.pip-installer.org/en/latest).  
 
     You can install pip from your distribution's package repo via _one_ of the below  
-	commands according to your Linux distribution:
+	2.4.9commands according to your Linux distribution:
 
 
 | DISTRIBUTION | INSTALLATION COMMAND |  PYTHON VERSION |
@@ -148,19 +148,19 @@ Alternatively, if you wish to do the installation yourself, please read on.
     https://github.com/aws/aws-cli/
 
     ```bash
-	$ sudo pip install awscli
+	2.4.9$ sudo pip install awscli
     ```
 
 * If you have the aws-cli installed and want to upgrade to the latest version you can run:
 
     ```bash
-	$ sudo pip install --upgrade awscli
+	2.4.9$ sudo pip install --upgrade awscli
     ```
 
 * Clone this git repo in a writeable directory:
 
     ```bash
-	$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+	2.4.9$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
     ```
 
 * **Add `ec2cli` to your path**. Add the following to your .bashrc, .bash_profile, or .profile:  
@@ -180,10 +180,10 @@ Alternatively, if you wish to do the installation yourself, please read on.
     ```bash
    $ aws configure
 
-	AWS Access Key ID: foo
-	AWS Secret Access Key: bar
-	Default region name [us-west-2]: us-west-2
-	Default output format [None]: json
+	2.4.9AWS Access Key ID: foo
+	2.4.9AWS Secret Access Key: bar
+	2.4.9Default region name [us-west-2]: us-west-2
+	2.4.9Default output format [None]: json
     ```
 
 * Optionally, define a profile for a specific user:
@@ -199,13 +199,13 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 * Command Completion
 
-	You'll want to enable command completion to make awscli
-	commands easy to type and recall.  After installing awscli,
-	add the following to your .bashrc or .bash_profile:
+	2.4.9You'll want to enable command completion to make awscli
+	2.4.9commands easy to type and recall.  After installing awscli,
+	2.4.9add the following to your .bashrc or .bash_profile:
 
     ```bash
-	# .bashrc
-	complete -C aws_completer aws
+	2.4.9# .bashrc
+	2.4.9complete -C aws_completer aws
     ```
 
 [back to the top](#top)
@@ -217,7 +217,7 @@ Alternatively, if you wish to do the installation yourself, please read on.
 After completing the above Installation and Configuration sections, verify your configuration:
 
 ```bash
-	$ ec2cli --version
+	2.4.9$ ec2cli --version
 ```
 
 [![version](./images/ec2cli-version.png)]((https://images.awspros.world/ec2cli/ec2cli-version.png))
