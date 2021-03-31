@@ -1032,9 +1032,9 @@ function ec2cli_list_instances(){
 
         if [ $FULL_CLI ]; then
             #print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
-            print_header "$sp InstanceId $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp PublicIP $sp $sp RunTime* $sp Tag $sp" $total_width  .body.tmp
+            print_header "$sp InstanceId $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp PublicIP $sp $sp RunTime* $sp Tag $sp" $total_width  $TMPDIR/.body.tmp
         else
-            print_header "$sp InstanceId $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp PublicIP $sp $sp RunTime* $sp" $total_width  .body.tmp
+            print_header "$sp InstanceId $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp PublicIP $sp $sp RunTime* $sp" $total_width  $TMPDIR/.body.tmp
         fi
 
         ## output table of json array ##
@@ -1057,11 +1057,11 @@ function ec2cli_list_instances(){
         fi
         case $sort_column in
             id | Id | ID | SnapshotId)
-                column=2; cat sort.tmp | sort -k"$column" -n >> .body.tmp;;
+                column=2; cat sort.tmp | sort -k"$column" -n >> $TMPDIR/.body.tmp;;
             size | Size)
-                column=4; cat sort.tmp | sort -k"$column" >> .body.tmp;;
+                column=4; cat sort.tmp | sort -k"$column" >> $TMPDIR/.body.tmp;;
             runtime)
-                column=15; cat sort.tmp | sort -k$column -n >> .body.tmp;;
+                column=15; cat sort.tmp | sort -k$column -n >> $TMPDIR/.body.tmp;;
         esac
         rm sort.tmp    # clean up
         #
@@ -1069,10 +1069,10 @@ function ec2cli_list_instances(){
         #
         if [ $FULL_CLI ]; then
             awk  '{ printf "%-2s %-20s %-2s %-11s %-2s %-9.9s %-2s %-21.21s %-2s %-22s %-2s %-15s %-2s %-13s %-2s %-33.33s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16, $17, $18}' .body.tmp | indent02
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16, $17, $18}' $TMPDIR/.body.tmp | indent02
         else
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-16s %-2s %-15.15s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16}' .body.tmp | indent02
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16}' $TMPDIR/.body.tmp | indent02
         fi
         # print footer
         if [ $ALL_REGIONS ]; then
@@ -1083,7 +1083,7 @@ function ec2cli_list_instances(){
     else
         ### -- no running instances -- ###
         printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
-        print_header "$sp InstanceId* $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp Tag $sp" $total_width .body.tmp
+        print_header "$sp InstanceId* $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp Tag $sp" $total_width $TMPDIR/.body.tmp
         #
         # output table of json array
         #
@@ -1091,25 +1091,25 @@ function ec2cli_list_instances(){
         if [ $FULL_CLI ]; then
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} \
-                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[$i]},${ARR_TAGK2[$i]}:${ARR_TAGV2[$i]} $sp" >> .body.tmp
+                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[$i]},${ARR_TAGK2[$i]}:${ARR_TAGV2[$i]} $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
             # print full format
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-64.64s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.body.tmp | indent02
             # print footer
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
         else
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} \
-                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[$i]} $sp" >> .body.tmp
+                      $sp ${ARR_DEV[$i]} $sp ${ARR_TAGK1[$i]}:${ARR_TAGV1[$i]} $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
             # print narrow format
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-34.34s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' .body.tmp | indent02
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.body.tmp | indent02
             # print footer
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
         fi
@@ -1189,12 +1189,12 @@ function ec2cli_list_images(){
     i=0
     for image in ${ARR_IMAGEID[*]}}; do
         echo "${ARR_IMAGEID[$i]} ${ARR_CREATEDATE[$i]} ${ARR_TYPE[$i]} \
-            ${ARR_VTYPE[$i]} ${ARR_SNAP0[$i]}"" ${ARR_DESCR[$i]}" >> .body.tmp
+            ${ARR_VTYPE[$i]} ${ARR_SNAP0[$i]}"" ${ARR_DESCR[$i]}" >> $TMPDIR/.body.tmp
         i=$(( $i+1 ))
     done
     # sort and combine results
     cat .header.tmp > .output.tmp
-    cat .body.tmp | sort -k +2 >> .output.tmp
+    cat $TMPDIR/.body.tmp | sort -k +2 >> .output.tmp
 
     ## print and format output ##
     # header, region identifier
@@ -1206,7 +1206,7 @@ function ec2cli_list_images(){
     print_footer "Total AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
 
     # clean up
-    rm .header.tmp .jsonimages.tmp .output.tmp .body.tmp
+    rm .header.tmp .jsonimages.tmp .output.tmp $TMPDIR/.body.tmp
     #
     # <-- end function ec2cli_list_images -->
     #
@@ -1677,7 +1677,7 @@ function ec2cli_list_securitygroups(){
                       $sp "$( if [ $(echo ${ARR_TPORT[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )"  \
                       $sp "$( if [ $(echo ${ARR_CIDR[$i]}) = "null" ]; then echo "-"; else echo "${ARR_CIDR[$i]}"; fi )" $sp ${ARR_VPC[$i]} \
                       $sp "$( if [ $(echo ${ARR_TAGKEY[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}"; fi )"  \
-                      $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                      $sp ${ARR_DESC[$i]} $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1687,7 +1687,7 @@ function ec2cli_list_securitygroups(){
                     echo "$sp ${ARR_NAME[$i]} $sp ${ARR_ID[$i]} $sp "$( if [ $(echo ${ARR_FPORT[$i]}) = "null" ]; then echo "-"; else echo "${ARR_FPORT[$i]}"; fi )" \
                           $sp "$( if [ $(echo ${ARR_TPORT[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TPORT[$i]}"; fi )" \
                           $sp "$( if [ $(echo ${ARR_CIDR[$i]}) = "null" ]; then echo "-"; else echo "${ARR_CIDR[$i]}"; fi )" $sp ${ARR_VPC[$i]} \
-                          $sp "$( if [ $(echo ${ARR_TAGKEY[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}"; fi )" $sp" >> .body.tmp
+                          $sp "$( if [ $(echo ${ARR_TAGKEY[$i]}) = "null" ]; then echo "-"; else echo "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}"; fi )" $sp" >> $TMPDIR/.body.tmp
                     # incr ct
                     i=$(( $i+1 ))
                 done
@@ -1695,7 +1695,7 @@ function ec2cli_list_securitygroups(){
         fi
 
         # sort
-        cat .body.tmp | sort -k2 -r >> .ec2-qv-securitygroups.tmp
+        cat $TMPDIR/.body.tmp | sort -k2 -r >> .ec2-qv-securitygroups.tmp
 
         if [ $FULL_CLI ]; then
             # print and format output
@@ -1821,7 +1821,7 @@ function ec2cli_list_snapshots(){
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
                       ${ARR_STATE[$i]} $sp ${ARR_PROG[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encypt"; else echo "-"; fi ) $sp \
-                      ${ARR_VID[$i]} $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                      ${ARR_VID[$i]} $sp ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp ${ARR_DESC[$i]} $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1829,7 +1829,7 @@ function ec2cli_list_snapshots(){
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_SIZE[$i]} $sp $(date --date=${ARR_CTIME[$i]} +"%Y-%m-%d") $sp \
                       ${ARR_STATE[$i]} $sp ${ARR_PROG[$i]} $sp $( if $(echo ${ARR_ENCRYPT[$i]}) == "true"; then echo "Encrypted"; else echo "-"; fi ) $sp \
-                      ${ARR_VID[$i]} $sp ${ARR_DESC[$i]} $sp" >> .body.tmp
+                      ${ARR_VID[$i]} $sp ${ARR_DESC[$i]} $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1840,11 +1840,11 @@ function ec2cli_list_snapshots(){
         fi
         case $sort_column in
             id | Id | ID | SnapshotId)
-                column=2; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
+                column=2; cat $TMPDIR/.body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
             size | Size)
-                column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
+                column=4; cat $TMPDIR/.body.tmp | sort -k"$column" -n >> .ec2-qv-snapshots.tmp;;
             date)
-                column=5; cat .body.tmp | sort -k6 -r >> .ec2-qv-snapshots.tmp;;
+                column=5; cat $TMPDIR/.body.tmp | sort -k6 -r >> .ec2-qv-snapshots.tmp;;
         esac
 
         # size, unit calcs of raw volumes snapshotted
@@ -1949,7 +1949,7 @@ function ec2cli_list_subnets(){
                       $sp ${ARR_ID[$i]} $sp ${ARR_MAP[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_CT[$i]}  \
                       $sp ${ARR_AZ[$i]} $sp "$( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi )" \
                       $sp $(if [ "${ARR_TAGKEY[$i]}" = "null" ]; then echo "-"; else echo "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}"; fi) \
-                      $sp" >> .body.tmp
+                      $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1958,7 +1958,7 @@ function ec2cli_list_subnets(){
                 echo "$sp $(if [ "${ARR_NAME[$i]}" = "null" ]; then echo "-"; else echo "${ARR_NAME[$i]}"; fi) \
                       $sp ${ARR_ID[$i]} $sp ${ARR_MAP[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_CT[$i]}  \
                       $sp ${ARR_AZ[$i]} $sp "$( if $(echo ${ARR_DEFAULT[$i]}) == "true"; then echo "yes"; else echo "-"; fi )" \
-                      $sp " >> .body.tmp
+                      $sp " >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -1969,11 +1969,11 @@ function ec2cli_list_subnets(){
         fi
         case $sort_column in
             id | Id | ID | SnapshotId)
-                column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
+                column=4; cat $TMPDIR/.body.tmp | sort -k"$column" -n >> .ec2-qv.tmp;;
             ip | IPs | ips | num_ip)
-                column=10; cat .body.tmp | sort -k"$column" -r -n >> .ec2-qv.tmp;;
+                column=10; cat $TMPDIR/.body.tmp | sort -k"$column" -r -n >> .ec2-qv.tmp;;
             date)
-                column=5; cat .body.tmp | sort -k6 -r >> .ec2-qv.tmp;;
+                column=5; cat $TMPDIR/.body.tmp | sort -k6 -r >> .ec2-qv.tmp;;
         esac
 
         if [ $FULL_CLI ]; then
@@ -1991,7 +1991,7 @@ function ec2cli_list_subnets(){
         fi
 
         # clean up
-        rm $TMPDIR/.jsonoutput.tmp .ec2-qv.tmp .body.tmp
+        rm $TMPDIR/.jsonoutput.tmp .ec2-qv.tmp $TMPDIR/.body.tmp
     fi
     #
     # <-- end function ec2cli_list_subnets -->
@@ -2121,7 +2121,7 @@ function ec2cli_list_volumes(){
                       $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
                       $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
-                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> .body.tmp
+                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp "${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]}" $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -2133,11 +2133,11 @@ function ec2cli_list_volumes(){
             fi
             case $sort_column in
                 id | Id | ID)
-                    column=2; cat .body.tmp | sort -k"$column" >> .ec2-qv-volumes.tmp;;
+                    column=2; cat $TMPDIR/.body.tmp | sort -k"$column" >> .ec2-qv-volumes.tmp;;
                 size | Size)
-                    column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-volumes.tmp;;
+                    column=4; cat $TMPDIR/.body.tmp | sort -k"$column" -n >> .ec2-qv-volumes.tmp;;
                 date)
-                    column=6; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
+                    column=6; cat $TMPDIR/.body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
             esac
             awk  '{ printf "%-2s %-22s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-9s %-2s %-20s %-2s %-8s %-2s %-15s %-2s %-41s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19}' .ec2-qv-volumes.tmp | indent02
@@ -2149,7 +2149,7 @@ function ec2cli_list_volumes(){
                       $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
                       $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
-                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp" >> .body.tmp
+                      ${ARR_VTYPE[$i]} $sp ${ARR_AZ[$i]} $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -2161,11 +2161,11 @@ function ec2cli_list_volumes(){
             fi
             case $sort_column in
                 id | Id | ID)
-                    column=2; cat .body.tmp | sort -k"$column" >> .ec2-qv-volumes.tmp;;
+                    column=2; cat $TMPDIR/.body.tmp | sort -k"$column" >> .ec2-qv-volumes.tmp;;
                 size | Size)
-                    column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-volumes.tmp;;
+                    column=4; cat $TMPDIR/.body.tmp | sort -k"$column" -n >> .ec2-qv-volumes.tmp;;
                 date)
-                    column=6; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
+                    column=6; cat $TMPDIR/.body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
             esac
             awk  '{ printf "%-2s %-22s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-20s %-2s %-9s %-2s %-16s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-volumes.tmp | indent02
@@ -2176,7 +2176,7 @@ function ec2cli_list_volumes(){
                       $( if [ "${ARR_STATE[$i]}" = "null" ]; then echo "free"; else echo "${ARR_STATE[$i]}"; fi ) $sp \
                       $( if [ "${ARR_ENCRYPT[$i]}" = "true" ]; then echo "Encypt"; else echo "-"; fi ) $sp \
                       $( if [ "${ARR_IID[$i]}" = "null" ]; then echo "-"; else echo "${ARR_IID[$i]}"; fi ) $sp \
-                      ${ARR_VTYPE[$i]} $sp ${ARR_TAG[$i]} $sp" >> .body.tmp
+                      ${ARR_VTYPE[$i]} $sp ${ARR_TAG[$i]} $sp" >> $TMPDIR/.body.tmp
                 # incr ct
                 i=$(( $i+1 ))
             done
@@ -2188,11 +2188,11 @@ function ec2cli_list_volumes(){
             fi
             case $sort_column in
                 id | Id | ID)
-                    column=2; cat .body.tmp | sort -k"$column" >> .ec2-qv-volumes.tmp;;
+                    column=2; cat $TMPDIR/.body.tmp | sort -k"$column" >> .ec2-qv-volumes.tmp;;
                 size | Size)
-                    column=4; cat .body.tmp | sort -k"$column" -n >> .ec2-qv-volumes.tmp;;
+                    column=4; cat $TMPDIR/.body.tmp | sort -k"$column" -n >> .ec2-qv-volumes.tmp;;
                 date)
-                    column=6; cat .body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
+                    column=6; cat $TMPDIR/.body.tmp | sort -k"$column" -r >> .ec2-qv-volumes.tmp;;
             esac
             awk  '{ printf "%-2s %-22s %-2s %-5s %-2s %-12s %-2s %-10s %-2s %-10s %-2s %-20s %-2s %-10s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' .ec2-qv-volumes.tmp | indent02
@@ -2206,7 +2206,7 @@ function ec2cli_list_volumes(){
         Total size on disk ${title}$ASUM${bodytext} $UNIT" $total_width
 
         # clean up
-        rm .ec2-qv-volumes.tmp .body.tmp $TMPDIR/.jsonoutput.tmp
+        rm .ec2-qv-volumes.tmp $TMPDIR/.body.tmp $TMPDIR/.jsonoutput.tmp
     fi
     #
     # <-- end function ec2cli_list_volumes -->
@@ -2249,7 +2249,7 @@ function ec2cli_list_vpcs(){
     while (( i < $MAXCT )); do
         echo "$sp ${ARR_ID[$i]} $sp $(if [ "${ARR_DEFAULT[$i]}" = "true" ]; then echo "yes"; else echo "-"; fi) $sp ${ARR_STATE[$i]} $sp \
               ${ARR_TENANCY[$i]} $sp ${ARR_CIDR[$i]} $sp ${ARR_DHCP[$i]} $sp \
-              ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> .body.tmp
+              ${ARR_TAGKEY[$i]}:${ARR_TAGVALUE[$i]} $sp" >> $TMPDIR/.body.tmp
         # incr ct
         i=$(( $i+1 ))
     done
@@ -2261,7 +2261,7 @@ function ec2cli_list_vpcs(){
     # print header
     print_header "$sp VpcId $sp Default? $sp State $sp Tenancy $sp CIDR $sp DHCP-OptionId $sp Tags $sp" $total_width .report.tmp
     # sort body text
-    cat .body.tmp | sort -k +10n  >> .report.tmp
+    cat $TMPDIR/.body.tmp | sort -k +10n  >> $TMPDIR/.report.tmp
     # print and format output
     awk  '{ printf "%-2s %-14s %-2s %-8s %-2s %-10s %-2s %-9s %-2s %-16s %-2s %-15s %-2s %-39s %-2s\n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' .report.tmp | indent02
@@ -2272,7 +2272,7 @@ function ec2cli_list_vpcs(){
         print_footer "${title}$MAXCT${bodytext} VPCs in region [$REGION]" $total_width
     fi
     # clean up
-    rm .jsonoutput.json .body.tmp .report.tmp
+    rm .jsonoutput.json $TMPDIR/.body.tmp $TMPDIR/.report.tmp
     #
     # <-- end function ec2cli_list_vpcs -->
     #
