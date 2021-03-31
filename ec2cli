@@ -442,11 +442,11 @@ function ec2cli_attach_volume(){
 
     ## choose volume ##---------------------------------------------------
     echo -e "\n${BOLD}Volume choices: ${UNBOLD}$REGION\n" | indent18
-    ec2cli_list_volumes $REGION > .text-output0.tmp
-    grep "vol-" .text-output0.tmp > .text-output1.tmp
+    ec2cli_list_volumes $REGION > $TMPDIR/.text-output0.tmp
+    grep "vol-" $TMPDIR/.text-output0.tmp > $TMPDIR/.text-output1.tmp
 
     # Use built-in IFS to read in all lines in tmp file
-    IFS=$'\n' read -d '' -r -a VOLUMES < .text-output1.tmp
+    IFS=$'\n' read -d '' -r -a VOLUMES < $TMPDIR/.text-output1.tmp
 
     # array max length
     MAXCT=${#VOLUMES[*]} # keep in mind, IFS starts array index at 0
@@ -454,7 +454,7 @@ function ec2cli_attach_volume(){
     # load output choice array
     i=0
     while (( i < $MAXCT )); do
-            echo "($i): ""${VOLUMES[$i]}" >> .arrayoutput.tmp
+            echo "($i): ""${VOLUMES[$i]}" >> $TMPDIR/.arrayoutput.tmp
             i=$(( $i+1 ))
     done
 
@@ -464,7 +464,7 @@ function ec2cli_attach_volume(){
 
     # values
     awk  '{ printf "%-4s %-13s %-3s %-9s %-9s %-11s %-9s %-11s %-2s %-2s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' .arrayoutput.tmp
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' $TMPDIR/.arrayoutput.tmp
 
     # Enter control structure to get user selection and validate
     VALID=0 # set loop break
@@ -494,15 +494,15 @@ function ec2cli_attach_volume(){
     echo "Volume "$VOLID" chosen."
 
     # clean up
-    rm .text-output0.tmp .text-output1.tmp .arrayoutput.tmp
+    rm $TMPDIR/.text-output0.tmp $TMPDIR/.text-output1.tmp $TMPDIR/.arrayoutput.tmp
 
     ## choose instance ## ------------------------------------------------
     echo -e "\n${BOLD}EC2 Instance choices: ${UNBOLD}$REGION\n" | indent18
-    ec2cli_list_instances $REGION > .text-output0.tmp
-    grep "i-" .text-output0.tmp > .text-output1.tmp
+    ec2cli_list_instances $REGION > $TMPDIR/.text-output0.tmp
+    grep "i-" $TMPDIR/.text-output0.tmp > $TMPDIR/.text-output1.tmp
 
     # Use built-in IFS to read in all lines in tmp file
-    IFS=$'\n' read -d '' -r -a INSTANCES < .text-output1.tmp
+    IFS=$'\n' read -d '' -r -a INSTANCES < $TMPDIR/.text-output1.tmp
 
     # array max length
     MAXCT=${#INSTANCES[*]} # keep in mind, IFS starts array index at 0
@@ -510,7 +510,7 @@ function ec2cli_attach_volume(){
     # load output choice array
     i=0
     while (( i < $MAXCT )); do
-            echo "($i): ""${INSTANCES[$i]}" >> .arrayoutput.tmp
+            echo "($i): ""${INSTANCES[$i]}" >> $TMPDIR/.arrayoutput.tmp
             i=$(( $i+1 ))
     done
 
@@ -520,7 +520,7 @@ function ec2cli_attach_volume(){
 
     # values
     awk  '{ printf "%-4s %-11s %-10s %-8s %-16s %-14s %-9s \n", \
-        $1, $2, $3, $4, $5, $6, $7}' .arrayoutput.tmp
+        $1, $2, $3, $4, $5, $6, $7}' $TMPDIR/.arrayoutput.tmp
 
     # Enter control structure to get user selection and validate
     VALID=0 # loop break
@@ -549,7 +549,7 @@ function ec2cli_attach_volume(){
     echo -e "Instance "$INSTANCEID" chosen.\n"
 
     # clean up
-    rm .text-output0.tmp .text-output1.tmp .arrayoutput.tmp
+    rm $TMPDIR/.text-output0.tmp $TMPDIR/.text-output1.tmp $TMPDIR/.arrayoutput.tmp
 
     ## choose device ## --------------------------------------------------
     read -p  "${yellow}  Enter device to mount to [/dev/sda1]:  ${reset}" DEVICE
@@ -631,7 +631,7 @@ function ec2cli_create_images(){
     i=0
     for id in ${ARR_ID[*]}; do
         echo "($i): "${ARR_ID[$i]} ${ARR_TYPE[$i]} ${ARR_STATE[$i]} ${ARR_SG[$i]} \
-              ${ARR_DEV[$i]} ${ARR_TAG[$i]} >> .arrayoutput.tmp
+              ${ARR_DEV[$i]} ${ARR_TAG[$i]} >> $TMPDIR/.arrayoutput.tmp
         # incr ct
         i=$(( $i+1 ))
     done
@@ -641,7 +641,7 @@ function ec2cli_create_images(){
     echo -e "       -------------------  ---------  -------  ---------------  ---------------------  -------------------------"
     # values
     awk  '{ printf "%-6s %-20s %-10s %-8s %-16s %-22s %-2s %-2s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .arrayoutput.tmp
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' $TMPDIR/.arrayoutput.tmp
     # footer
     printf "\nTotal Instances in region [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n" | indent10
 
@@ -661,7 +661,7 @@ function ec2cli_create_images(){
             else
                     if [[ -z "$CHOICE" ]]; then
                             # CHOICE is blank, clean up and assign default [quit]
-                            rm .arrayoutput.tmp
+                            rm $TMPDIR/.arrayoutput.tmp
                             return
                             #exit $E_USER_CANCEL
                     else
@@ -727,7 +727,7 @@ function ec2cli_create_images(){
     std_logger "INFO:  AMI image [$NAME] creation start"
 
     # clean up
-    rm .jsonoutput.tmp .arrayoutput.tmp .jsoninstance.tmp
+    rm $TMPDIR/.jsonoutput.tmp $TMPDIR/.arrayoutput.tmp $TMPDIR/.jsoninstance.tmp
     #
     # <-- end function ec2cli_create_images -->
     #
@@ -749,23 +749,23 @@ function ec2cli_create_snapshot(){
         ### choose volume ###
         #
         # json object of all ebs volumes in region
-        aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > .jsonoutput.tmp
-        ARR_ID=( $(jq -r .Volumes[].VolumeId .jsonoutput.tmp) )
+        aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > $TMPDIR/.jsonoutput.tmp
+        ARR_ID=( $(jq -r .Volumes[].VolumeId $TMPDIR/.jsonoutput.tmp) )
         MAXCT=${#ARR_ID[*]}
         if [[ $MAXCT -eq 0 ]]; then
             # no ebs volumes to snapshot, exit
-            rm .jsonoutput.tmp
+            rm $TMPDIR/.jsonoutput.tmp
             std_error_exit "No EBS volumes in region $REGION. Exiting." $E_DEPENDENCY
         fi
 
         # volumes exist in region, process remainder of json object
-        ARR_SIZE=( $(jq -r .Volumes[].Size .jsonoutput.tmp) )
-        ARR_STATE=( $(jq -r .Volumes[].State .jsonoutput.tmp) )
-        ARR_INSTANCE=( $(jq -r .Volumes[].Attachments[].InstanceId .jsonoutput.tmp) )
-        ARR_TYPE=( $(jq -r .Volumes[].VolumeType .jsonoutput.tmp) )
-        ARR_ENCRYPT=( $(jq -r .Volumes[].Encrypted .jsonoutput.tmp) )
-        ARR_AZ=( $(jq -r .Volumes[].AvailabilityZone .jsonoutput.tmp) )
-        ARR_TAG=( $(jq -r .Volumes[].Tags[0].Value .jsonoutput.tmp | cut -c 1-20) )
+        ARR_SIZE=( $(jq -r .Volumes[].Size $TMPDIR/.jsonoutput.tmp) )
+        ARR_STATE=( $(jq -r .Volumes[].State $TMPDIR/.jsonoutput.tmp) )
+        ARR_INSTANCE=( $(jq -r .Volumes[].Attachments[].InstanceId $TMPDIR/.jsonoutput.tmp) )
+        ARR_TYPE=( $(jq -r .Volumes[].VolumeType $TMPDIR/.jsonoutput.tmp) )
+        ARR_ENCRYPT=( $(jq -r .Volumes[].Encrypted $TMPDIR/.jsonoutput.tmp) )
+        ARR_AZ=( $(jq -r .Volumes[].AvailabilityZone $TMPDIR/.jsonoutput.tmp) )
+        ARR_TAG=( $(jq -r .Volumes[].Tags[0].Value $TMPDIR/.jsonoutput.tmp | cut -c 1-20) )
 
         # display choices
         printf "\n${white}${BOLD}EBS Volumes${UNBOLD}${reset} : $REGION\n\n" | indent18
@@ -773,7 +773,7 @@ function ec2cli_create_snapshot(){
         i=0
         for id in ${ARR_ID[*]}; do
             echo "($i): "${ARR_ID[$i]} ${ARR_SIZE[$i]} ${ARR_STATE[$i]} ${ARR_INSTANCE[$i]} \
-                  ${ARR_TYPE[$i]} ${ARR_AZ[$i]} ${ARR_TAG[$i]} >> .arrayoutput.tmp
+                  ${ARR_TYPE[$i]} ${ARR_AZ[$i]} ${ARR_TAG[$i]} >> $TMPDIR/.arrayoutput.tmp
             # incr ct
             i=$(( $i+1 ))
         done
@@ -782,11 +782,11 @@ function ec2cli_create_snapshot(){
         echo -e "     ---------------------  --  --------  -------------------  --------  ----------  --------------------"
         # values
         awk  '{ printf "%-4s %-22s %-3s %-9s %-20s %-9s %-11s %-2s %-2s %-2s \n", \
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .arrayoutput.tmp
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' $TMPDIR/.arrayoutput.tmp
         # footer
         printf "\nTotal Volumes in region [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}\n" | indent10
         # clean up
-        rm .jsonoutput.tmp .arrayoutput.tmp
+        rm $TMPDIR/.jsonoutput.tmp $TMPDIR/.arrayoutput.tmp
 
         # get user input while checking type and range
         VALID=0    # set loop break
@@ -943,18 +943,18 @@ function ec2cli_list_instances(){
         REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-instances \
-                --region $region --output json >> .jsonoutput.tmp; done &
+                --region $region --output json >> $TMPDIR/.jsonoutput.tmp; done &
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
-        aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > .jsonoutput.tmp
+        aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > $TMPDIR/.jsonoutput.tmp
     fi
 
     # retrieve account name
     ACCT_ALIAS="$(account_alias $PROFILE)"
 
     # load fields into respective arrays
-    ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' .jsonoutput.tmp) )
+    ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' $TMPDIR/.jsonoutput.tmp) )
     MAXCT=${#ARR_STATE[*]}    # count instances found
 
     if [ "$MAXCT" = "null" ] || [ "$MAXCT" -eq 0 ]; then
@@ -975,18 +975,18 @@ function ec2cli_list_instances(){
     fi
 
     # instances > 0, parse remainder of json object
-    ARR_IP=( $(jq -r '.Reservations[].Instances[].PublicIpAddress' .jsonoutput.tmp) )
-    ARR_LT=( $(jq -r '.Reservations[].Instances[].LaunchTime' .jsonoutput.tmp) )
-    ARR_ID=( $(jq -r '.Reservations[].Instances[].InstanceId' .jsonoutput.tmp) )
-    ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' .jsonoutput.tmp) )
-    ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' .jsonoutput.tmp) )
+    ARR_IP=( $(jq -r '.Reservations[].Instances[].PublicIpAddress' $TMPDIR/.jsonoutput.tmp) )
+    ARR_LT=( $(jq -r '.Reservations[].Instances[].LaunchTime' $TMPDIR/.jsonoutput.tmp) )
+    ARR_ID=( $(jq -r '.Reservations[].Instances[].InstanceId' $TMPDIR/.jsonoutput.tmp) )
+    ARR_TYPE=( $(jq -r '.Reservations[].Instances[].InstanceType' $TMPDIR/.jsonoutput.tmp) )
+    ARR_DEV=( $(jq -r '.Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId' $TMPDIR/.jsonoutput.tmp) )
     # limit security grp name to 15 chars
-    ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' .jsonoutput.tmp) )
+    ARR_SG=( $(jq -r '.Reservations[].Instances[].SecurityGroups[0].GroupName' $TMPDIR/.jsonoutput.tmp) )
     # limit length of tag fields to 20 chars
-    ARR_TAGK1=( $(jq -r '.Reservations[].Instances[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-17) )
-    ARR_TAGV1=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-17) )
-    ARR_TAGK2=( $(jq -r '.Reservations[].Instances[].Tags[1].Key' .jsonoutput.tmp | cut -c 1-17) )
-    ARR_TAGV2=( $(jq -r '.Reservations[].Instances[].Tags[1].Value' .jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGK1=( $(jq -r '.Reservations[].Instances[].Tags[0].Key' $TMPDIR/.jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGV1=( $(jq -r '.Reservations[].Instances[].Tags[0].Value' $TMPDIR/.jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGK2=( $(jq -r '.Reservations[].Instances[].Tags[1].Key' $TMPDIR/.jsonoutput.tmp | cut -c 1-17) )
+    ARR_TAGV2=( $(jq -r '.Reservations[].Instances[].Tags[1].Value' $TMPDIR/.jsonoutput.tmp | cut -c 1-17) )
 
     #
     # instances in region.  test if running instances
@@ -1116,7 +1116,7 @@ function ec2cli_list_instances(){
     fi
 
     # clean up
-    rm .body.tmp .jsonoutput.tmp
+    rm $TMPDIR/.body.tmp $TMPDIR/.jsonoutput.tmp
 
     #
     # <-- end function ec2cli_list_instances -->
@@ -1389,10 +1389,10 @@ function ec2cli_run_instances(){
 	            BlockDeviceMappings[0].Ebs.VolumeId, \
 	            PublicIpAddress, \
 	            Tags[0].Value]" \
-	>> .text-output1.tmp
+	>> $TMPDIR/.text-output1.tmp
 
 	# Use built-in IFS to read in all lines in tmp file
-	IFS=$'\n' read -d '' -r -a INSTANCES < .text-output1.tmp
+	IFS=$'\n' read -d '' -r -a INSTANCES < $TMPDIR/.text-output1.tmp
 
 	# calc array max length | test for 0 instances
 	MAXCT=${#INSTANCES[*]} # IFS starts array index at 0
@@ -1408,7 +1408,7 @@ function ec2cli_run_instances(){
 	# load output choice array
 	i=0
 	while (( i < $MAXCT )); do
-	        echo "($i): ""${INSTANCES[$i]}" >> .arrayoutput.tmp
+	        echo "($i): ""${INSTANCES[$i]}" >> $TMPDIR/.arrayoutput.tmp
 	        i=$(( $i+1 ))
 	done
 
@@ -1418,7 +1418,7 @@ function ec2cli_run_instances(){
 
 	# values
 	awk  '{ printf "%-4s %-20s %-11s %-8s %-21s %-22s %-15s %-2s %-2s %-2s %-2s \n", \
-	        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' .arrayoutput.tmp
+	        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11}' $TMPDIR/.arrayoutput.tmp
 
 	# get user input while checking type and range
 	VALID=0    # set loop break
@@ -1439,7 +1439,7 @@ function ec2cli_run_instances(){
 	        else
 	                if [[ -z "$CHOICE" ]]; then
 	                        # CHOICE is blank, clean up and assign default [quit]
-                            rm .arrayoutput.tmp .text-output1.tmp
+                            rm $TMPDIR/.arrayoutput.tmp $TMPDIR/.text-output1.tmp
 	                        exit $E_USER_CANCEL
 	                else
 	                        # valid user entry, exit loop
@@ -1472,9 +1472,9 @@ function ec2cli_run_instances(){
     aws ec2 --profile $PROFILE describe-security-groups \
         --output json \
         --region $REGION \
-        --group-ids $(cat .secgrp-ids.tmp) > .jsonoutput.tmp
-    ARR_PORT=( $(jq -r '.SecurityGroups[].IpPermissions[].ToPort' .jsonoutput.tmp) )
-    ARR_IP=( $(jq -r '.SecurityGroups[].IpPermissions[].IpRanges[].CidrIp' .jsonoutput.tmp) )
+        --group-ids $(cat .secgrp-ids.tmp) > $TMPDIR/.jsonoutput.tmp
+    ARR_PORT=( $(jq -r '.SecurityGroups[].IpPermissions[].ToPort' $TMPDIR/.jsonoutput.tmp) )
+    ARR_IP=( $(jq -r '.SecurityGroups[].IpPermissions[].IpRanges[].CidrIp' $TMPDIR/.jsonoutput.tmp) )
     MAXCT=${#ARR_PORT[*]}
 
     i=0    # counter
@@ -1495,10 +1495,10 @@ function ec2cli_run_instances(){
 	        # Access validated
 			std_message "Access verified to instance ($TARGET). Proceeding..." INFO
 	        # clean up
-	        rm .jsonoutput.tmp .secgrp-ids.tmp
+	        rm $TMPDIR/.jsonoutput.tmp $TMPDIR/.secgrp-ids.tmp
 	else
 	        # No access from current login client location, clean up
-	        rm .jsonoutput.tmp .secgrp-ids.tmp
+	        rm $TMPDIR/.jsonoutput.tmp $TMPDIR/.secgrp-ids.tmp
 	        # log, exit
 	        std_error_exit "No ssh or RDP access to instance ($TARGET). Please update security group settings. Aborting (code $E_NETWORK_ACCESS)" $E_NETWORK_ACCESS
 	fi
@@ -1507,7 +1507,7 @@ function ec2cli_run_instances(){
 	# start instance ------------------
 	#
 	# check to see if already started
-    if [[ $(grep $TARGET .text-output1.tmp | grep running) ]]; then
+    if [[ $(grep $TARGET $TMPDIR/.text-output1.tmp | grep running) ]]; then
         # instance already running, skip start
         std_message "Instance ($TARGET) already running.  Logging in..." INFO
     else
@@ -1531,7 +1531,7 @@ function ec2cli_run_instances(){
 	    done
     fi
     # clean up
-    rm .arrayoutput.tmp .text-output1.tmp
+    rm $TMPDIR/.arrayoutput.tmp $TMPDIR/.text-output1.tmp
 
 	#
 	# Log in --------------------------
@@ -1541,10 +1541,10 @@ function ec2cli_run_instances(){
 	aws ec2  --profile $PROFILE describe-instances \
         --region $REGION \
         --output json \
-		--instance-id $TARGET > .jsonoutput.tmp
+		--instance-id $TARGET > $TMPDIR/.jsonoutput.tmp
 
 	# discover public ip assignment
-	IPADDRESS=$(jq -r '.Reservations[].Instances[].PublicIpAddress' .jsonoutput.tmp)
+	IPADDRESS=$(jq -r '.Reservations[].Instances[].PublicIpAddress' $TMPDIR/.jsonoutput.tmp)
 	#
 	# validate IP as public
 	if [[ $IPADDRESS == "null" ]]; then
@@ -1552,17 +1552,17 @@ function ec2cli_run_instances(){
 	fi
 
 	# Check Windows or Linux
-	OS=$(jq -r '.Reservations[].Instances[].Platform' .jsonoutput.tmp)
+	OS=$(jq -r '.Reservations[].Instances[].Platform' $TMPDIR/.jsonoutput.tmp)
 
 	if [[ $OS == "windows" ]]; then
 			# windows instance, validate deps & log in via RDP
             # clean up
-            .jsonoutput.tmp
+            rm $TMPDIR/.jsonoutput.tmp
 			# windows login
             ec2cli_rdp-login $TARGET $IPADDRESS
 	else
 		# Linux instance, discover required access key
-		KEY=$(jq -r '.Reservations[].Instances[].KeyName' .jsonoutput.tmp)".pem"
+		KEY=$(jq -r '.Reservations[].Instances[].KeyName' $TMPDIR/.jsonoutput.tmp)".pem"
 
 		# update log and login
 		std_logger "INFO: Linux Instance ($TARGET) started. "
@@ -1577,7 +1577,7 @@ function ec2cli_run_instances(){
         done
 
 		# clean up and exit
-		rm .jsonoutput.tmp
+		rm $TMPDIR/.jsonoutput.tmp
     	exit 0
 	fi
     #
@@ -1599,16 +1599,16 @@ function ec2cli_list_securitygroups(){
         REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-security-groups \
-                --region $region --output json >> .jsonoutput.tmp; done &
+                --region $region --output json >> $TMPDIR/.jsonoutput.tmp; done &
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
         aws ec2 --profile $PROFILE describe-security-groups \
-                    --output json --region $REGION > .jsonoutput.tmp
+                    --output json --region $REGION > $TMPDIR/.jsonoutput.tmp
     fi
 
     # number of groups
-    SUM=$(jq -r '.SecurityGroups[].GroupName' .jsonoutput.tmp | wc -l)
+    SUM=$(jq -r '.SecurityGroups[].GroupName' $TMPDIR/.jsonoutput.tmp | wc -l)
 
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
@@ -1639,15 +1639,15 @@ function ec2cli_list_securitygroups(){
         fi
 
         # parse json
-        ARR_ID=( $(jq -r '.SecurityGroups[].GroupId' .jsonoutput.tmp) )
-        ARR_NAME=( $(jq -r '.SecurityGroups[].GroupName' .jsonoutput.tmp) )
-        ARR_FPORT=( $(jq -r '.SecurityGroups[].IpPermissions[0].FromPort' .jsonoutput.tmp) )
-        ARR_TPORT=( $(jq -r '.SecurityGroups[].IpPermissions[0].ToPort' .jsonoutput.tmp) )
-        ARR_CIDR=( $(jq -r '.SecurityGroups[].IpPermissions[0].IpRanges[0].CidrIp' .jsonoutput.tmp) )
-        ARR_VPC=( $(jq -r '.SecurityGroups[].VpcId' .jsonoutput.tmp) )
-        ARR_TAGKEY=( $(jq -r '.SecurityGroups[].Tags[0].Key' .jsonoutput.tmp) )
-        ARR_TAGVALUE=( $(jq -r '.SecurityGroups[].Tags[0].Value' .jsonoutput.tmp) )
-        ARR_DESC=( $(jq -r '.SecurityGroups[].Description' .jsonoutput.tmp) )
+        ARR_ID=( $(jq -r '.SecurityGroups[].GroupId' $TMPDIR/.jsonoutput.tmp) )
+        ARR_NAME=( $(jq -r '.SecurityGroups[].GroupName' $TMPDIR/.jsonoutput.tmp) )
+        ARR_FPORT=( $(jq -r '.SecurityGroups[].IpPermissions[0].FromPort' $TMPDIR/.jsonoutput.tmp) )
+        ARR_TPORT=( $(jq -r '.SecurityGroups[].IpPermissions[0].ToPort' $TMPDIR/.jsonoutput.tmp) )
+        ARR_CIDR=( $(jq -r '.SecurityGroups[].IpPermissions[0].IpRanges[0].CidrIp' $TMPDIR/.jsonoutput.tmp) )
+        ARR_VPC=( $(jq -r '.SecurityGroups[].VpcId' $TMPDIR/.jsonoutput.tmp) )
+        ARR_TAGKEY=( $(jq -r '.SecurityGroups[].Tags[0].Key' $TMPDIR/.jsonoutput.tmp) )
+        ARR_TAGVALUE=( $(jq -r '.SecurityGroups[].Tags[0].Value' $TMPDIR/.jsonoutput.tmp) )
+        ARR_DESC=( $(jq -r '.SecurityGroups[].Description' $TMPDIR/.jsonoutput.tmp) )
 
         # ip stats
         MAXCT=${#ARR_ID[*]}    # count snapshots found
@@ -1713,7 +1713,7 @@ function ec2cli_list_securitygroups(){
         \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
 
         # clean up
-        rm .jsonoutput.tmp .body.tmp  .ec2-qv-securitygroups.tmp
+        rm $TMPDIR/.jsonoutput.tmp $TMPDIR/.body.tmp  $TMPDIR/.ec2-qv-securitygroups.tmp
     fi
     #
     # <-- end function ec2cli_list_securitygroups -->
@@ -1754,12 +1754,12 @@ function ec2cli_list_snapshots(){
         REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-snapshots --owner self \
-                --region $region --output json >> .jsonoutput.tmp; done &
+                --region $region --output json >> $TMPDIR/.jsonoutput.tmp; done &
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
         aws ec2 --profile $PROFILE describe-snapshots --owner self \
-                    --output json --region $REGION > .jsonoutput.tmp
+                    --output json --region $REGION > $TMPDIR/.jsonoutput.tmp
     fi
 
     # retrieve account name
@@ -1768,12 +1768,12 @@ function ec2cli_list_snapshots(){
     # Sum size of all snapshots (footer)
     if [ $ALL_REGIONS ]; then
         SUM=0
-        ARR=$(cat .jsonoutput.tmp | jq -r .Snapshots[].VolumeSize)
+        ARR=$(cat $TMPDIR/.jsonoutput.tmp | jq -r .Snapshots[].VolumeSize)
         for vol in ${ARR[@]}; do
             SUM=$(( $SUM + $vol ))
         done
     else
-        SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' .jsonoutput.tmp)
+        SUM=$(jq -r '.Snapshots | map(.VolumeSize) | add' $TMPDIR/.jsonoutput.tmp)
     fi
 
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
@@ -1801,17 +1801,17 @@ function ec2cli_list_snapshots(){
         fi
 
         # parse json
-        ARR_ID=( $(jq -r '.Snapshots[].SnapshotId' .jsonoutput.tmp) )
-        ARR_SIZE=( $(jq -r '.Snapshots[].VolumeSize' .jsonoutput.tmp) )
-        ARR_CTIME=( $(jq -r '.Snapshots[].StartTime' .jsonoutput.tmp) )
-        ARR_VID=( $(jq -r '.Snapshots[].VolumeId' .jsonoutput.tmp) )
-        ARR_STATE=( $(jq -r '.Snapshots[].State' .jsonoutput.tmp) )
-        ARR_PROG=( $(jq -r '.Snapshots[].Progress' .jsonoutput.tmp) )
-        ARR_ENCRYPT=( $(jq -r '.Snapshots[].Encrypted' .jsonoutput.tmp) )
-        ARR_DESC=( $(jq -r '.Snapshots[].Description' .jsonoutput.tmp | cut -c 1-37) )
+        ARR_ID=( $(jq -r '.Snapshots[].SnapshotId' $TMPDIR/.jsonoutput.tmp) )
+        ARR_SIZE=( $(jq -r '.Snapshots[].VolumeSize' $TMPDIR/.jsonoutput.tmp) )
+        ARR_CTIME=( $(jq -r '.Snapshots[].StartTime' $TMPDIR/.jsonoutput.tmp) )
+        ARR_VID=( $(jq -r '.Snapshots[].VolumeId' $TMPDIR/.jsonoutput.tmp) )
+        ARR_STATE=( $(jq -r '.Snapshots[].State' $TMPDIR/.jsonoutput.tmp) )
+        ARR_PROG=( $(jq -r '.Snapshots[].Progress' $TMPDIR/.jsonoutput.tmp) )
+        ARR_ENCRYPT=( $(jq -r '.Snapshots[].Encrypted' $TMPDIR/.jsonoutput.tmp) )
+        ARR_DESC=( $(jq -r '.Snapshots[].Description' $TMPDIR/.jsonoutput.tmp | cut -c 1-37) )
         # limit length of tag fields to 20 chars
-        ARR_TAGKEY=( $(jq -r '.Snapshots[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-15) )
-        ARR_TAGVALUE=( $(jq -r '.Snapshots[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-15) )
+        ARR_TAGKEY=( $(jq -r '.Snapshots[].Tags[0].Key' $TMPDIR/.jsonoutput.tmp | cut -c 1-15) )
+        ARR_TAGVALUE=( $(jq -r '.Snapshots[].Tags[0].Value' $TMPDIR/.jsonoutput.tmp | cut -c 1-15) )
 
         MAXCT=${#ARR_ID[*]}    # count snapshots found
 
@@ -1869,7 +1869,7 @@ function ec2cli_list_snapshots(){
         else
             print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
         fi
-        rm .ec2-qv-snapshots.tmp .body.tmp .jsonoutput.tmp
+        rm $TMPDIR/.ec2-qv-snapshots.tmp $TMPDIR/.body.tmp $TMPDIR/.jsonoutput.tmp
     fi
     #
     # <-- end function ec2cli_list_snapshots -->
@@ -1889,15 +1889,15 @@ function ec2cli_list_subnets(){
         REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-subnets \
-                --region $region --output json >> .jsonoutput.tmp; done &
+                --region $region --output json >> $TMPDIR/.jsonoutput.tmp; done &
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
-        aws ec2 --profile $PROFILE describe-subnets --output json --region $REGION > .jsonoutput.tmp
+        aws ec2 --profile $PROFILE describe-subnets --output json --region $REGION > $TMPDIR/.jsonoutput.tmp
     fi
 
     # number of groups
-    SUM=$(jq -r '.Subnets[].CidrBlock' .jsonoutput.tmp | wc -l)
+    SUM=$(jq -r '.Subnets[].CidrBlock' $TMPDIR/.jsonoutput.tmp | wc -l)
 
 
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]; then
@@ -1928,15 +1928,15 @@ function ec2cli_list_subnets(){
         fi
 
         # parse json
-        ARR_NAME=( $(jq -r '.Subnets[].Tags[0].Value' .jsonoutput.tmp) )
-        ARR_ID=( $(jq -r '.Subnets[].SubnetId' .jsonoutput.tmp) )
-        ARR_MAP=( $(jq -r '.Subnets[].MapPublicIpOnLaunch' .jsonoutput.tmp) )
-        ARR_CIDR=( $(jq -r '.Subnets[].CidrBlock' .jsonoutput.tmp) )
-        ARR_CT=( $(jq -r '.Subnets[].AvailableIpAddressCount' .jsonoutput.tmp) )
-        ARR_AZ=( $(jq -r '.Subnets[].AvailabilityZone' .jsonoutput.tmp) )
-        ARR_DEFAULT=( $(jq -r '.Subnets[].DefaultForAz' .jsonoutput.tmp) )
-        ARR_TAGKEY=( $(jq -r '.Subnets[].Tags[1].Key' .jsonoutput.tmp) )
-        ARR_TAGVALUE=( $(jq -r '.Subnets[].Tags[1].Value' .jsonoutput.tmp) )
+        ARR_NAME=( $(jq -r '.Subnets[].Tags[0].Value' $TMPDIR/.jsonoutput.tmp) )
+        ARR_ID=( $(jq -r '.Subnets[].SubnetId' $TMPDIR/.jsonoutput.tmp) )
+        ARR_MAP=( $(jq -r '.Subnets[].MapPublicIpOnLaunch' $TMPDIR/.jsonoutput.tmp) )
+        ARR_CIDR=( $(jq -r '.Subnets[].CidrBlock' $TMPDIR/.jsonoutput.tmp) )
+        ARR_CT=( $(jq -r '.Subnets[].AvailableIpAddressCount' $TMPDIR/.jsonoutput.tmp) )
+        ARR_AZ=( $(jq -r '.Subnets[].AvailabilityZone' $TMPDIR/.jsonoutput.tmp) )
+        ARR_DEFAULT=( $(jq -r '.Subnets[].DefaultForAz' $TMPDIR/.jsonoutput.tmp) )
+        ARR_TAGKEY=( $(jq -r '.Subnets[].Tags[1].Key' $TMPDIR/.jsonoutput.tmp) )
+        ARR_TAGVALUE=( $(jq -r '.Subnets[].Tags[1].Value' $TMPDIR/.jsonoutput.tmp) )
 
 
         MAXCT=${#ARR_ID[*]}    # count snapshots found
@@ -1991,7 +1991,7 @@ function ec2cli_list_subnets(){
         fi
 
         # clean up
-        rm .jsonoutput.tmp .ec2-qv.tmp .body.tmp
+        rm $TMPDIR/.jsonoutput.tmp .ec2-qv.tmp .body.tmp
     fi
     #
     # <-- end function ec2cli_list_subnets -->
@@ -2067,22 +2067,22 @@ function ec2cli_list_volumes(){
         REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-volumes \
-                --region $region --output json >> .jsonoutput.tmp; done &
+                --region $region --output json >> $TMPDIR/.jsonoutput.tmp; done &
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
-        aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > .jsonoutput.tmp
+        aws ec2 --profile $PROFILE describe-volumes --region $REGION --output json > $TMPDIR/.jsonoutput.tmp
     fi
 
     # determine size of all volumes returned
     if [ $ALL_REGIONS ]; then
         SUM=0
-        ARR=$(jq -r '.Volumes[].Size' .jsonoutput.tmp);
+        ARR=$(jq -r '.Volumes[].Size' $TMPDIR/.jsonoutput.tmp);
         for vol in ${ARR[@]}; do
             SUM=$(( $SUM + $vol ))
         done
     else
-        SUM=$(jq -r '.Volumes | map(.Size) | add' .jsonoutput.tmp)
+        SUM=$(jq -r '.Volumes | map(.Size) | add' $TMPDIR/.jsonoutput.tmp)
     fi
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
@@ -2095,17 +2095,17 @@ function ec2cli_list_volumes(){
         printf "\n${title}EBS VOLUMES${bodytext} : $REGION   |  *sorted\n" | indent18
 
         # parse json
-        ARR_VID=( $(jq -r '.Volumes[].VolumeId' .jsonoutput.tmp) )
-        ARR_SIZE=( $(jq -r '.Volumes[].Size' .jsonoutput.tmp) )
-        ARR_CTIME=( $(jq -r '.Volumes[].CreateTime' .jsonoutput.tmp) )
-        ARR_STATE=( $(jq -r '.Volumes[].Attachments[0].State' .jsonoutput.tmp) )
-        ARR_ENCRYPT=( $(jq -r '.Volumes[].Encrypted' .jsonoutput.tmp) )
-        ARR_IID=( $(jq -r '.Volumes[].Attachments[0].InstanceId' .jsonoutput.tmp) )
-        ARR_VTYPE=( $(jq -r '.Volumes[].VolumeType' .jsonoutput.tmp) )
-        ARR_AZ=( $(jq -r '.Volumes[].AvailabilityZone' .jsonoutput.tmp | cut -c 1-20) )
+        ARR_VID=( $(jq -r '.Volumes[].VolumeId' $TMPDIR/.jsonoutput.tmp) )
+        ARR_SIZE=( $(jq -r '.Volumes[].Size' $TMPDIR/.jsonoutput.tmp) )
+        ARR_CTIME=( $(jq -r '.Volumes[].CreateTime' $TMPDIR/.jsonoutput.tmp) )
+        ARR_STATE=( $(jq -r '.Volumes[].Attachments[0].State' $TMPDIR/.jsonoutput.tmp) )
+        ARR_ENCRYPT=( $(jq -r '.Volumes[].Encrypted' $TMPDIR/.jsonoutput.tmp) )
+        ARR_IID=( $(jq -r '.Volumes[].Attachments[0].InstanceId' $TMPDIR/.jsonoutput.tmp) )
+        ARR_VTYPE=( $(jq -r '.Volumes[].VolumeType' $TMPDIR/.jsonoutput.tmp) )
+        ARR_AZ=( $(jq -r '.Volumes[].AvailabilityZone' $TMPDIR/.jsonoutput.tmp | cut -c 1-20) )
         # limit length of tag fields to 20 chars
-        ARR_TAGKEY=( $(jq -r '.Volumes[].Tags[0].Key' .jsonoutput.tmp | cut -c 1-20) )
-        ARR_TAGVALUE=( $(jq -r '.Volumes[].Tags[0].Value' .jsonoutput.tmp | cut -c 1-20) )
+        ARR_TAGKEY=( $(jq -r '.Volumes[].Tags[0].Key' $TMPDIR/.jsonoutput.tmp | cut -c 1-20) )
+        ARR_TAGVALUE=( $(jq -r '.Volumes[].Tags[0].Value' $TMPDIR/.jsonoutput.tmp | cut -c 1-20) )
 
         MAXCT=${#ARR_VID[*]}    # count snapshots found
         UNATTACHED_CT="0"
@@ -2206,7 +2206,7 @@ function ec2cli_list_volumes(){
         Total size on disk ${title}$ASUM${bodytext} $UNIT" $total_width
 
         # clean up
-        rm .ec2-qv-volumes.tmp .body.tmp .jsonoutput.tmp
+        rm .ec2-qv-volumes.tmp .body.tmp $TMPDIR/.jsonoutput.tmp
     fi
     #
     # <-- end function ec2cli_list_volumes -->
