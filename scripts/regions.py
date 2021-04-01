@@ -18,7 +18,7 @@ from botocore.exceptions import ClientError
 
 
 CONFIG_DIR = os.getenv('HOME') + '/' + '.config/ec2cli'
-REFERENCE = CONFIG_DIR + '/' + 'regions.list'
+REFERENCE = '../core' + 'regions.list'
 MAX_AGE_DAYS = 3
 
 
@@ -87,7 +87,7 @@ def get_regions(profile=None):
 
 def print_array(args):
     for x in args:
-        print(x.strip() + ' ', end='')
+        print('\t\t' + x.strip())
 
 
 def shared_credentials_location():
@@ -139,12 +139,11 @@ if len(sys.argv) > 1:
 if PROFILE is None:
     PROFILE = 'default'
 
-if os.path.exists(REFERENCE) and file_age(REFERENCE, 'days') < MAX_AGE_DAYS:
-    r = read(REFERENCE)
-    regions = [x for x in r.split('\n') if x]
-    sys.exit(print_array(regions))
-else:
-    regions = get_regions(profile=PROFILE)
-    print_array(regions)
-    write_file(regions, REFERENCE)
-    sys.exit(0)
+regions = get_regions(profile=PROFILE)
+write_file(regions, REFERENCE)
+
+print('\n\tContents written to core/regions.list:\n')
+print_array(regions)
+print(f'\n\tFile contains {len(regions)} AWS region codes\n')
+
+sys.exit(0)
