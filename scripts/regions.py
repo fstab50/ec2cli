@@ -17,8 +17,9 @@ from pyaws.session import boto3_session
 from botocore.exceptions import ClientError
 
 
+REGIONLIST = 'regions.list'
 CONFIG_DIR = os.getenv('HOME') + '/' + '.config/ec2cli'
-REFERENCE = '../core' + 'regions.list'
+REFERENCE = '../core' + REGIONLIST
 MAX_AGE_DAYS = 3
 
 
@@ -139,11 +140,17 @@ if len(sys.argv) > 1:
 if PROFILE is None:
     PROFILE = 'default'
 
-regions = get_regions(profile=PROFILE)
-write_file(regions, REFERENCE)
 
-print('\n\tContents written to core/regions.list:\n')
-print_array(regions)
-print(f'\n\tFile contains {len(regions)} AWS region codes\n')
+if os.path.exists(REFERENCE) and file_age(REFERENCE, 'days') < MAX_AGE_DAYS:
+    print(f'\n\tRegioncode file ({REGIONLIST}), less than {MAX_AGE_DAYS} days old.\n')
+    sys.exit(0)
+
+else:
+    regions = get_regions(profile=PROFILE)
+    write_file(regions, REFERENCE)
+
+    print('\n\tContents written to core/regions.list:\n')
+    print_array(regions)
+    print(f'\n\tFile contains {len(regions)} AWS region codes\n')
 
 sys.exit(0)
