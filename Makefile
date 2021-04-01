@@ -32,9 +32,9 @@ VERSION_FILE = $(LIB_DIR)/version.py
 
 build-all: clean builddeb buildrpm    ## Clean and Build Debian & RPM pkgs
 
-zero-builddeb: clean deplist builddeb    ## Clean and Build Debian (.deb) pkg
+zero-builddeb: clean deplist generate-regions builddeb    ## Clean and Build Debian (.deb) pkg
 
-zero-buildrpm: clean deplist buildrpm    ## Clean and Build Redhat (.rpm) pkg
+zero-buildrpm: clean deplist generate-regions buildrpm    ## Clean and Build Redhat (.rpm) pkg
 
 zero-installdeb:	clean builddeb installdeb	## Clean, Build & Install Debian (.deb) pkg
 
@@ -71,13 +71,21 @@ test:     ## Run pytest unittests
 
 
 .PHONY: build-sizes
-build-sizes:	##  Create ec2 sizes.txt if 10 days age. FORCE=true trigger refresh
+build-sizes:	## Create ec2 sizes.txt if 10 days age. FORCE=true trigger refresh
 	cp $(MODULE_PATH)/version.py $(SCRIPTS)/
 	if [ -d $(VENV_DIR) ]; then . $(VENV_DIR)/bin/activate && \
 	$(PYTHON3_PATH) $(SCRIPTS)/ec2sizes.py $(FORCE); else \
 	$(MAKE) setup-venv && . $(VENV_DIR)/bin/activate && \
 	$(PYTHON3_PATH) $(SCRIPTS)/ec2sizes.py $(FORCE); fi
 	rm -f $(SCRIPTS)/version.py
+
+
+.PHONY: generate-regions
+generate-regions:  ## Regenerate list of AWS region codes
+	if [ -d $(VENV_DIR) ]; then . $(VENV_DIR)/bin/activate && \
+	$(PYTHON3_PATH) $(SCRIPTS)/regions.py; else \
+	$(MAKE) setup-venv && . $(VENV_DIR)/bin/activate && \
+	$(PYTHON3_PATH) $(SCRIPTS)/regions.py; fi
 
 
 docs: clean setup-venv    ## Generate sphinx documentation
