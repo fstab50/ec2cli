@@ -14,14 +14,6 @@ import sys
 import inspect
 import datetime
 from botocore.exceptions import ClientError
-from pyaws.session import boto3_session
-from pyaws.utils import export_json_object
-
-try:
-    from configparser import ConfigParser
-except Exception:
-    print('unable to import configParser library. Exit')
-    sys.exit(1)
 
 
 CONFIG_DIR = os.getenv('HOME') + '/' + '.config/ec2cli'
@@ -30,6 +22,28 @@ MAX_AGE_DAYS = 3
 
 
 # --- declarations  --------------------------------------------------------------------------------
+
+
+def region_list():
+    return [
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'ap-northeast-3',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'ca-central-1',
+        'eu-central-1',
+        'eu-north-1',
+        'eu-west-1',
+        'eu-west-2',
+        'eu-west-3',
+        'sa-east-1',
+        'us-east-1',
+        'us-east-2',
+        'us-west-1',
+        'us-west-2'
+    ]
 
 
 def file_age(filepath, unit='seconds'):
