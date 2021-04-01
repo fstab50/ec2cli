@@ -72,20 +72,20 @@ test:     ## Run pytest unittests
 
 .PHONY: build-sizes
 build-sizes:	## Create ec2 sizes.txt if 10 days age. FORCE=true trigger refresh
-	cp $(MODULE_PATH)/version.py $(SCRIPTS)/
+	cp $(MODULE_PATH)/version.py $(SCRIPT_DIR)/
 	if [ -d $(VENV_DIR) ]; then . $(VENV_DIR)/bin/activate && \
-	$(PYTHON3_PATH) $(SCRIPTS)/ec2sizes.py $(FORCE); else \
+	$(PYTHON3_PATH) $(SCRIPT_DIR)/ec2sizes.py $(FORCE); else \
 	$(MAKE) setup-venv && . $(VENV_DIR)/bin/activate && \
-	$(PYTHON3_PATH) $(SCRIPTS)/ec2sizes.py $(FORCE); fi
-	rm -f $(SCRIPTS)/version.py
+	$(PYTHON3_PATH) $(SCRIPT_DIR)/ec2sizes.py $(FORCE); fi
+	rm -f $(SCRIPT_DIR)/version.py
 
 
 .PHONY: generate-regions
 generate-regions:  ## Regenerate list of AWS region codes
 	if [ -d $(VENV_DIR) ]; then . $(VENV_DIR)/bin/activate && \
-	$(PYTHON3_PATH) $(SCRIPTS)/regions.py; else \
+	$(PYTHON3_PATH) $(SCRIPT_DIR)/regions.py; else \
 	$(MAKE) setup-venv && . $(VENV_DIR)/bin/activate && \
-	$(PYTHON3_PATH) $(SCRIPTS)/regions.py; fi
+	$(PYTHON3_PATH) $(SCRIPT_DIR)/regions.py; fi
 
 
 docs: clean setup-venv    ## Generate sphinx documentation
