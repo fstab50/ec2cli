@@ -13,6 +13,7 @@ import os
 import sys
 import inspect
 import datetime
+from pyaws.session import boto3_session
 from botocore.exceptions import ClientError
 
 
