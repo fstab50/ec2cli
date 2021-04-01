@@ -18,10 +18,10 @@
 
 ## About this repository
 
-* Purpose: 	2.4.9	2.4.9CLI utilities for use with Amazon Web Services (AWS)
-* Version:	2.4.9
-* Repo: 	2.4.9	2.4.9https://github.com/fstab50/ec2cli
-* Mirror:	2.4.9	2.4.9https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+* Purpose: 		CLI utilities for use with Amazon Web Services (AWS)
+* Version:	    2.4.10
+* Repo: 		https://github.com/fstab50/ec2cli
+* Mirror:		https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 
 * * *
 
@@ -55,7 +55,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 ## Usage ##
 
 ```bash
-	2.4.9$ ec2cli --help     
+	$ ec2cli --help
 ```
 
 [![help](./images/ec2cli-help.png)](https://images.awspros.world/ec2cli/ec2cli-help.png)
@@ -75,103 +75,107 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 * * *
 ## Installation ##
+* * *
 
-### `AUTOMATED INSTALLATION`
+<a name="debian-distro-install"></a>
+### Ubuntu, Linux Mint, Debian variants  (Python 3.6+)
 
-* **install.sh**
+The easiest way to install **ec2cli** on debian-based Linux distributions is via the debian-tools package repository:
 
-    - The easiest way to install `ec2cli` is to download and run [the installer](./install.sh).  It will check for all dependencies, and if missing, prompt you to install them.   
-    - Run the following commands from the filesystem location where you wish to install `ec2cli`:
 
-        ```bash
-            $ cd < ec2cli install dir >
-            $ wget https://bitbucket.org/blakeca00/ec2cli/downloads/install.sh
-            $ sh install.sh
-        ```
+1. Open a command line terminal.
 
-Alternatively, if you wish to do the installation yourself, please read on.
+    [![deb-install0](./assets/deb-install-0.png)](http://images.awspros.world/ec2cli/deb-install-0.png)
 
-### `MANUAL INSTALLATION`
-
-* **General Dependencies**
-
-	2.4.9- Writable directory where utilities are located
-	2.4.9- One of the following python versions: 2.6.5, 2.7.X+, 3.3.X+, 3.4.X+
-	2.4.9- Installation Amazon CLI tools (awscli, see below this section)
-	2.4.9- awk, see your dist repo
-	2.4.9- sed, see your dist repo  
-
-* **jq, JSON Parser**.  Install `jq` from your local distribution repository.  
-
-    ```bash
-	2.4.9$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
-    ```
-
-    ```bash
-	2.4.9$ sudo yum install jq        # RedHat, Fedora, CentOS
-    ```
-
-* **Environment variables**:
-
-	2.4.9- Setup the following global environment variables by adding each to your	2.4.9.bashrc or .bash_profile (substitute your respective values)
-
-    ```bash                              
-    	2.4.9# .bashrc / .bash_profile
-
-    	2.4.9export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
-    	2.4.9export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
-    	2.4.9export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
+2. Download and install the repository definition file
 
     ```
-
-* **Python Package Manager**. If you do not currently have it, install [pip](http://www.pip-installer.org/en/latest).  
-
-    You can install pip from your distribution's package repo via _one_ of the below  
-	2.4.9commands according to your Linux distribution:
-
-
-| DISTRIBUTION | INSTALLATION COMMAND |  PYTHON VERSION |
-| :------------------------------ | :----------------------------------------- | :--------: |
-| **Ubuntu** | ``` $ sudo apt install python-pip ``` | python2.7 |
-| **Redhat** | ```  $ sudo yum install python-pip  ``` | python2.7 |
-| **Fedora-based distros** | ``` $ sudo dnf install python-pip ``` | python2.7 |
-| **Ubuntu** | ``` $ sudo apt install python3-pip ``` | python3.4+ |
-| **Redhat** | ```  $ sudo yum install python34-setuptools  ``` | python3.4 |
-| **Redhat** | ```  $ sudo yum install python36-setuptools  ``` | python3.6 |
-| **CentOS7** | ```  $ sudo yum install python34-setuptools  ``` | python3.4 |
-| **CentOS7** | ```  $ sudo yum install python36-setuptools  ``` | python3.6 |
-| **Fedora-based distros** | ``` $ sudo dnf install python3-pip ``` | python3.4+ |
-
-* **Install the [awscli](https://github.com/aws/aws-cli/)**
-
-    Detailed instructions can be found in the README located at:
-    https://github.com/aws/aws-cli/
-
-    ```bash
-	2.4.9$ sudo pip install awscli
+    $ sudo apt install wget
     ```
 
-* If you have the aws-cli installed and want to upgrade to the latest version you can run:
-
-    ```bash
-	2.4.9$ sudo pip install --upgrade awscli
+    ```
+    $ wget http://awscloud.center/deb/debian-tools.list
     ```
 
-* Clone this git repo in a writeable directory:
+    [![deb-install1](./assets/deb-install-1.png)](http://images.awspros.world/ec2cli/deb-install-1.png)
 
-    ```bash
-	2.4.9$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+    ```
+    $ sudo chown 0:0 debian-tools.list && sudo mv debian-tools.list /etc/apt/sources.list.d/
     ```
 
-* **Add `ec2cli` to your path**. Add the following to your .bashrc, .bash_profile, or .profile:  
+3. Install the package repository public key on your local machine
 
-    ```bash
-    export PATH=$PATH:$EC2_REPO
     ```
+    $ wget -qO - http://awscloud.center/keys/public.key | sudo apt-key add -
+    ```
+
+    [![deb-install2](./assets/deb-install-2.png)](http://images.awspros.world/ec2cli/deb-install-2.png)
+
+4. Update the local package repository cache
+
+    ```
+    $ sudo apt update
+    ```
+
+5. Install **ec2cli** os package
+
+    ```
+    $ sudo apt install ec2cli
+    ```
+
+    Answer "y":
+
+    [![deb-install3](./assets/deb-install-3.png)](http://images.awspros.world/ec2cli/deb-install-3.png)
+
+
+6. Verify Installation
+
+    ```
+    $ apt show ec2cli
+    ```
+
+    [![apt-show](./assets/deb-install-4.png)](http://images.awspros.world/ec2cli/deb-install-4.png)
+
 
 [back to the top](#top)
 
 * * *
+
+<a name="redhat-distro-install"></a>
+### Redhat, CentOS  (Python 3.6+)
+
+Redhat Package Manager (RPM) format used by Redhat-based distros is under development.  Check [rpm.awscloud.center](http://s3.us-east-2.amazonaws.com/rpm.awscloud.center/index.html) page for updates.
+
+
+[back to the top](#top)
+
+* * *
+<a name="amzn2-distro-install"></a>
+### Amazon Linux 2 / Fedora (Python 3.7+)
+
+Redhat Package Manager (RPM) format used by Amazon Linux under development.  Check [amzn2.awscloud.center](http://s3.us-east-2.amazonaws.com/amzn2.awscloud.center/index.html) page for updates.
+
+--
+
+[back to the top](#top)
+
+
+* * *
+## Build options
+
+**[GNU Make](https://www.gnu.org/software/make) Targets**.  Type the following to display the available make targets from the root of the project:
+
+```bash
+    $  make help
+```
+
+<p align="center">
+    <a href="http://images.awspros.world/ec2cli/make-help.png" target="_blank"><img src="./images/make-help.png">
+</p>
+
+--
+
+[back to the top](#top)
 
 ## Configuration ##
 
@@ -180,10 +184,10 @@ Alternatively, if you wish to do the installation yourself, please read on.
     ```bash
    $ aws configure
 
-	2.4.9AWS Access Key ID: foo
-	2.4.9AWS Secret Access Key: bar
-	2.4.9Default region name [us-west-2]: us-west-2
-	2.4.9Default output format [None]: json
+	AWS Access Key ID: foo
+	AWS Secret Access Key: bar
+	Default region name [us-west-2]: us-west-2
+	Default output format [None]: json
     ```
 
 * Optionally, define a profile for a specific user:
@@ -199,25 +203,25 @@ Alternatively, if you wish to do the installation yourself, please read on.
 
 * Command Completion
 
-	2.4.9You'll want to enable command completion to make awscli
-	2.4.9commands easy to type and recall.  After installing awscli,
-	2.4.9add the following to your .bashrc or .bash_profile:
+	You'll want to enable command completion to make awscli
+	commands easy to type and recall.  After installing awscli,
+	add the following to your .bashrc or .bash_profile:
 
     ```bash
-	2.4.9# .bashrc
-	2.4.9complete -C aws_completer aws
+	# .bashrc
+	complete -C aws_completer aws
     ```
 
 [back to the top](#top)
 
 * * *
 
-### Verify Your Configuration  
+### Verify Your Configuration
 
 After completing the above Installation and Configuration sections, verify your configuration:
 
 ```bash
-	2.4.9$ ec2cli --version
+	$ ec2cli --version
 ```
 
 [![version](./images/ec2cli-version.png)]((https://images.awspros.world/ec2cli/ec2cli-version.png))
@@ -231,7 +235,7 @@ After completing the above Installation and Configuration sections, verify your 
 ## IAM Permissions ##
 
 #### ec2cli Required Permissions ####
-You'll need appropriate IAM permissions to execute ec2cli.  
+You'll need appropriate IAM permissions to execute ec2cli.
 
 ```json
 {
