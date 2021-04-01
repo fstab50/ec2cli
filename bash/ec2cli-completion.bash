@@ -267,7 +267,7 @@ function _ec2cli_completions(){
         '--region' | "--re*")
             ##  complete AWS region codes
             python3=$(which python3)
-            regions=$($python3 "$config_dir/regions.py")
+            regions=$(cat "$config_dir/regions.list")
 
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
 
