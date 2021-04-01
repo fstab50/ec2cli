@@ -32,9 +32,9 @@ VERSION_FILE = $(LIB_DIR)/version.py
 
 build-all: clean builddeb buildrpm    ## Clean and Build Debian & RPM pkgs
 
-zero-builddeb: clean deplist generate-regions builddeb    ## Clean and Build Debian (.deb) pkg
+zero-builddeb: clean generate-regions builddeb    ## Clean and Build Debian (.deb) pkg
 
-zero-buildrpm: clean deplist generate-regions buildrpm    ## Clean and Build Redhat (.rpm) pkg
+zero-buildrpm: clean generate-regions buildrpm    ## Clean and Build Redhat (.rpm) pkg
 
 zero-installdeb:	clean builddeb installdeb	## Clean, Build & Install Debian (.deb) pkg
 
@@ -93,13 +93,6 @@ docs: clean setup-venv    ## Generate sphinx documentation
 	$(PIP_CALL) install -r $(DOC_PATH)/requirements.txt
 	cd $(CUR_DIR) && $(MAKE) clean-docs
 	cd $(DOC_PATH) && . $(VENV_DIR)/bin/activate && $(MAKE) html
-
-
-.PHONY: deplist
-deplist: pre-build  setup-venv    ## Gen OS pkg desc files. FORCE=x to force regen
-	if [ $(FORCE) ]; then . $(VENV_DIR)/bin/activate && \
-	$(PYTHON3_PATH) $(SCRIPT_DIR)/build_deplist.py --force; \
-	else . $(VENV_DIR)/bin/activate && $(PYTHON3_PATH) $(SCRIPT_DIR)/build_deplist.py; fi
 
 
 .PHONY: builddeb
