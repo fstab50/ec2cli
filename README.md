@@ -19,7 +19,7 @@
 ## About this repository
 
 * Purpose: 		CLI utilities for use with Amazon Web Services (AWS)
-* Version:	    2.4.10
+* Version:	
 * Repo: 		https://github.com/fstab50/ec2cli
 * Mirror:		https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 
@@ -44,7 +44,7 @@ While I realize that accomplishing the same functionality is easier with the AWS
 
 _Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
 
-[![instances](./images/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
+[![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
 
 (See [Screenshots](#screenshots) section below)
 
@@ -58,7 +58,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 	$ ec2cli --help
 ```
 
-[![help](./images/ec2cli-help.png)](https://images.awspros.world/ec2cli/ec2cli-help.png)
+[![help](./assets/ec2cli-help.png)](https://images.awspros.world/ec2cli/ec2cli-help.png)
 
 
 ### Notes: ###
@@ -170,7 +170,7 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 ```
 
 <p align="center">
-    <a href="http://images.awspros.world/ec2cli/make-help.png" target="_blank"><img src="./images/make-help.png">
+    <a href="http://images.awspros.world/ec2cli/make-help.png" target="_blank"><img src="./assets/make-help.png">
 </p>
 
 --
@@ -224,7 +224,7 @@ After completing the above Installation and Configuration sections, verify your 
 	$ ec2cli --version
 ```
 
-[![version](./images/ec2cli-version.png)]((https://images.awspros.world/ec2cli/ec2cli-version.png))
+[![version](./assets/ec2cli-version.png)]((https://images.awspros.world/ec2cli/ec2cli-version.png))
 
 **Note**: Python and Kernel versions will depend upon your system parameters
 
@@ -303,24 +303,24 @@ List command displays AWS resource details for your AWS default region if no reg
 ```bash
 $ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
 ```
-[![instances](./images/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
+[![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
 
 ```bash
 $ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
 ```
 
-[![volumes](./images/ec2cli-list-volumes.png)](https://images.awspros.world/ec2cli/ec2cli-list-volumes.png)
+[![volumes](./assets/ec2cli-list-volumes.png)](https://images.awspros.world/ec2cli/ec2cli-list-volumes.png)
 
 
 ```bash
 $ ec2cli -s    # list snapshots, AWS default region (us-west-2)
 ```
-[![snapshots](./images/ec2cli-list-snapshots.png)](https://images.awspros.world/ec2cli/ec2cli-list-snapshots.png)
+[![snapshots](./assets/ec2cli-list-snapshots.png)](https://images.awspros.world/ec2cli/ec2cli-list-snapshots.png)
 
 ```bash
 $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 ```
-[![securitygroups](./images/ec2cli-list-securitygroups.png)](https://images.awspros.world/ec2cli/ec2cli-list-securitygroups.png)
+[![securitygroups](./assets/ec2cli-list-securitygroups.png)](https://images.awspros.world/ec2cli/ec2cli-list-securitygroups.png)
 
 [back to the top](#top)
 
@@ -338,29 +338,29 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 ```
 1.Select from list of instance choices:
 
-![](./images/start-instance_01.png)
+![](./assets/start-instance_01.png)
 
 2.After instance is chosen, ec2cli performs a network access check:
 
   * Access check sources the security group and validates IPs listed in the group against your local IP.
   * _Note_: if the instance you chose is already running, the ec2cli moves immediately to authentication (Step 4).
 
-![](./images/start-instance_02.png)
+![](./assets/start-instance_02.png)
 
 3.If network access check succeeds, the ec2 wait function is called to prevent login until the instance starts.
 
-![](./images/start-instance_03.png)
+![](./assets/start-instance_03.png)
 
 4.Authentication start:
 
   * Public IP and ssh key name are sourced from instance json data via api call.
   * The ssh key is then located on your local machine in the dir specified by the ``$SSH_KEYS`` env variable.
 
-![](./images/start-instance_04.png)
+![](./assets/start-instance_04.png)
 
 5.Login established (entire start sequence shown)
 
-![](./images/start-instance_05.png)
+![](./assets/start-instance_05.png)
 
 [back to the top](#top)
 

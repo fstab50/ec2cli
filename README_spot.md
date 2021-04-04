@@ -9,23 +9,23 @@ $ ec2cli --spot
 ```
 1.Select region for which you wish to view spot prices (default region auto selected via environment variables):
 
-[![](./images/spotprice_region.png)](https://images.awspros.world/ec2cli/spotprice_region.png)
+[![](./assets/spotprice_region.png)](https://images.awspros.world/ec2cli/spotprice_region.png)
 
-2.Select Operating System:   
+2.Select Operating System:
 
-[![](./images/spotprice_os.png)](https://images.awspros.world/ec2cli/spotprice_os.png)
+[![](./assets/spotprice_os.png)](https://images.awspros.world/ec2cli/spotprice_os.png)
 
 3.Select a specific instance type or all instances.
 
-[![](./images/spotprice_types.png)](https://images.awspros.world/ec2cli/spotprice_types.png)
+[![](./assets/spotprice_types.png)](https://images.awspros.world/ec2cli/spotprice_types.png)
 
 4a.If specific instance type selected:
 
-[![](./images/spotprice_1instance.png)](https://images.awspros.world/ec2cli/spotprice_1instance.png)
+[![](./assets/spotprice_1instance.png)](https://images.awspros.world/ec2cli/spotprice_1instance.png)
 
 4b.If default [all] selected, output is an ordered list (increasing):
 
-[![](./images/spotprice_all.png)](https://images.awspros.world/ec2cli/spotprice_all.png)
+[![](./assets/spotprice_all.png)](https://images.awspros.world/ec2cli/spotprice_all.png)
 
 ( [Back to README](./README.md) )
 
