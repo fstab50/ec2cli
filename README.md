@@ -123,7 +123,7 @@ The easiest way to install **ec2cli** on debian-based Linux distributions is via
     $ sudo apt install ec2cli
     ```
 
-    [![deb-install3a](./assets/deb-install-3.png)](http://images.awspros.world/ec2cli/deb-install-3a.png)
+    [![deb-install3a](./assets/deb-install-3a.png)](http://images.awspros.world/ec2cli/deb-install-3a.png)
 
     Answer "y":
 
