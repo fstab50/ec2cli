@@ -1,12 +1,32 @@
 <a name="top"></a>
 * * *
 # EC2cli - Amazon EC2 Utilities
+* * *
 
+## Summary
 
-* [About](#about-this-repository)
-* [License](#license)
-* [Introduction](#introduction)
-* [Installation](#installation)
+EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or listing which EC2 instances are running.
+
+That being said, ec2cli was designed for use with relatively low AWS resource counts.  If you are operating at scale, these will prove cumbersome since are no embedded filtering capabilities (if you would like to contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you have already developed your own tools for managing and operating AWS resources in a commercial environment.
+
+While I realize that accomplishing the same functionality is easier with the AWS ruby or python SDK's, I developed these in bash to make them easy for system administrators and solution architects to modify for their particular use cases.
+
+_Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
+
+[![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
+
+(See [Screenshots](#screenshots) section below)
+
+**Version**:	2.4.10
+
+--
+
+[back to the top](#top)
+
+* * *
+
+## Contents
+
 * [Configuration](#configuration)
 * [Permissions](#iam-permissions)
 * [Usage](#usage)
@@ -60,24 +80,6 @@
 
 * All utilities contained herein are copyrighted and made available under GPLv2
 * See [LICENSE](./LICENSE.txt)
-
-[back to the top](#top)
-
-* * *
-
-## Introduction
-
-EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or listing which EC2 instances are running.
-
-That being said, ec2cli was designed for use with relatively low AWS resource counts.  If you are operating at scale, these will prove cumbersome since are no embedded filtering capabilities (if you would like to contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you have already developed your own tools for managing and operating AWS resources in a commercial environment.
-
-While I realize that accomplishing the same functionality is easier with the AWS ruby or python SDK's, I developed these in bash to make them easy for system administrators and solution architects to modify for their particular use cases.
-
-_Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
-
-[![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
-
-(See [Screenshots](#screenshots) section below)
 
 [back to the top](#top)
 
