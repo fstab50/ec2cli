@@ -3,32 +3,12 @@
 # EC2cli - Amazon EC2 Utilities
 * * *
 
-## Summary
-
-EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or listing which EC2 instances are running.
-
-While it is clear that accomplishing the ec1cli's functionality with the AWS ruby or python SDK's may be cleaner, ec2cli was developed in bash to make it easy for system administrators and solution architects to modify ec2cli for each's respective use cases.
-
-_Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
-
-[![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
-
-(See [Screenshots](#screenshots) section below)
-
-**Version**:	2.4.10
-
---
-
-[back to the top](#top)
-
-* * *
-
 ## Contents
 
 
 * [**About**](#about-this-repository)
 
-* [**License**](#license)
+* [**Summary**](#summary)
 
 * [**Dependencies**](#dependencies)
 
@@ -73,11 +53,21 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 [back to the top](#top)
 
 * * *
+## Summary
 
-## License
+EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or listing which EC2 instances are running.
 
-* All utilities contained herein are copyrighted and made available under GPLv2
-* See [LICENSE](./LICENSE.md)
+While it is clear that accomplishing the ec1cli's functionality with the AWS ruby or python SDK's may be cleaner, ec2cli was developed in bash to make it easy for system administrators and solution architects to modify ec2cli for each's respective use cases.
+
+_Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
+
+[![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
+
+(See [Screenshots](#screenshots) section below)
+
+**Version**:	2.4.10
+
+--
 
 [back to the top](#top)
 
@@ -409,15 +399,25 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 * * *
 
+## Author & Copyright
+
+All works contained herein copyrighted via below author unless work is explicitly noted by an alternate author.
+
+* Copyright Blake Huber, All Rights Reserved.
+
+[back to the top](#top)
+
+* * *
+
 ## License
 
 * Software contained in this repo is licensed under the [license agreement](./LICENSE.md).  You may display the license and copyright information by issuing the following command:
 
 ```
-$ gcreds --version
+$ ec2cli --version
 ```
 
-[![help](./assets/version-copyright.png)](https://images.awspros.world/gcreds/version-copyright.png)
+[![help](./assets/version-copyright.png)](https://images.awspros.world/ec2cli/version-copyright.png)
 
 
 [back to the top](#top)
