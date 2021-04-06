@@ -5,7 +5,6 @@
 
 ## Contents
 
-
 * [**About**](#about-this-repository)
 
 * [**Summary**](#summary)
@@ -64,8 +63,6 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 [![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
 
 (See [Screenshots](#screenshots) section below)
-
-**Version**:	2.4.10
 
 --
 
