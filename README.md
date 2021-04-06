@@ -70,7 +70,28 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 * * *
 
-## Usage ##
+## Dependencies
+
+[gcreds](https://github.com/fstab50/gcreds) requires the following:
+
+- [Python version 3.6+](https://docs.python.org/3/)
+- Installation Amazon CLI tools (awscli, see Installation section)
+- [jq](https://stedolan.github.io/jq), a json parser generally available from your distribution repo
+- bash (4.x)
+- Standard linux utilities:
+    * grep
+    * awk
+    * sed
+    * cat
+    * hostname
+
+--
+
+[back to the top](#top)
+
+* * *
+
+## Program Options ##
 
 ```bash
 	$ ec2cli --help
