@@ -212,23 +212,23 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 a. Run the _aws configure_ command:
 
     ```bash
-   $ aws configure
+    $ aws configure
 
-	AWS Access Key ID: foo
-	AWS Secret Access Key: bar
-	Default region name [us-west-2]: us-west-2
-	Default output format [None]: json
+	     AWS Access Key ID: foo
+	     AWS Secret Access Key: bar
+	     Default region name [us-west-2]: us-west-2
+	     Default output format [None]: json
     ```
 
 b. Optionally, define a profile for a specific user:
 
     ```bash
-   $ aws configure --profile testuser
+      $ aws configure --profile testuser
 
-    AWS Access Key ID: footestuser
-    AWS Secret Access Key: bartestuser
-    Default region name [us-west-2]: us-west-2
-    Default output format [None]: json
+        AWS Access Key ID: footestuser
+        AWS Secret Access Key: bartestuser
+        Default region name [us-west-2]: us-west-2
+        Default output format [None]: json
     ```
 
 c. Configure bash command completion:
@@ -238,8 +238,8 @@ c. Configure bash command completion:
 	add the following to your .bashrc or .bash_profile:
 
     ```bash
-	# .bashrc
-	complete -C aws_completer aws
+	   # .bashrc
+	    complete -C aws_completer aws
     ```
 
 2. Next, configure [IAM policy permissions](#iam-permissions) for the user profile which will generally be used with **ec2cli**.
