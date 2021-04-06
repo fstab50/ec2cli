@@ -24,8 +24,6 @@
 
 * [**Identity and Access Management (IAM) Permissions**](#iam-permissions)
 
-* [**Usage**](#usage)
-
 * [**Build Options**](#build-options)
 
 * [**Screenshots**](#screenshots)
