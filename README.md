@@ -240,6 +240,8 @@ c. Configure bash command completion:  	You'll want to enable command completion
 
 2. Next, configure [IAM policy permissions](#iam-permissions) for the user profile which will generally be used with **ec2cli**.
 
+--
+
 [back to the top](#top)
 
 * * *
@@ -249,7 +251,7 @@ c. Configure bash command completion:  	You'll want to enable command completion
 After completing the above Installation and Configuration sections, verify your configuration:
 
 ```bash
-	$ aws --version
+$ aws --version
 ```
 
 Output:
