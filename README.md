@@ -390,29 +390,32 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 ```
 1.Select from list of instance choices:
 
-![](./assets/start-instance_01.png)
+[![instances](./assets/start-instance_01.png)](https://images.awspros.world/ec2cli/start-instance_01.png)
 
 2.After instance is chosen, ec2cli performs a network access check:
 
   * Access check sources the security group and validates IPs listed in the group against your local IP.
   * _Note_: if the instance you chose is already running, the ec2cli moves immediately to authentication (Step 4).
 
-![](./assets/start-instance_02.png)
+[![instances](./assets/start-instance_2.png)](https://images.awspros.world/ec2cli/start-instance_2.png)
+
 
 3.If network access check succeeds, the ec2 wait function is called to prevent login until the instance starts.
 
-![](./assets/start-instance_03.png)
+[![instances](./assets/start-instance_03.png)](https://images.awspros.world/ec2cli/start-instance_03.png)
 
 4.Authentication start:
 
   * Public IP and ssh key name are sourced from instance json data via api call.
   * The ssh key is then located on your local machine in the dir specified by the ``$SSH_KEYS`` env variable.
 
-![](./assets/start-instance_04.png)
+[![instances](./assets/start-instance_04.png)](https://images.awspros.world/ec2cli/start-instance_04.png)
 
 5.Login established (entire start sequence shown)
 
-![](./assets/start-instance_05.png)
+[![instances](./assets/start-instance_05.png)](https://images.awspros.world/ec2cli/start-instance_05.png)
+
+--
 
 [back to the top](#top)
 
