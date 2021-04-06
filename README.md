@@ -446,6 +446,9 @@ All works contained herein copyrighted via below author unless work is explicitl
 $ ec2cli --version
 ```
 
+[![version](./assets/version-copyright.png)](https://images.awspros.world/ec2cli/version-copyright.png)
+
+
 [back to the top](#top)
 
 * * *
