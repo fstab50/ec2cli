@@ -75,7 +75,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 [ec2cli](https://github.com/fstab50/ec2cli) requires the following:
 
 - [Python version 3.6+](https://docs.python.org/3/)
-- Installation and configuration of [Amazon Web Services CLI tools](https://github.com/aws/aws-cli)
+- Installation and configuration of [Amazon Web Services CLI tools](https://github.com/aws/aws-cli) (awscli).  After installation, follow this [configuration guide](#configuration) to set up the awscli.
 - [jq](https://stedolan.github.io/jq), a json parser generally available from your distribution repo
 - bash (4.x)
 - Standard linux utilities:
@@ -265,7 +265,8 @@ After completing the above Installation and Configuration sections, verify your 
 	$ ec2cli --version
 ```
 
-[![version](./assets/ec2cli-version.png)]((https://images.awspros.world/ec2cli/ec2cli-version.png))
+[![version](./assets/version-copyright.png)](https://images.awspros.world/ec2cli/version-copyright.png)
+
 
 **Note**: Python and Kernel versions will depend upon your system parameters
 
@@ -434,9 +435,6 @@ All works contained herein copyrighted via below author unless work is explicitl
 ```
 $ ec2cli --version
 ```
-
-[![help](./assets/version-copyright.png)](https://images.awspros.world/ec2cli/version-copyright.png)
-
 
 [back to the top](#top)
 
