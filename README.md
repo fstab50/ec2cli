@@ -13,7 +13,10 @@
 
 * [**Program Options**](#program-options)
 
-* [**Build Options**](#build-options)
+* [**Installation**](#installation)
+  * [Ubuntu, Linux Mint, Debian-based Distributions](#debian-distro-install)
+  * [Redhat, CentOS](#redhat-distro-install)
+  * [Amazon Linux 2, Fedora](#amzn2-distro-install)
 
 * [**Configuration**](#configuration)
 
@@ -21,12 +24,9 @@
 
 * [**Identity and Access Management (IAM) Permissions**](#iam-permissions)
 
-* [**Installation**](#installation)
-    * [Ubuntu, Linux Mint, Debian-based Distributions](#debian-distro-install)
-    * [Redhat, CentOS](#redhat-distro-install)
-    * [Amazon Linux 2, Fedora](#amzn2-distro-install)
-
 * [**Usage**](#usage)
+
+* [**Build Options**](#build-options)
 
 * [**Screenshots**](#screenshots)
 
@@ -204,27 +204,12 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 
 
 * * *
-## Build options
-
-**[GNU Make](https://www.gnu.org/software/make) Targets**.  Type the following to display the available make targets from the root of the project:
-
-```bash
-    $  make help
-```
-
-<p align="center">
-    <a href="http://images.awspros.world/ec2cli/make-help.png" target="_blank"><img src="./assets/make-help.png">
-</p>
-
---
-
-[back to the top](#top)
 
 ## Configuration ##
 
 1. You will have to configure the Amazon Web Servies comand line interface before attempting to use **ec2cli**:
 
-* Run the _aws configure_ command:
+  * Run the _aws configure_ command:
 
     ```bash
    $ aws configure
@@ -235,7 +220,7 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 	Default output format [None]: json
     ```
 
-* Optionally, define a profile for a specific user:
+  * Optionally, define a profile for a specific user:
 
     ```bash
    $ aws configure --profile testuser
@@ -246,7 +231,7 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
     Default output format [None]: json
     ```
 
-* Configure bash command completion:
+  * Configure bash command completion:
 
 	You'll want to enable command completion to make awscli
 	commands easy to type and recall.  After installing awscli,
@@ -339,6 +324,24 @@ You'll need appropriate IAM permissions to execute ec2cli.
 ```
 
 You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
+
+[back to the top](#top)
+
+* * *
+
+## Build options
+
+**[GNU Make](https://www.gnu.org/software/make) Targets**.  If you wish to use this project to compile your own Linux installation pa kages, type the following to display the available make targets from the root of the project:
+
+```bash
+    $  make help
+```
+
+<p align="center">
+    <a href="http://images.awspros.world/ec2cli/make-help.png" target="_blank"><img src="./assets/make-help.png">
+</p>
+
+--
 
 [back to the top](#top)
 
