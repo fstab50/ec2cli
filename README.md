@@ -77,7 +77,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 ## License
 
 * All utilities contained herein are copyrighted and made available under GPLv2
-* See [LICENSE](./LICENSE.txt)
+* See [LICENSE](./LICENSE.md)
 
 [back to the top](#top)
 
@@ -409,17 +409,27 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 * * *
 
-## Contribution Guidelines ##
+## License
 
-   If you'd like to contribute, please fork and then send me
-   a pull request.
+* Software contained in this repo is licensed under the [license agreement](./LICENSE.md).  You may display the license and copyright information by issuing the following command:
+
+```
+$ gcreds --version
+```
+
+[![help](./assets/version-copyright.png)](https://images.awspros.world/gcreds/version-copyright.png)
+
 
 [back to the top](#top)
 
 * * *
 
-## Contact ##
+## Disclaimer
 
-* Repo owner:  Blake Huber // @B1akeHuber
+*Code is provided "as is". No liability is assumed by either the code's originating author nor this repo's owner for their use at AWS or any other facility. Furthermore, running function code at AWS may incur monetary charges; in some cases, charges may be substantial. Charges are the sole responsibility of the account holder executing code obtained from this library.*
+
+Additional terms may be found in the complete [license agreement](./LICENSE.md).
 
 [back to the top](#top)
+
+* * *
