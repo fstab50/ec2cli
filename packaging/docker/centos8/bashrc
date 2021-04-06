@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+
+# .bashrc
+
+ENV_LIBRARY="$HOME/git/library-utilities/function-library"
+CONFIG_DIR="$HOME/.config/bash"
+source "$CONFIG_DIR/colors.sh"
+
+
+# ------------------------------------------------------------------------------
+#  function declarations
+# ------------------------------------------------------------------------------
+
+# indent, x spaces
+function indent02() { sed 's/^/  /'; }
+function indent04() { sed 's/^/    /'; }
+function indent10() { sed 's/^/          /'; }
+
+
+function basher() {
+     if [[ $1 = 'run' ]]; then
+         shift
+    	 /usr/bin/docker run -e HIST_FILE=/root/.bash_history \
+    	     -v $HOME/.bash_history:/root/.bash_history "$@"
+     else
+         /usr/bin/docker "$@"
+     fi
+}
+
+
+# pip command completion
+function _pip_completion(){
+	    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+	                   COMP_CWORD=$COMP_CWORD \
+	                   PIP_AUTO_COMPLETE=1 $1 ) )
+	}
+	complete -o default -F _pip_completion pip
+	complete -o default -F _pip_completion pip3
+
+
+# autocompletion for python cheat cli app
+function _cheat_autocomplete {
+    sheets=$(cheat -l | cut -d' ' -f1)
+    COMPREPLY=()
+    if [ $COMP_CWORD = 1 ]; then
+	COMPREPLY=(`compgen -W "$sheets" -- $2`)
+    fi
+}
+complete -F _cheat_autocomplete cheat
+
+
+function motd(){
+	sh $CONFIG_DIR/motd.sh
+}
+
+
+function source_env_scripts(){
+    ## souce shell env scripts ##
+    for script in $(ls $ENV_LIBRARY); do
+        if [[ -e "$ENV_LIBRARY/$script" ]]; then
+            source "$ENV_LIBRARY/$script"
+        fi
+    done
+    #
+    #<-- end function cfcli_source_libraries -->
+}
+# source_env_scripts        #   NOT NEEDED YET, SEE ALIASES
+
+
+# --------------------------------------------------------------------------------
+# User specific variables
+# --------------------------------------------------------------------------------
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+# language (required for unicode chars)
+export LANG=en_US.UTF-8
+
+# cheat
+export CHEAT_EDITOR="/usr/bin/vim"
+export CHEATCOLORS=true
+
+# display motd
+motd
+
+# AWS Marketplace Owner IDs
+export UBUNTU=099720109477
+export AMAZON=137112412989
+export CENTOS=679593333241
+export REDHAT=679593333241
+
+# Path
+PATH=$PATH:$HOME/.local/bin:$HOME/bin:$EC2_HOME/bin
+export PATH
+
+# Enable cmd completion for aws tools
+complete -C aws_completer aws
+
+
+# --------------------------------------------------------------------------------
+# User specific aliases
+# --------------------------------------------------------------------------------
+
+# User Aliases - bash
+alias v="ls -lh"
+alias va="ls -lhd .*"
+alias vs='ls -lhSr'
+alias vu='vagrant up'
+alias vh='vagrant halt'
+alias du='du -hc --exclude=".git"'
+alias c='clear'
+alias vi="vim"
+alias df="dfc -T" 	# human readable df output
+alias his='history | tail -n 75'
+alias mutt="mutt -F ~/.mutt/.muttrc"
+alias dockbash='docker run -e HIST_FILE=/root/.bash_history -v=$HOME/.bash_history:/root/.bash_history'
+alias docker=basher
+alias rkhunter='sudo /usr/bin/rkhunter'
+
+# git Aliases
+alias gitb='git branch'
+alias gits='git status'
+
+
+#-------------------------------------------------------------------------------
+#  Syntax Highlighting
+#-------------------------------------------------------------------------------
+
+# Redhat systems
+LESSOPEN="| $(which highlight) %s --out-format xterm256 --line-numbers --quiet --force --style solarized-light"
+export LESSOPEN
+export LESS=" -R"
+alias less='less -m -g -i -J --underline-special'
+alias more='less'

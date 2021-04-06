@@ -1,0 +1,40 @@
+[user]
+	email = blakeca00@gmail.com
+	name = Blake Huber
+
+[alias]
+	b = branch
+	br = branch
+	cm = commit -m
+	co = checkout
+    df = diff
+    ci = commit -v
+    cp = cherry-pick
+    cam = commit -am
+    mt = mergetool
+    pl = pull --rebase
+	pom = push origin master
+	pod = push origin develop
+    sa = stash
+    st = status
+	cl1 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)' --all
+	cl2 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all
+	cl = !"git cl1"
+	cldetail = log --graph --abbrev-commit --decorate --date=relative --all --color
+	clsummary = log --graph --oneline --decorate --all --color
+
+[push]
+  default = simple
+
+[merge]
+   tool = vimdiff
+
+[core]
+  editor = vim
+  excludesfile = /Users/dennish/.gitignore_global
+
+[color]
+  ui = true
+
+[pager]
+	branch = false

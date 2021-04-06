@@ -1,64 +1,105 @@
 <a name="top"></a>
 * * *
 # EC2cli - Amazon EC2 Utilities
+* * *
 
+## Contents
 
-* [About](#about-this-repository)
-* [License](#license)
-* [Introduction](#introduction)
-* [Installation](#installation)
-* [Configuration](#configuration)
-* [Permissions](#iam-permissions)
-* [Usage](#usage)
-* [Screenshots](#screenshots)
-* [Contribution Guidelines](#contribution-guidelines)
-* [Contact](#contact)
+* [**About**](#about-this-repository)
+
+* [**Summary**](#summary)
+
+* [**Dependencies**](#dependencies)
+
+* [**Program Options**](#program-options)
+
+* [**Installation**](#installation)
+  * [Ubuntu, Linux Mint, Debian-based Distributions](#debian-distro-install)
+  * [Redhat, CentOS](#redhat-distro-install)
+  * [Amazon Linux 2, Fedora](#amzn2-distro-install)
+
+* [**Configuration**](#configuration)
+
+* [**Verify Your Configuration**](#verify-your-configuration)
+
+* [**Identity and Access Management (IAM) Permissions**](#iam-permissions)
+
+* [**Usage**](#usage)
+
+* [**Build Options**](#build-options)
+
+* [**Screenshots**](#screenshots)
+
+* [**Author & Copyright**](#author--copyright)
+
+* [**License**](#license)
+
+* [**Disclaimer**](#disclaimer)
+
+--
+
+[back to the top](#top)
 
 * * *
 
 ## About this repository
 
 * Purpose: 		CLI utilities for use with Amazon Web Services (AWS)
-* Version:	2.4.7
+* Version:	2.4.10
 * Repo: 		https://github.com/fstab50/ec2cli
 * Mirror:		https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
 
-* * *
-
-## License
-
-* All utilities contained herein are copyrighted and made available under GPLv2
-* See [LICENSE](./LICENSE.txt)
+--
 
 [back to the top](#top)
 
 * * *
-
-## Introduction
+## Summary
 
 EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or listing which EC2 instances are running.
 
-That being said, ec2cli was designed for use with relatively low AWS resource counts.  If you are operating at scale, these will prove cumbersome since are no embedded filtering capabilities (if you would like to contribute, please see "Contributing" below).  The assumption is that if you are operating at scale, you have already developed your own tools for managing and operating AWS resources in a commercial environment.
-
-While I realize that accomplishing the same functionality is easier with the AWS ruby or python SDK's, I developed these in bash to make them easy for system administrators and solution architects to modify for their particular use cases.
+While it is clear that accomplishing the ec1cli's functionality with the AWS ruby or python SDK's may be cleaner, ec2cli was developed in bash to make it easy for system administrators and solution architects to modify ec2cli for each's respective use cases.
 
 _Dependency Note_:  ec2cli was developed and tested under bash. Some functionality may work with other shells; however, your mileage may vary.
 
-[![instances](./images/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
+[![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
 
 (See [Screenshots](#screenshots) section below)
+
+--
 
 [back to the top](#top)
 
 * * *
 
-## Usage ##
+## Dependencies
+
+[ec2cli](https://github.com/fstab50/ec2cli) requires the following:
+
+- [Python version 3.6+](https://docs.python.org/3/)
+- Installation and configuration of [Amazon Web Services CLI tools](https://github.com/aws/aws-cli) (awscli).  After installation, follow this [configuration guide](#configuration) to set up the awscli.
+- [jq](https://stedolan.github.io/jq), a json parser generally available from your distribution repo
+- bash (4.x)
+- Standard linux utilities:
+    * grep
+    * awk
+    * sed
+    * cat
+    * hostname
+
+--
+
+[back to the top](#top)
+
+* * *
+
+## Program Options ##
 
 ```bash
-	$ ec2cli --help     
+	$ ec2cli --help
 ```
 
-[![help](./images/ec2cli-help.png)](https://images.awspros.world/ec2cli/ec2cli-help.png)
+[![help](./assets/ec2cli-help.png)](https://images.awspros.world/ec2cli/ec2cli-help.png)
 
 
 ### Notes: ###
@@ -75,152 +116,149 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 * * *
 ## Installation ##
+* * *
 
-### `AUTOMATED INSTALLATION`
+<a name="debian-distro-install"></a>
+### Ubuntu, Linux Mint, Debian variants  (Python 3.6+)
 
-* **install.sh**
+The easiest way to install **ec2cli** on debian-based Linux distributions is via the debian-tools package repository:
 
-    - The easiest way to install `ec2cli` is to download and run [the installer](./install.sh).  It will check for all dependencies, and if missing, prompt you to install them.   
-    - Run the following commands from the filesystem location where you wish to install `ec2cli`:
 
-        ```bash
-            $ cd < ec2cli install dir >
-            $ wget https://bitbucket.org/blakeca00/ec2cli/downloads/install.sh
-            $ sh install.sh
-        ```
+1. Open a command line terminal.
 
-Alternatively, if you wish to do the installation yourself, please read on.
+    [![deb-install0](./assets/deb-install-0.png)](http://images.awspros.world/ec2cli/deb-install-0.png)
 
-### `MANUAL INSTALLATION`
-
-* **General Dependencies**
-
-	- Writable directory where utilities are located
-	- One of the following python versions: 2.6.5, 2.7.X+, 3.3.X+, 3.4.X+
-	- Installation Amazon CLI tools (awscli, see below this section)
-	- awk, see your dist repo
-	- sed, see your dist repo  
-
-* **jq, JSON Parser**.  Install `jq` from your local distribution repository.  
-
-    ```bash
-	$ sudo apt-get install jq    # Ubuntu, most Debian-based distributions
-    ```
-
-    ```bash
-	$ sudo yum install jq        # RedHat, Fedora, CentOS
-    ```
-
-* **Environment variables**:
-
-	- Setup the following global environment variables by adding each to your	.bashrc or .bash_profile (substitute your respective values)
-
-    ```bash                              
-    	# .bashrc / .bash_profile
-
-    	export EC2_REPO=~/git/ec2cli           # location of this README and utilities (writable)
-    	export SSH_KEYS=~/AWS                  # location of ssh access keys (.pem files)
-    	export AWS_DEFAULT_REGION=us-west-2    # your Primary AWS Region  
+2. Download and install the repository definition file
 
     ```
-
-* **Python Package Manager**. If you do not currently have it, install [pip](http://www.pip-installer.org/en/latest).  
-
-    You can install pip from your distribution's package repo via _one_ of the below  
-	commands according to your Linux distribution:
-
-
-| DISTRIBUTION | INSTALLATION COMMAND |  PYTHON VERSION |
-| :------------------------------ | :----------------------------------------- | :--------: |
-| **Ubuntu** | ``` $ sudo apt install python-pip ``` | python2.7 |
-| **Redhat** | ```  $ sudo yum install python-pip  ``` | python2.7 |
-| **Fedora-based distros** | ``` $ sudo dnf install python-pip ``` | python2.7 |
-| **Ubuntu** | ``` $ sudo apt install python3-pip ``` | python3.4+ |
-| **Redhat** | ```  $ sudo yum install python34-setuptools  ``` | python3.4 |
-| **Redhat** | ```  $ sudo yum install python36-setuptools  ``` | python3.6 |
-| **CentOS7** | ```  $ sudo yum install python34-setuptools  ``` | python3.4 |
-| **CentOS7** | ```  $ sudo yum install python36-setuptools  ``` | python3.6 |
-| **Fedora-based distros** | ``` $ sudo dnf install python3-pip ``` | python3.4+ |
-
-* **Install the [awscli](https://github.com/aws/aws-cli/)**
-
-    Detailed instructions can be found in the README located at:
-    https://github.com/aws/aws-cli/
-
-    ```bash
-	$ sudo pip install awscli
+    $ sudo apt install wget
     ```
 
-* If you have the aws-cli installed and want to upgrade to the latest version you can run:
-
-    ```bash
-	$ sudo pip install --upgrade awscli
+    ```
+    $ wget http://awscloud.center/deb/debian-tools.list
     ```
 
-* Clone this git repo in a writeable directory:
+    [![deb-install1](./assets/deb-install-1.png)](http://images.awspros.world/ec2cli/deb-install-1.png)
 
-    ```bash
-	$ git clone https://blakeca00@bitbucket.org/blakeca00/ec2cli.git
+    ```
+    $ sudo chown 0:0 debian-tools.list && sudo mv debian-tools.list /etc/apt/sources.list.d/
     ```
 
-* **Add `ec2cli` to your path**. Add the following to your .bashrc, .bash_profile, or .profile:  
+3. Install the package repository public key on your local machine
 
-    ```bash
-    export PATH=$PATH:$EC2_REPO
     ```
+    $ wget -qO - http://awscloud.center/keys/public.key | sudo apt-key add -
+    ```
+
+    [![deb-install2](./assets/deb-install-2.png)](http://images.awspros.world/ec2cli/deb-install-2.png)
+
+4. Update the local package repository cache
+
+    ```
+    $ sudo apt update
+    ```
+
+5. Install **ec2cli** os package
+
+    ```
+    $ sudo apt install ec2cli
+    ```
+
+    [![deb-install3a](./assets/deb-install-3a.png)](http://images.awspros.world/ec2cli/deb-install-3a.png)
+
+    Answer "y":
+
+    [![deb-install3b](./assets/deb-install-3b.png)](http://images.awspros.world/ec2cli/deb-install-3b.png)
+
+
+6. Verify Installation
+
+    ```
+    $ apt show ec2cli
+    ```
+
+    [![apt-show](./assets/deb-install-4.png)](http://images.awspros.world/ec2cli/deb-install-4.png)
+
 
 [back to the top](#top)
+
+* * *
+
+<a name="redhat-distro-install"></a>
+### Redhat, CentOS  (Python 3.6+)
+
+Redhat Package Manager (RPM) format used by Redhat-based distros is under development.  Check [rpm.awscloud.center](http://s3.us-east-2.amazonaws.com/rpm.awscloud.center/index.html) page for updates.
+
+
+[back to the top](#top)
+
+* * *
+<a name="amzn2-distro-install"></a>
+### Amazon Linux 2 / Fedora (Python 3.7+)
+
+Redhat Package Manager (RPM) format used by Amazon Linux under development.  Check [amzn2.awscloud.center](http://s3.us-east-2.amazonaws.com/amzn2.awscloud.center/index.html) page for updates.
+
+--
+
+[back to the top](#top)
+
 
 * * *
 
 ## Configuration ##
 
-* Configure awscli running the aws configure command:
+1. You will have to configure the Amazon Web Servies comand line interface before attempting to use **ec2cli**:
 
-    ```bash
-   $ aws configure
+a. Run the _aws configure_ command:
 
-	AWS Access Key ID: foo
-	AWS Secret Access Key: bar
-	Default region name [us-west-2]: us-west-2
-	Default output format [None]: json
-    ```
+```bash
+$ aws configure
+   AWS Access Key ID: foo
+   AWS Secret Access Key: bar
+   Default region name [us-west-2]: us-west-2
+   Default output format [None]: json
+```
 
-* Optionally, define a profile for a specific user:
+b. Optionally, define a profile for a specific user:
 
-    ```bash
-   $ aws configure --profile testuser
-
+```bash
+  $ aws configure --profile testuser
     AWS Access Key ID: footestuser
     AWS Secret Access Key: bartestuser
     Default region name [us-west-2]: us-west-2
     Default output format [None]: json
-    ```
+```
 
-* Command Completion
-
-	You'll want to enable command completion to make awscli
+c. Configure bash command completion:  	You'll want to enable command completion to make awscli
 	commands easy to type and recall.  After installing awscli,
 	add the following to your .bashrc or .bash_profile:
 
-    ```bash
-	# .bashrc
+```bash
+  # .bashrc
 	complete -C aws_completer aws
-    ```
+```
+
+2. Next, configure [IAM policy permissions](#iam-permissions) for the user profile which will generally be used with **ec2cli**.
+
+--
 
 [back to the top](#top)
 
 * * *
 
-### Verify Your Configuration  
+### Verify Your Configuration
 
 After completing the above Installation and Configuration sections, verify your configuration:
 
 ```bash
-	$ ec2cli --version
+$ aws --version
 ```
 
-[![version](./images/ec2cli-version.png)]((https://images.awspros.world/ec2cli/ec2cli-version.png))
+Output:
+
+```
+$  aws-cli/1.19.44 Python/3.8.5 Linux/5.6.0-1052-oem botocore/1.20.44
+```
 
 **Note**: Python and Kernel versions will depend upon your system parameters
 
@@ -231,7 +269,7 @@ After completing the above Installation and Configuration sections, verify your 
 ## IAM Permissions ##
 
 #### ec2cli Required Permissions ####
-You'll need appropriate IAM permissions to execute ec2cli.  
+You'll need appropriate IAM permissions to execute ec2cli.
 
 ```json
 {
@@ -289,6 +327,24 @@ You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-q
 
 * * *
 
+## Build options
+
+**[GNU Make](https://www.gnu.org/software/make) Targets**.  If you wish to use this project to compile your own Linux installation pa kages, type the following to display the available make targets from the root of the project:
+
+```bash
+    $  make help
+```
+
+<p align="center">
+    <a href="http://images.awspros.world/ec2cli/make-help.png" target="_blank"><img src="./assets/make-help.png">
+</p>
+
+--
+
+[back to the top](#top)
+
+* * *
+
 ## Screenshots ##
 
 #### ec2cli `list` command ####
@@ -299,24 +355,24 @@ List command displays AWS resource details for your AWS default region if no reg
 ```bash
 $ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
 ```
-[![instances](./images/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
+[![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
 
 ```bash
 $ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
 ```
 
-[![volumes](./images/ec2cli-list-volumes.png)](https://images.awspros.world/ec2cli/ec2cli-list-volumes.png)
+[![volumes](./assets/ec2cli-list-volumes.png)](https://images.awspros.world/ec2cli/ec2cli-list-volumes.png)
 
 
 ```bash
 $ ec2cli -s    # list snapshots, AWS default region (us-west-2)
 ```
-[![snapshots](./images/ec2cli-list-snapshots.png)](https://images.awspros.world/ec2cli/ec2cli-list-snapshots.png)
+[![snapshots](./assets/ec2cli-list-snapshots.png)](https://images.awspros.world/ec2cli/ec2cli-list-snapshots.png)
 
 ```bash
 $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 ```
-[![securitygroups](./images/ec2cli-list-securitygroups.png)](https://images.awspros.world/ec2cli/ec2cli-list-securitygroups.png)
+[![securitygroups](./assets/ec2cli-list-securitygroups.png)](https://images.awspros.world/ec2cli/ec2cli-list-securitygroups.png)
 
 [back to the top](#top)
 
@@ -334,29 +390,32 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 ```
 1.Select from list of instance choices:
 
-![](./images/start-instance_01.png)
+[![instances](./assets/start-instance_01.png)](https://images.awspros.world/ec2cli/start-instance_01.png)
 
 2.After instance is chosen, ec2cli performs a network access check:
 
   * Access check sources the security group and validates IPs listed in the group against your local IP.
   * _Note_: if the instance you chose is already running, the ec2cli moves immediately to authentication (Step 4).
 
-![](./images/start-instance_02.png)
+[![instances](./assets/start-instance_2.png)](https://images.awspros.world/ec2cli/start-instance_2.png)
+
 
 3.If network access check succeeds, the ec2 wait function is called to prevent login until the instance starts.
 
-![](./images/start-instance_03.png)
+[![instances](./assets/start-instance_03.png)](https://images.awspros.world/ec2cli/start-instance_03.png)
 
 4.Authentication start:
 
   * Public IP and ssh key name are sourced from instance json data via api call.
   * The ssh key is then located on your local machine in the dir specified by the ``$SSH_KEYS`` env variable.
 
-![](./images/start-instance_04.png)
+[![instances](./assets/start-instance_04.png)](https://images.awspros.world/ec2cli/start-instance_04.png)
 
 5.Login established (entire start sequence shown)
 
-![](./images/start-instance_05.png)
+[![instances](./assets/start-instance_05.png)](https://images.awspros.world/ec2cli/start-instance_05.png)
+
+--
 
 [back to the top](#top)
 
@@ -372,17 +431,34 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 * * *
 
-## Contribution Guidelines ##
+## Author & Copyright
 
-   If you'd like to contribute, please fork and then send me
-   a pull request.
+All works contained herein copyrighted via below author unless work is explicitly noted by an alternate author.
+
+* Copyright Blake Huber, All Rights Reserved.
 
 [back to the top](#top)
 
 * * *
 
-## Contact ##
+## License
 
-* Repo owner:  Blake Huber // @B1akeHuber
+* Software contained in this repo is licensed under the [license agreement](./LICENSE.md).  You may display the license and copyright information by issuing the following command:
+
+```
+$ ec2cli --version
+```
 
 [back to the top](#top)
+
+* * *
+
+## Disclaimer
+
+*Code is provided "as is". No liability is assumed by either the code's originating author nor this repo's owner for their use at AWS or any other facility. Furthermore, running function code at AWS may incur monetary charges; in some cases, charges may be substantial. Charges are the sole responsibility of the account holder executing code obtained from this library.*
+
+Additional terms may be found in the complete [license agreement](./LICENSE.md).
+
+[back to the top](#top)
+
+* * *

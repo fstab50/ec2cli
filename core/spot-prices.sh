@@ -41,8 +41,9 @@ PROFILE="$1"
 REGION=$AWS_DEFAULT_REGION    # set region from global env var
 pkg_path=$(cd $(dirname $0); pwd -P)
 PWD=$(pwd)
-ec2cli_log=$EC2_REPO"/logs/ec2cli.log"
-CONFIG_DIR="$HOME/.config/ec2cli"
+lib_path="/usr/local/lib/ec2cli"
+ec2cli_log="/var/log/ec2cli.log"
+CONFIG_DIR="$lib_path"
 
 declare -a C_TYPE
 declare -a D_TYPE
@@ -59,14 +60,14 @@ declare -a MISC_TYPE
 
 
 # source colors library
-source $pkg_path/colors.sh
+source $lib_path/colors.sh
 frame=$bgframe
 
 # source standard functions
-source $pkg_path/std_functions.sh
+source $lib_path/std_functions.sh
 
 # source config file location
-config_dir=$(cat $EC2_REPO/core/pkgconfig.json | jq -r .config_dir)
+config_dir=$(cat $lib_path/pkgconfig.json | jq -r .config_dir)
 std_logger "config_dir set ($config_dir)" "INFO" $ec2cli_log
 
 # colors
@@ -94,10 +95,10 @@ function _git_root(){
 function precheck(){
     ## validates presence of instance types file, gen if not  ##
     if [ ! -e $config_dir/types.ec2 ]; then
-        bash $pkg_path/instancetypes.sh
+        bash $lib_path/instancetypes.sh
     else
         # check age of file, if older than x age, renew it
-        bash $pkg_path/instancetypes.sh
+        bash $lib_path/instancetypes.sh
     fi
 }
 

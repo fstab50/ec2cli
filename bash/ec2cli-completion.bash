@@ -169,7 +169,7 @@ function _ec2cli_completions(){
     local prev                      #  completion word at index position -1 in COMP_WORDS array
     local initcmd                   #  completion word at index position -2 in COMP_WORDS array
 
-    config_dir="$HOME/.config/ec2cli"
+    config_dir="/usr/local/lib/ec2cli"
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     initcmd="${COMP_WORDS[COMP_CWORD-2]}"
@@ -267,7 +267,7 @@ function _ec2cli_completions(){
         '--region' | "--re*")
             ##  complete AWS region codes
             python3=$(which python3)
-            regions=$($python3 "$config_dir/regions.py")
+            regions=$(cat "$config_dir/regions.list")
 
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
 

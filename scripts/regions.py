@@ -13,23 +13,39 @@ import os
 import sys
 import inspect
 import datetime
-from botocore.exceptions import ClientError
 from pyaws.session import boto3_session
-from pyaws.utils import export_json_object
-
-try:
-    from configparser import ConfigParser
-except Exception:
-    print('unable to import configParser library. Exit')
-    sys.exit(1)
+from botocore.exceptions import ClientError
 
 
+REGIONLIST = 'regions.list'
 CONFIG_DIR = os.getenv('HOME') + '/' + '.config/ec2cli'
-REFERENCE = CONFIG_DIR + '/' + 'regions.list'
+REFERENCE = '../core' + REGIONLIST
 MAX_AGE_DAYS = 3
 
 
 # --- declarations  --------------------------------------------------------------------------------
+
+
+def region_list():
+    return [
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'ap-northeast-3',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'ca-central-1',
+        'eu-central-1',
+        'eu-north-1',
+        'eu-west-1',
+        'eu-west-2',
+        'eu-west-3',
+        'sa-east-1',
+        'us-east-1',
+        'us-east-2',
+        'us-west-1',
+        'us-west-2'
+    ]
 
 
 def file_age(filepath, unit='seconds'):
@@ -72,7 +88,7 @@ def get_regions(profile=None):
 
 def print_array(args):
     for x in args:
-        print(x.strip() + ' ', end='')
+        print('\t\t' + x.strip())
 
 
 def shared_credentials_location():
@@ -124,12 +140,17 @@ if len(sys.argv) > 1:
 if PROFILE is None:
     PROFILE = 'default'
 
+
 if os.path.exists(REFERENCE) and file_age(REFERENCE, 'days') < MAX_AGE_DAYS:
-    r = read(REFERENCE)
-    regions = [x for x in r.split('\n') if x]
-    sys.exit(print_array(regions))
+    print(f'\n\tRegioncode file ({REGIONLIST}), less than {MAX_AGE_DAYS} days old.\n')
+    sys.exit(0)
+
 else:
     regions = get_regions(profile=PROFILE)
-    print_array(regions)
     write_file(regions, REFERENCE)
-    sys.exit(0)
+
+    print('\n\tContents written to core/regions.list:\n')
+    print_array(regions)
+    print(f'\n\tFile contains {len(regions)} AWS region codes\n')
+
+sys.exit(0)
