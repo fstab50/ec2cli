@@ -209,7 +209,7 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 
 1. You will have to configure the Amazon Web Servies comand line interface before attempting to use **ec2cli**:
 
-  * Run the _aws configure_ command:
+a. Run the _aws configure_ command:
 
     ```bash
    $ aws configure
@@ -220,7 +220,7 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 	Default output format [None]: json
     ```
 
-  * Optionally, define a profile for a specific user:
+b. Optionally, define a profile for a specific user:
 
     ```bash
    $ aws configure --profile testuser
@@ -231,7 +231,7 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
     Default output format [None]: json
     ```
 
-  * Configure bash command completion:
+c. Configure bash command completion:
 
 	You'll want to enable command completion to make awscli
 	commands easy to type and recall.  After installing awscli,
