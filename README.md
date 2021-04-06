@@ -17,7 +17,9 @@
 
 * [**Configuration**](#configuration)
 
-* [**Permissions**](#iam-permissions)
+* [**Verify Your Configuration**](#verify-your-configuration)
+
+* [**Identity and Access Management (IAM) Permissions**](#iam-permissions)
 
 * [**Installation**](#installation)
     * [Ubuntu, Linux Mint, Debian-based Distributions](#debian-distro-install)
@@ -220,7 +222,9 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 
 ## Configuration ##
 
-* Configure awscli running the aws configure command:
+1. You will have to configure the Amazon Web Servies comand line interface before attempting to use **ec2cli**:
+
+* Run the _aws configure_ command:
 
     ```bash
    $ aws configure
@@ -242,7 +246,7 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
     Default output format [None]: json
     ```
 
-* Command Completion
+* Configure bash command completion:
 
 	You'll want to enable command completion to make awscli
 	commands easy to type and recall.  After installing awscli,
@@ -253,6 +257,8 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 	complete -C aws_completer aws
     ```
 
+2. Next, configure [IAM policy permissions](#iam-permissions) for the user profile which will generally be used with **ec2cli**.
+
 [back to the top](#top)
 
 * * *
@@ -262,11 +268,14 @@ Redhat Package Manager (RPM) format used by Amazon Linux under development.  Che
 After completing the above Installation and Configuration sections, verify your configuration:
 
 ```bash
-	$ ec2cli --version
+	$ aws --version
 ```
 
-[![version](./assets/version-copyright.png)](https://images.awspros.world/ec2cli/version-copyright.png)
+Output:
 
+```
+$  aws-cli/1.19.44 Python/3.8.5 Linux/5.6.0-1052-oem botocore/1.20.44
+```
 
 **Note**: Python and Kernel versions will depend upon your system parameters
 
