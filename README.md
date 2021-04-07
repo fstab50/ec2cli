@@ -378,7 +378,7 @@ $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 
 * * *
 
-<a name="screenshot1"></a>
+<a name="screenshots1"></a>
 #### [Screenshots](#screenshots) / ec2cli `run` command
 
 *Note: this utility may also be used to automate login to a running EC2 instance*
