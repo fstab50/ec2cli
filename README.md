@@ -347,7 +347,7 @@ You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-q
 ## Screenshots ##
 * * *
 <a name="screenshots0"></a>
-#### [Screenshots](#screenshots) / ec2cli list command
+#### [Screenshots](#screenshots) / ec2cli `list` command
 
 List command displays AWS resource details for your AWS default region if no region specified. If an alternate region given as a parameter, displays resource details for the specified region.
 
@@ -379,7 +379,7 @@ $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 * * *
 
 <a name="screenshots2"></a>
-#### [Screenshots](#screenshots) / [ec2cli `run` command](screenshots2)
+#### [Screenshots](#screenshots) / ec2cli `run` command
 
 *Note: this utility may also be used to automate login to a running EC2 instance*
 *as well as starting a stopped instance. See step 2. (below)*
@@ -421,7 +421,7 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 * * *
 
 <a name="screenshots3"></a>
-#### [Screenshots](#screenshots) / [Spot Price Utility](screenshots3)
+#### [Screenshots](#screenshots) / Spot Price Utility
 
 
 [Screenshots (continued)](./README_spot.md)
