@@ -27,7 +27,7 @@
 * [**Build Options**](#build-options)
 
 * [**Screenshots**](#screenshots)
-  * [ec2cli list command](#screenshots-/-ec2cli-list-command)
+  * [ec2cli list command](#screenshots--ec2cli-list-command)
   * [ec2cli run command](#screenshots-/-ec2cli-run-command)
   * [EC2 Spot Price Utility](#screenshots-/-spt-price-utility)
 
