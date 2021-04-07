@@ -29,7 +29,7 @@
 * [**Screenshots**](#screenshots)
   * [ec2cli list command](#screenshots0)
   * [ec2cli run command](#screenshots1)
-  * [EC2 Spot Price Utility](#screenshots3)
+  * [EC2 Spot Price Utility](#screenshots2)
 
 * [**Author & Copyright**](#author--copyright)
 
@@ -378,7 +378,7 @@ $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 
 * * *
 
-<a name="screenshots2"></a>
+<a name="screenshot1"></a>
 #### [Screenshots](#screenshots) / ec2cli `run` command
 
 *Note: this utility may also be used to automate login to a running EC2 instance*
@@ -420,7 +420,7 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 * * *
 
-<a name="screenshots3"></a>
+<a name="screenshots2"></a>
 #### [Screenshots](#screenshots) / Spot Price Utility
 
 
