@@ -27,9 +27,9 @@
 * [**Build Options**](#build-options)
 
 * [**Screenshots**](#screenshots)
-  * [ec2cli list command](#screenshots--ec2cli-list-command)
-  * [ec2cli run command](#screenshots-/-ec2cli-run-command)
-  * [EC2 Spot Price Utility](#screenshots-/-spt-price-utility)
+  * [ec2cli list command](#screenshots0)
+  * [ec2cli run command](#screenshots1)
+  * [EC2 Spot Price Utility](#screenshots3)
 
 * [**Author & Copyright**](#author--copyright)
 
@@ -346,8 +346,8 @@ You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-q
 * * *
 ## Screenshots ##
 * * *
-
-#### Sreenshots / ec2cli `list` command ####
+<a name="screenshots0"></a>
+#### [Screenshots](#screenshots) / ec2cli list command
 
 List command displays AWS resource details for your AWS default region if no region specified. If an alternate region given as a parameter, displays resource details for the specified region.
 
@@ -378,7 +378,8 @@ $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 
 * * *
 
-#### Sreenshots / ec2cli `run` command ###
+<a name="screenshots2"></a>
+#### [Screenshots](#screenshots) / [ec2cli `run` command](screenshots2)
 
 *Note: this utility may also be used to automate login to a running EC2 instance*
 *as well as starting a stopped instance. See step 2. (below)*
@@ -419,7 +420,9 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 
 * * *
 
-### Screenshots / Spot Price Utility ###
+<a name="screenshots3"></a>
+#### [Screenshots](#screenshots) / [Spot Price Utility](screenshots3)
+
 
 [Screenshots (continued)](./README_spot.md)
 
