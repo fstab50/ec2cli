@@ -1130,7 +1130,7 @@ function ec2cli_list_images(){
     local REGION=$1     # region passed from global identifier
     local NUMLIST       # boolean parameter, 1 = output numbered list
     local MAXCT         # array length
-    local total_width="110"
+    local total_width="130"
     local sp="${frame}|${bodytext}"       # separator
     declare -a REGIONS
     # print out numbered list of instances?
@@ -1183,7 +1183,7 @@ function ec2cli_list_images(){
     done
 
     # print header
-    print_header "AMI-id CreateDateTime Type vType SnapshotId Description" $total_width $TMPDIR/.header.tmp
+    print_header "\n$sp AMI-id $sp CreateDateTime $sp Type $sp vType $sp SnapshotId $sp Description" $total_width $TMPDIR/.header.tmp
 
     # create table of json array
     i=0
@@ -1200,7 +1200,7 @@ function ec2cli_list_images(){
     # header, region identifier
     printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} $REGION  $sp  ACCOUNT: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
     # format output
-    awk  '{ printf "%-13s %-18s %-8s %-12s %-23s %-10s %-2s %-2s %-2s %-2s \n", \
+    awk  '{ printf "%-22s %-18s %-8s %-12s %-23s %-10s %-2s %-2s %-2s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' $TMPDIR/.output.tmp | indent02
     # footer
     print_footer "Total AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
