@@ -1130,7 +1130,7 @@ function ec2cli_list_images(){
     local REGION=$1     # region passed from global identifier
     local NUMLIST       # boolean parameter, 1 = output numbered list
     local MAXCT         # array length
-    local total_width="132"
+    local total_width="137"
     local sp="${frame}|${bodytext}"       # separator
     declare -a REGIONS
     # print out numbered list of instances?
@@ -1171,7 +1171,7 @@ function ec2cli_list_images(){
     ARR_SNAP0=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" $TMPDIR/.jsonimages.tmp) )
     ARR_SNAP1=( $(jq -r ".Images[].BlockDeviceMappings[1].Ebs.SnapshotId" $TMPDIR/.jsonimages.tmp) )
     ARR_NAME=( $(jq -r ".Images[].Name" $TMPDIR/.jsonimages.tmp | cut -c 1-25) )    # limit to 25 chars
-    ARR_DESCR=( $(jq -r ".Images[].Description" $TMPDIR/.jsonimages.tmp  | cut -c 1-30) )
+    ARR_DESCR=( $(jq -r ".Images[].Description" $TMPDIR/.jsonimages.tmp  | cut -c 1-35) )
 
     # convert date-time format to %Y-%m-%d.T%H:%M
     i=0     # initialize counter
@@ -1200,7 +1200,7 @@ function ec2cli_list_images(){
     # header, region identifier
     printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} $REGION  $sp  ACCOUNT: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
     # format output
-    awk  '{ printf " %-3s %-21s  %-3s %-17s  %-3s %-10s  %-3s %-8s  %-3s %-23s %-2s %-30s %-2s \n", \
+    awk  '{ printf " %-3s %-21s  %-3s %-17s  %-3s %-10s  %-3s %-8s  %-3s %-23s %-2s %-35s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.output.tmp | indent02
     # footer
     print_footer "Total AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
