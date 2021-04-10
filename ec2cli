@@ -1183,7 +1183,7 @@ function ec2cli_list_images(){
     done
 
     # print header
-    print_header "$sp AMI-id $sp CreateDateTime $sp Type $sp vType $sp SnapshotId $sp Description $sp" $total_width $TMPDIR/.header.tmp
+    print_header "$sp AMI-id $sp CreateDateTime $sp Type $sp vType $sp SnapshotId $sp Tags $sp" $total_width $TMPDIR/.header.tmp
 
     # create table of json array
     i=0
