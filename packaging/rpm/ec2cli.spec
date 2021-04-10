@@ -27,7 +27,7 @@ Prefix:         /usr
 Requires:      DEPLIST
 
 %if 0%{?rhel}%{?amzn2}
-Requires: epel-release bash-completion procps-ng jq awscli hostname util-linux coreutils curl bc bash
+Requires: epel-release bash-completion procps-ng jq awscli hostname util-linux coreutils curl bc bash python3
 %endif
 
 %if 0%{?amzn1}
