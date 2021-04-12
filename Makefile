@@ -150,7 +150,6 @@ debian-help:  ## print help menu options for the debian package creation script
 	rm -f $(SCRIPT_DIR)/version.py
 
 
-
 .PHONY: rpm-help
 rpm-help:  ## print help menu options for the redhat rpm package creation script
 	$(PYTHON3_PATH) $(SCRIPT_DIR)/buildrpm.py
