@@ -300,6 +300,11 @@ function _ec2cli_completions(){
             return 0
             ;;
 
+        '--vpcs')
+            COMPREPLY=( $(compgen -W "list" -- ${cur}) )
+            return 0
+            ;;
+
         "ec2cli")
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
 
