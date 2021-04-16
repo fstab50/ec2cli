@@ -2332,6 +2332,10 @@ function parse_regioncode(){
         -p | --profile | -d | --debug | -h | --help)
             return 1
             ;;
+
+        attach | create | list | run)
+            return 0
+            ;;
     esac
 
     if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
@@ -2602,15 +2606,13 @@ function parse_parameters(){
                     fi
                 	;;
 
-                -N | --network | --networks | --Network | --Networks)
+                -N | --network)
         			#
         			# display all network details for region
         			#
                     OPTION="$1"
                     if [ $2 ]; then
-                        if ! parse_regioncode $2; then
-                            shift 1
-                        else shift 2; fi
+                        shift 2
                     else
                         shift 1
                     fi
