@@ -211,7 +211,11 @@ function _ec2cli_completions(){
             case "${prev}" in
                 'list')
                     COMPREPLY=( $(compgen -W "--region --profile" -- ${cur}) )
-                ;;
+                    return 0
+                    ;;
+                *)
+                    return 0
+                    ;;
             esac
             ;;
 
@@ -232,7 +236,20 @@ function _ec2cli_completions(){
     esac
     case "${prev}" in
 
-        'attach' | 'create' | 'list' | 'run')
+        'list')
+            case "${initcmd}" in
+                '--network' )
+                    COMPREPLY=( $(compgen -W "--region --profile" -- ${cur}) )
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=( $(compgen -W "--all --profile --region --sort" -- ${cur}) )
+                    return 0
+                    ;;
+            esac
+            ;;
+
+        'attach' | 'create' | 'run')
             ##
             ##  Return compreply with any of the 5 comp_words that
             ##  not already present on the command line
