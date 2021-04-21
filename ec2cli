@@ -2611,12 +2611,8 @@ function parse_parameters(){
         			# display all network details for region
         			#
                     OPTION="$1"
-                    if [ $2 ]; then
-                        shift 2
-                    else
-                        shift 1
-                    fi
-        			;;
+                    shift 1
+                    ;;
 
                 -r | --region)
                     if parse_regioncode "$2"; then
