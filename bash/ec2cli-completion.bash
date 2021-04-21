@@ -273,7 +273,21 @@ function _ec2cli_completions(){
             ;;
 
         '--network' | '-N')
-            COMPREPLY=( $(compgen -W "list" -- ${cur}) )
+            ##
+            ##  Return compreply with any of the 5 comp_words that
+            ##  not already present on the command line
+            ##
+            declare -a horsemen singletons
+            horsemen=(  '--profile' '--region' )
+            singletons=( "${resources}" )
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
+            numargs=$(_numargs "$subcommands")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
+                _complete_4_horsemen_subcommands "${subcommands}"
+            else
+                COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            fi
             return 0
             ;;
 
