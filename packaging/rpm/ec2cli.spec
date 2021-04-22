@@ -64,7 +64,7 @@ install -m 0664 csv_generator.py $RPM_BUILD_ROOT/%{_libdir}/csv_generator.py
 install -m 0664 iam_identities.py $RPM_BUILD_ROOT/%{_libdir}/iam_identities.py
 install -m 0664 instancetypes.sh $RPM_BUILD_ROOT/%{_libdir}/instancetypes.sh
 install -m 0664 loggers.py $RPM_BUILD_ROOT/%{_libdir}/loggers.py
-install -m 0664 latest-ami.py $RPM_BUILD_ROOT/%{_libdir}/latest-ami.py
+install -m 0664 latest_ami.py $RPM_BUILD_ROOT/%{_libdir}/latest_ami.py
 install -m 0644 help_menus.lib $RPM_BUILD_ROOT/%{_libdir}/help_menus.lib
 install -m 0664 script_utils.py $RPM_BUILD_ROOT/%{_libdir}/script_utils.py
 install -m 0644 oscodes_unix.py $RPM_BUILD_ROOT/%{_libdir}/oscodes_unix.py
