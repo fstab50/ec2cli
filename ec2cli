@@ -2895,7 +2895,7 @@ else
             ec2cli_list_securitygroups $REGION
 
         elif [ "$FUNCTION_CALL" = "SPOT_MARKET" ]; then
-            sh $lib_path/spot-prices.sh "$PROFILE"
+            sh $lib_path/spot_prices.sh "$PROFILE"
 
         elif [ $EXPORT ]; then
             SORT_COL="false"
