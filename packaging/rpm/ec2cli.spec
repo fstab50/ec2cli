@@ -64,17 +64,17 @@ install -m 0664 csv_generator.py $RPM_BUILD_ROOT/%{_libdir}/csv_generator.py
 install -m 0664 iam_identities.py $RPM_BUILD_ROOT/%{_libdir}/iam_identities.py
 install -m 0664 instancetypes.sh $RPM_BUILD_ROOT/%{_libdir}/instancetypes.sh
 install -m 0664 loggers.py $RPM_BUILD_ROOT/%{_libdir}/loggers.py
-install -m 0644 std_functions.sh $RPM_BUILD_ROOT/%{_libdir}/std_functions.sh
+install -m 0664 latest-ami.py $RPM_BUILD_ROOT/%{_libdir}/latest-ami.py
+install -m 0644 help_menus.lib $RPM_BUILD_ROOT/%{_libdir}/help_menus.lib
+install -m 0664 script_utils.py $RPM_BUILD_ROOT/%{_libdir}/script_utils.py
+install -m 0644 oscodes_unix.py $RPM_BUILD_ROOT/%{_libdir}/oscodes_unix.py
+install -m 0644 pkgconfig.json $RPM_BUILD_ROOT/%{_libdir}/pkgconfig.json
 install -m 0664 spot_prices.sh $RPM_BUILD_ROOT/%{_libdir}/spot_prices.sh
+install -m 0644 std_functions.sh $RPM_BUILD_ROOT/%{_libdir}/std_functions.sh
+install -m 0644 regions.list $RPM_BUILD_ROOT/%{_libdir}/regions.list
+install -m 0644 sizes.txt $RPM_BUILD_ROOT/%{_libdir}/sizes.txt
 install -m 0644 version.py $RPM_BUILD_ROOT/%{_libdir}/version.py
 
--rw-r--r  help_menus.lib
--rw-r--r  latest-ami.py
--rw-r--r  oscodes_unix.py
--rw-r--r  pkgconfig.json
--rw-rw-r  regions.list
--rw-r--r  script_utils.py
--rw-rw-r  sizes.txt
 
 %files
  %defattr(-,root,root)
