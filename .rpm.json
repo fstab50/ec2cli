@@ -2,7 +2,7 @@
     "Package": "rpm",
     "Project": "ec2cli",
     "ProjectUrl": "https://github.com/fstab50/ec2cli",
-    "Description": "Utility for compiling and installing any Python3 version.\nSupports RHEL 6, RHEL 7, CentOS 6, CentOS",
+    "Description": "Utility for managing EC2 resources on AWS from the command line.",
     "Version": "MAJOR_VERSION",
     "Release": "MINOR_VERSION",
     "PreInstall": ["rpm-build", "rpmdevtools"],
@@ -31,7 +31,7 @@
     "RepoDefinitionFile": "developer-tools.repo",
     "SpecFile": {
         "Name": "ec2cli.spec",
-        "Summary": "A Utility for Managing Amazon STS Temporary Credentials",
+        "Summary": "Utility for managing EC2 resources on AWS from the command line.",
         "Group":  "TecAdmin",
         "BuildArch": "noarch",
         "License": "GPL",
