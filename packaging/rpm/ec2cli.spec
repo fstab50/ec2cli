@@ -64,7 +64,6 @@ install -m 0664 csv_generator.py $RPM_BUILD_ROOT/%{_libdir}/csv_generator.py
 install -m 0664 iam_identities.py $RPM_BUILD_ROOT/%{_libdir}/iam_identities.py
 install -m 0664 instancetypes.sh $RPM_BUILD_ROOT/%{_libdir}/instancetypes.sh
 install -m 0664 loggers.py $RPM_BUILD_ROOT/%{_libdir}/loggers.py
-install -m 0664 latest_ami.py $RPM_BUILD_ROOT/%{_libdir}/latest_ami.py
 install -m 0644 help_menus.lib $RPM_BUILD_ROOT/%{_libdir}/help_menus.lib
 install -m 0664 script_utils.py $RPM_BUILD_ROOT/%{_libdir}/script_utils.py
 install -m 0644 oscodes_unix.py $RPM_BUILD_ROOT/%{_libdir}/oscodes_unix.py
@@ -135,26 +134,6 @@ if [ ! "$(echo $PATH | grep '\/usr\/local\/bin')" ]; then
         fi
 
     fi
-fi
-
-
-##   enable bash_completion   ##
-
-# - /etc/bash_completion.d
-# - /usr/local/etc/bash_completion.d
-# - /usr/share/bash-completion/completions
-
-if [[ -f '/etc/bash_completion' ]]; then
-    . /etc/bash_completion
-
-elif [[ -d '/etc/bash_completion.d' ]]; then
-    . /etc/bash_completion.d/ec2cli-completion.bash
-
-elif [[ -f '/usr/share/bash-completion/bash_completion' ]]; then
-    . /usr/share/bash-completion/bash_completion
-
-elif [[ -f '/usr/local/etc/bash_completion.d/ec2cli-completion.bash' ]]; then
-    . /usr/local/etc/bash_completion.d/ec2cli-completion.bash
 fi
 
 
