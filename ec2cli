@@ -244,16 +244,17 @@ function environment_info(){
         std_logger "[$msg_header]: boto library detected: $boto_ver"
 
     elif [[ $dep == "awscli" ]]; then
-        std_message "awscli version detected: ${accent}${BOLD}$awscli_ver${UNBOLD}${reset}" $msg_header "pprint" | indent04
-        std_message "boto library detected: ${accent}${BOLD}$boto_ver${UNBOLD}${reset}" $msg_header "pprint" | indent04
-        std_message "Python runtime detected: ${accent}${BOLD}$python_ver${UNBOLD}${reset}" $msg_header "pprint" | indent04
-
+        std_message "awscli version detected: ${white}$awscli_ver${reset}" $msg_header "pprint" | indent04
+        std_message "boto library detected: ${white}$boto_ver${reset}" $msg_header "pprint" | indent04
+        std_message "Python runtime detected: ${white}$python_ver${reset}" $msg_header "pprint" | indent04
+        printf -- '\n'
+        
     elif [[ $dep == "os" ]]; then
-        std_message "Kernel detected: ${title}$(echo $version_info | awk '{print $3}')${reset}" $msg_header | indent04
+        std_message "Kernel detected: ${white}$(echo $version_info | awk '{print $3}')${reset}" $msg_header | indent04
 
     elif [[ $dep == "jq" ]]; then
         version_info=$(jq --version 2>&1)
-        std_message "parser detected: ${title}$(echo $version_info)${reset}" $msg_header | indent04
+        std_message "parser detected: ${white}$(echo $version_info)${reset}" $msg_header | indent04
 
     else
         std_logger "[$msg_header]: detected: $($prog --version | head -1)"
