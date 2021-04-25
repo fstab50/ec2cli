@@ -1130,7 +1130,7 @@ function ec2cli_list_images(){
     local REGION=$1     # region passed from global identifier
     local NUMLIST       # boolean parameter, 1 = output numbered list
     local MAXCT         # array length
-    local total_width="110"
+    local total_width="137"
     local sp="${frame}|${bodytext}"       # separator
     declare -a REGIONS
     # print out numbered list of instances?
@@ -1142,17 +1142,17 @@ function ec2cli_list_images(){
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
         for region in ${REGIONS[@]}; do \
             aws ec2 --profile $PROFILE describe-images \
-                --region $region --output json --owner self >> .jsonimages.tmp; done &
+                --region $region --output json --owner self >> $TMPDIR/.jsonimages.tmp; done &
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
-        aws ec2 --profile $PROFILE describe-images --region $REGION --output json --owner self > .jsonimages.tmp
+        aws ec2 --profile $PROFILE describe-images --region $REGION --output json --owner self > $TMPDIR/.jsonimages.tmp
     fi
 
     # retrieve account name
     ACCT_ALIAS="$(account_alias $PROFILE)"
 
-    ARR_IMAGEID=( $(jq -r ".Images[].ImageId" .jsonimages.tmp) )
+    ARR_IMAGEID=( $(jq -r ".Images[].ImageId" $TMPDIR/.jsonimages.tmp) )
     MAXCT=${#ARR_IMAGEID[*]}    # values in array
 
     # test for 0 instances in region
@@ -1160,18 +1160,18 @@ function ec2cli_list_images(){
         # no instances in region
         std_logger "INFO: function ec2cli_list_images: list AMI images"
         std_message "No Amazon Machine Images found in region $REGION." INFO
-        rm .jsonimages.tmp    # clean up
+        rm $TMPDIR/.jsonimages.tmp    # clean up
         return
     fi
 
     # images exist in region, retrieve all other values
-    ARR_TYPE=( $(jq -r ".Images[].ImageType" .jsonimages.tmp) )
-    ARR_VTYPE=( $(jq -r ".Images[].VirtualizationType" .jsonimages.tmp) )
-    ARR_CREATEDATE=( $(jq -r ".Images[].CreationDate" .jsonimages.tmp) )
-    ARR_SNAP0=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" .jsonimages.tmp) )
-    ARR_SNAP1=( $(jq -r ".Images[].BlockDeviceMappings[1].Ebs.SnapshotId" .jsonimages.tmp) )
-    ARR_NAME=( $(jq -r ".Images[].Name" .jsonimages.tmp | cut -c 1-25) )    # limit to 25 chars
-    ARR_DESCR=( $(jq -r ".Images[].Description" .jsonimages.tmp) )
+    ARR_TYPE=( $(jq -r ".Images[].ImageType" $TMPDIR/.jsonimages.tmp) )
+    ARR_VTYPE=( $(jq -r ".Images[].VirtualizationType" $TMPDIR/.jsonimages.tmp) )
+    ARR_CREATEDATE=( $(jq -r ".Images[].CreationDate" $TMPDIR/.jsonimages.tmp) )
+    ARR_SNAP0=( $(jq -r ".Images[].BlockDeviceMappings[0].Ebs.SnapshotId" $TMPDIR/.jsonimages.tmp) )
+    ARR_SNAP1=( $(jq -r ".Images[].BlockDeviceMappings[1].Ebs.SnapshotId" $TMPDIR/.jsonimages.tmp) )
+    ARR_NAME=( $(jq -r ".Images[].Name" $TMPDIR/.jsonimages.tmp | cut -c 1-25) )    # limit to 25 chars
+    ARR_DESCR=( $(jq -r ".Images[].Description" $TMPDIR/.jsonimages.tmp  | cut -c 1-35) )
 
     # convert date-time format to %Y-%m-%d.T%H:%M
     i=0     # initialize counter
@@ -1183,30 +1183,30 @@ function ec2cli_list_images(){
     done
 
     # print header
-    print_header "AMI-id CreateDateTime Type vType SnapshotId Description" $total_width .header.tmp
+    print_header "$sp AMI-id $sp CreateDateTime $sp Type $sp vType $sp SnapshotId $sp Tags $sp" $total_width $TMPDIR/.header.tmp
 
     # create table of json array
     i=0
     for image in ${ARR_IMAGEID[*]}}; do
-        echo "${ARR_IMAGEID[$i]} ${ARR_CREATEDATE[$i]} ${ARR_TYPE[$i]} \
-            ${ARR_VTYPE[$i]} ${ARR_SNAP0[$i]}"" ${ARR_DESCR[$i]}" >> $TMPDIR/.body.tmp
+        echo "$sp ${ARR_IMAGEID[$i]} $sp  ${ARR_CREATEDATE[$i]} $sp  ${ARR_TYPE[$i]} $sp  \
+            ${ARR_VTYPE[$i]} $sp ${ARR_SNAP0[$i]}""  $sp  ${ARR_DESCR[$i]} $sp " >> $TMPDIR/.body.tmp
         i=$(( $i+1 ))
     done
     # sort and combine results
-    cat .header.tmp > .output.tmp
-    cat $TMPDIR/.body.tmp | sort -k +2 >> .output.tmp
+    cat $TMPDIR/.header.tmp > $TMPDIR/.output.tmp
+    cat $TMPDIR/.body.tmp | sort -k +2 >> $TMPDIR/.output.tmp
 
     ## print and format output ##
     # header, region identifier
     printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} $REGION  $sp  ACCOUNT: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
     # format output
-    awk  '{ printf "%-13s %-18s %-8s %-12s %-23s %-10s %-2s %-2s %-2s %-2s \n", \
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10}' .output.tmp | indent02
+    awk  '{ printf " %-3s %-21s  %-3s %-17s  %-3s %-10s  %-3s %-8s  %-3s %-23s %-2s %-35s %-2s \n", \
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.output.tmp | indent02
     # footer
     print_footer "Total AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
 
     # clean up
-    rm .header.tmp .jsonimages.tmp .output.tmp $TMPDIR/.body.tmp
+    rm $TMPDIR/.header.tmp $TMPDIR/.jsonimages.tmp $TMPDIR/.output.tmp $TMPDIR/.body.tmp
     #
     # <-- end function ec2cli_list_images -->
     #
@@ -2332,6 +2332,10 @@ function parse_regioncode(){
         -p | --profile | -d | --debug | -h | --help)
             return 1
             ;;
+
+        attach | create | list | run)
+            return 0
+            ;;
     esac
 
     if [ ! $REGIONFILE_CHECK ]; then setup_regioncodes; fi
@@ -2602,19 +2606,13 @@ function parse_parameters(){
                     fi
                 	;;
 
-                -N | --network | --networks | --Network | --Networks)
+                -N | --network)
         			#
         			# display all network details for region
         			#
                     OPTION="$1"
-                    if [ $2 ]; then
-                        if ! parse_regioncode $2; then
-                            shift 1
-                        else shift 2; fi
-                    else
-                        shift 1
-                    fi
-        			;;
+                    shift 1
+                    ;;
 
                 -r | --region)
                     if parse_regioncode "$2"; then
@@ -2897,7 +2895,7 @@ else
             ec2cli_list_securitygroups $REGION
 
         elif [ "$FUNCTION_CALL" = "SPOT_MARKET" ]; then
-            sh $lib_path/spot-prices.sh "$PROFILE"
+            sh $lib_path/spot_prices.sh "$PROFILE"
 
         elif [ $EXPORT ]; then
             SORT_COL="false"

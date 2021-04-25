@@ -182,7 +182,7 @@ function _ec2cli_completions(){
 
     # option strings
     options='--debug --help --profile --region --version'
-    resources='--images --instances --sgroups --spot --subnets --snapshots --tags --volumes --vpcs'
+    resources='--images --instances --network --sgroups --spot --subnets --snapshots --tags --volumes --vpcs'
     commands='attach create list run'
 
 
@@ -207,6 +207,18 @@ function _ec2cli_completions(){
             return 0
             ;;
 
+        '-N' | '--network')
+            case "${prev}" in
+                'list')
+                    COMPREPLY=( $(compgen -W "--region --profile" -- ${cur}) )
+                    return 0
+                    ;;
+                *)
+                    return 0
+                    ;;
+            esac
+            ;;
+
         '--sort')
             return 0
             ;;
@@ -224,7 +236,20 @@ function _ec2cli_completions(){
     esac
     case "${prev}" in
 
-        'attach' | 'create' | 'list' | 'run')
+        'list')
+            case "${initcmd}" in
+                '--network' )
+                    COMPREPLY=( $(compgen -W "--region --profile" -- ${cur}) )
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=( $(compgen -W "--all --profile --region --sort" -- ${cur}) )
+                    return 0
+                    ;;
+            esac
+            ;;
+
+        'attach' | 'create' | 'run')
             ##
             ##  Return compreply with any of the 5 comp_words that
             ##  not already present on the command line
@@ -245,6 +270,25 @@ function _ec2cli_completions(){
 
         '--instances' | '--images' | '--snapshots' | '--sgroups' | '--subnets' | '--volumes')
             COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
+            ;;
+
+        '--network' | '-N')
+            ##
+            ##  Return compreply with any of the 5 comp_words that
+            ##  not already present on the command line
+            ##
+            declare -a horsemen singletons
+            horsemen=(  '--profile' '--region' )
+            singletons=( "${resources}" )
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
+            numargs=$(_numargs "$subcommands")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
+                _complete_4_horsemen_subcommands "${subcommands}"
+            else
+                COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            fi
+            return 0
             ;;
 
         '--profile')
@@ -297,6 +341,11 @@ function _ec2cli_completions(){
                 changed_files=$(_code_subcommands)
                 COMPREPLY=( $(compgen -W "${changed_files}" -- ${cur}) )
             fi
+            return 0
+            ;;
+
+        '--vpcs')
+            COMPREPLY=( $(compgen -W "list" -- ${cur}) )
             return 0
             ;;
 

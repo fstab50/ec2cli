@@ -145,7 +145,9 @@ help:   ## Print help index
 
 .PHONY: debian-help
 debian-help:  ## print help menu options for the debian package creation script
+	cp $(MODULE_PATH)/version.py $(SCRIPT_DIR)/
 	$(PYTHON3_PATH) $(SCRIPT_DIR)/builddeb.py
+	rm -f $(SCRIPT_DIR)/version.py
 
 
 .PHONY: rpm-help

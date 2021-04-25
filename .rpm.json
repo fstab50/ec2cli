@@ -1,0 +1,106 @@
+{
+    "Package": "rpm",
+    "Project": "ec2cli",
+    "ProjectUrl": "https://github.com/fstab50/ec2cli",
+    "Description": "Utility for managing EC2 resources on AWS from the command line.",
+    "Version": "MAJOR_VERSION",
+    "Release": "MINOR_VERSION",
+    "PreInstall": ["rpm-build", "rpmdevtools"],
+    "Dependencies": [
+        "bash >= 4.1",
+        "curl >= 7.0",
+        "bc >= 1.0",
+        "coreutils",
+        "hostname",
+        "which",
+        "util-linux",
+        "jq",
+        "wget"
+    ],
+    "LogFiles": [
+        {
+            "file": "ec2cli.log", "Permissions": "0666"
+        }
+    ],
+    "VersionModule": "version.py",
+    "DockerImage": "rpmbuildF",
+    "DockerContainer": "ec2cli",
+    "DockerUser": "builder",
+    "DockerBuildScript": "docker-buildrpm.sh",
+    "BashCompletion": "ec2cli-completion.bash",
+    "RepoDefinitionFile": "developer-tools.repo",
+    "SpecFile": {
+        "Name": "ec2cli.spec",
+        "Summary": "Utility for managing EC2 resources on AWS from the command line.",
+        "Group":  "TecAdmin",
+        "BuildArch": "noarch",
+        "License": "GPL",
+        "Source": "ec2cli-MAJOR_VERSION.MINOR_VERSION.tar.gz",
+        "BuildDirName": "ec2cli-MAJOR_VERSION",
+        "Directories": [
+            {
+                "Dirname": "/usr/local/lib/ec2cli",
+                "Permissions": "0755"
+            },
+            {
+                "Dirname": "/usr/local/bin",
+                "Permissions": "0755"
+            },
+            {
+                "Dirname": "/var/log",
+                "Permissions": "0755"
+            }
+        ],
+        "Files": [
+            {
+                "filename": "ec2cli",
+                "SourceLocation": "rpmbuild/SOURCES/ec2cli-MAJOR_VERSION/ec2cli",
+                "location": "/usr/local/bin/ec2cli",
+                "Permissions": "0755"
+            },
+            {
+                "filename": "std_functions.sh",
+                "SourceLocation": "rpmbuild/SOURCES/ec2cli-MAJOR_VERSION/std_functions.sh",
+                "SpecFilePath": "/usr/local/lib/ec2cli/std_functions.sh",
+                "Permissions": "0755"
+            },
+            {
+                "filename": "colors.py",
+                "SourceLocation": "rpmbuild/SOURCES/ec2cli-MAJOR_VERSION/colors.py",
+                "SpecFilePath": "/usr/local/lib/ec2cli/colors.py",
+                "Permissions": "0755"
+            },
+            {
+                "filename": "colors.sh",
+                "SourceLocation": "rpmbuild/SOURCES/ec2cli-MAJOR_VERSION/colors.sh",
+                "SpecFilePath": "/usr/local/lib/ec2cli/colors.sh",
+                "Permissions": "0755"
+            },
+            {
+                "filename": "iam_users.py",
+                "SourceLocation": "rpmbuild/SOURCES/ec2cli-MAJOR_VERSION/iam_users.py",
+                "SpecFilePath": "/usr/local/lib/ec2cli/iam_users.py",
+                "Permissions": "0755"
+            },
+            {
+                "filename": "version.py",
+                "SourceLocation": "rpmbuild/SOURCES/ec2cli-MAJOR_VERSION/version.py",
+                "SpecFilePath": "/usr/local/lib/ec2cli/version.py",
+                "Permissions": "0755"
+            },
+            {
+                "filename": "precheck-accounts.py",
+                "SourceLocation": "rpmbuild/SOURCES/ec2cli-MAJOR_VERSION/precheck-accounts.py",
+                "SpecFilePath": "/usr/local/lib/ec2cli/precheck-accounts.py",
+                "Permissions": "0755"
+            },
+            {
+                "filename": "ec2cli.log",
+                "SourceLocation": "rpmbuild/SOURCES/ec2cli-MAJOR_VERSION/ec2cli.log",
+                "SpecFilePath": "/var/log/ec2cli.log",
+                "Permissions": "0666"
+            }
+        ],
+        "BuildComment": "RPM Package built by CI/CD automtation"
+    }
+}

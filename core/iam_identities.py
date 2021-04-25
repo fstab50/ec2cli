@@ -15,7 +15,6 @@ Summary.
 import os
 import sys
 import inspect
-from pyaws.utils import stdout_message
 
 try:
     from configparser import ConfigParser
@@ -32,7 +31,7 @@ def print_array(content, args):
         if x in args:
             continue
         else:
-            print(x + ' ', end='')
+            print(x + ' ')
 
 
 def shared_credentials_location():
@@ -52,14 +51,10 @@ def awscli_profiles():
     if os.path.isfile(config_file):
         config.read(config_file)
     else:
-        stdout_message(
-            message='awscli configuration file not found on local filesystem. Exit',
-            prefix='WARN'
-        )
         sys.exit(1)
 
     for profile in config.sections():
-        if 'role_arn' in config[profile].keys():
+        if 'role_arn' in config[profile].keys() or 'aws_security_token' in config[profile].keys():
             config.pop(profile)
     return config
 
@@ -76,11 +71,11 @@ def print_profiles(config, args):
 
 # --- main --------------------------------------------------------------------------------
 
+if __name__ == '__main__':
+    # globals
+    home = os.environ.get('HOME')
+    config_file = shared_credentials_location() or home + '/.aws/credentials'
+    config = ConfigParser()
 
-# globals
-home = os.environ.get('HOME')
-config_file = shared_credentials_location() or home + '/.aws/credentials'
-config = ConfigParser()
-
-modified_config = awscli_profiles()
-sys.exit(print_profiles(modified_config, sys.argv[1:]))
+    modified_config = awscli_profiles()
+    sys.exit(print_profiles(modified_config, sys.argv[1:]))

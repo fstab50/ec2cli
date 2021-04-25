@@ -16,35 +16,28 @@ BuildRoot:      %{buildroot}
 Name:           %{name}
 Version:        %{version}
 Release:        %{release}
-Summary:        Create and Manage Amazon STS Role Credentials for Amazon Web Services
+Summary:        Manage Amazon Web Services' EC2 machines from the command line
 
 Group:          Development/Tools
 BuildArch:      noarch
 License:        GPL
-URL:            https://ec2cli.readthedocs.io
+URL:            https://github.com/fstab50/ec2cli
 Source:         %{name}-%{version}.%{release}.tar.gz
 Prefix:         /usr
 Requires:      DEPLIST
 
 %if 0%{?rhel}%{?amzn2}
-Requires: epel-release bash-completion procps-ng jq awscli hostname util-linux coreutils curl bc bash
+Requires: bind-utils bc bash coreutils curl epel-release bash-completion procps-ng jq awscli hostname util-linux python3
 %endif
 
 %if 0%{?amzn1}
-Requires: epel-release procps jq awscli hostname util-linux coreutils curl bc bash
+Requires: bind-utils bc bash coreutils curl epel-release procps jq awscli hostname util-linux
 %endif
 
 %description
-ec2cli requests temporary credentials from Amazon's Security Token Service, STS
-(http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html), for roles that
-normally require multi-factor credentials authentication in order to authenticate users.
--
-A primary use case for ec2cli is the generation of a temporary set of AWS access credentials
-for programmatic use by automation tools running on your local machine.
--
-ec2cli manages temporary credentials it generates to prevent corruption of your local awscli
-config. When generating new temporary credentials, ec2cli will automatically clear expired
-credentials from your local awscli config to prevent duplicate sets of credentials.
+EC2cli is a utility which allows one to view and manage EC2 machines,
+EBS volumes, snapshots, tags, and EC2 spot instances from the linux
+command line in Bash.
 
 
 %prep
@@ -61,14 +54,25 @@ install -m 0755 -d $RPM_BUILD_ROOT/%{_libdir}
 install -m 0755 -d $RPM_BUILD_ROOT/%{_logdir}
 install -m 0755 -d $RPM_BUILD_ROOT/%{_compdir}
 install -m 0755 -d $RPM_BUILD_ROOT/%{_yumdir}
-install -m 0755 ec2cli $RPM_BUILD_ROOT/%{_bindir}/ec2cli
-install -m 0644 std_functions.sh $RPM_BUILD_ROOT/%{_libdir}/std_functions.sh
 install -m 0644 colors.sh $RPM_BUILD_ROOT/%{_libdir}/colors.sh
 install -m 0644 colors.py $RPM_BUILD_ROOT/%{_libdir}/colors.py
-install -m 0644 iam_users.py $RPM_BUILD_ROOT/%{_libdir}/iam_users.py
-install -m 0644 precheck-accounts.py $RPM_BUILD_ROOT/%{_libdir}/precheck-accounts.py
-install -m 0644 version.py $RPM_BUILD_ROOT/%{_libdir}/version.py
+install -m 0644 config.json $RPM_BUILD_ROOT/%{_libdir}/config.json
+install -m 0755 ec2cli $RPM_BUILD_ROOT/%{_bindir}/ec2cli
 install -m 0644 ec2cli-completion.bash $RPM_BUILD_ROOT/%{_compdir}/ec2cli-completion.bash
+install -m 0644 exitcodes.sh $RPM_BUILD_ROOT/%{_libdir}/exitcodes.sh
+install -m 0664 csv_generator.py $RPM_BUILD_ROOT/%{_libdir}/csv_generator.py
+install -m 0664 iam_identities.py $RPM_BUILD_ROOT/%{_libdir}/iam_identities.py
+install -m 0664 instancetypes.sh $RPM_BUILD_ROOT/%{_libdir}/instancetypes.sh
+install -m 0664 loggers.py $RPM_BUILD_ROOT/%{_libdir}/loggers.py
+install -m 0644 help_menus.lib $RPM_BUILD_ROOT/%{_libdir}/help_menus.lib
+install -m 0664 script_utils.py $RPM_BUILD_ROOT/%{_libdir}/script_utils.py
+install -m 0644 oscodes_unix.py $RPM_BUILD_ROOT/%{_libdir}/oscodes_unix.py
+install -m 0644 pkgconfig.json $RPM_BUILD_ROOT/%{_libdir}/pkgconfig.json
+install -m 0664 spot_prices.sh $RPM_BUILD_ROOT/%{_libdir}/spot_prices.sh
+install -m 0644 std_functions.sh $RPM_BUILD_ROOT/%{_libdir}/std_functions.sh
+install -m 0644 regions.list $RPM_BUILD_ROOT/%{_libdir}/regions.list
+install -m 0644 sizes.txt $RPM_BUILD_ROOT/%{_libdir}/sizes.txt
+install -m 0644 version.py $RPM_BUILD_ROOT/%{_libdir}/version.py
 
 
 %files
@@ -130,26 +134,6 @@ if [ ! "$(echo $PATH | grep '\/usr\/local\/bin')" ]; then
         fi
 
     fi
-fi
-
-
-##   enable bash_completion   ##
-
-# - /etc/bash_completion.d
-# - /usr/local/etc/bash_completion.d
-# - /usr/share/bash-completion/completions
-
-if [[ -f '/etc/bash_completion' ]]; then
-    . /etc/bash_completion
-
-elif [[ -d '/etc/bash_completion.d' ]]; then
-    . /etc/bash_completion.d/ec2cli-completion.bash
-
-elif [[ -f '/usr/share/bash-completion/bash_completion' ]]; then
-    . /usr/share/bash-completion/bash_completion
-
-elif [[ -f '/usr/local/etc/bash_completion.d/ec2cli-completion.bash' ]]; then
-    . /usr/local/etc/bash_completion.d/ec2cli-completion.bash
 fi
 
 
