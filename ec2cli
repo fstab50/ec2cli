@@ -240,15 +240,15 @@ function environment_info(){
     if [[ $dep == "aws" ]]; then
         std_logger "[$msg_header]: awscli version detected: $awscli_ver"
         std_logger "[$msg_header]: Python runtime detected: $python_ver"
-        std_logger "[$msg_header]: Kernel detected: $(echo $version_info | awk '{print $3}')"
+        std_logger "[$msg_header]: Kernel detected: $(echo "$version_info" | awk '{print $3}')"
         std_logger "[$msg_header]: boto library detected: $boto_ver"
 
     elif [[ $dep == "awscli" ]]; then
-        std_message "awscli version detected: ${white}$awscli_ver${reset}" $msg_header "pprint" | indent04
-        std_message "boto library detected: ${white}$boto_ver${reset}" $msg_header "pprint" | indent04
-        std_message "Python runtime detected: ${white}$python_ver${reset}" $msg_header "pprint" | indent04
+        std_message "awscli version detected: ${white}$awscli_ver${reset}" "$msg_header" "pprint" | indent04
+        std_message "boto library detected: ${white}$boto_ver${reset}" "$msg_header" "pprint" | indent04
+        std_message "Python runtime detected: ${white}$python_ver${reset}" "$msg_header" "pprint" | indent04
         printf -- '\n'
-        
+
     elif [[ $dep == "os" ]]; then
         std_message "Kernel detected: ${white}$(echo $version_info | awk '{print $3}')${reset}" $msg_header | indent04
 
