@@ -896,12 +896,12 @@ function ec2cli_create_tag(){
     done
 
     # create tag
-    aws ec2 --profile $PROFILE --region $region create-tags \
-        --resources $resource_id \
+    aws ec2 --profile "$PROFILE" --region "$region" create-tags \
+        --resources "$resource_id" \
         --tags Key="$KEY",Value="$VALUE"
 
     # Output list of all tags
-    ec2cli_list_tags  $region $resource_id
+    ec2cli_list_tags  "$region" "$resource_id"
     #
     # <-- end function ec2cli_cretae-tag -->
     #
@@ -924,7 +924,7 @@ function ec2cli_list_instances(){
     if [ "$export" = "true" ]; then
         echo -e "\nExport Data to Comma Separated Value Format -- ${title}Instances${bodytext}\n" | indent04
         read -p "    Export File Location? [ $pwd ]: " choice | indent04
-        if [ -z $choice ]; then
+        if [ -z "$choice" ]; then
             path="$pwd"
         elif [ "$choice" = "q" ]; then
             return 0
@@ -932,26 +932,26 @@ function ec2cli_list_instances(){
             path="$choice"
         fi
         std_message "Exporting data to comma separated value (csv) file." "INFO" | indent04
-        python3 $lib_path/csv_generator.py --profile $PROFILE --type instances --region $REGION --filepath $path
+        python3 "$lib_path/csv_generator.py" --profile "$PROFILE" --type instances --region "$REGION" --filepath "$path"
         return 0
     fi
 
     # pull json info, all instances in region
-    if [ $ALL_REGIONS ]; then
+    if [ "$ALL_REGIONS" ]; then
         # load array from local list of regions
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
-        REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
+        REGION_CT=$(cat ${CONFIG_PATH}/${REGION_CONFIGFILE} | wc -l)
         for region in ${REGIONS[@]}; do \
-            aws ec2 --profile $PROFILE describe-instances \
-                --region $region --output json >> $TMPDIR/.jsonoutput.tmp; done &
+            aws ec2 --profile "$PROFILE" describe-instances \
+                --region "$region" --output json >> $TMPDIR/.jsonoutput.tmp; done &
         delay_spinner "  Please wait, retrieving data from AWS..."
         clear
     else
-        aws ec2 --profile $PROFILE describe-instances --region $REGION --output json > $TMPDIR/.jsonoutput.tmp
+        aws ec2 --profile "$PROFILE" describe-instances --region "$REGION" --output json > $TMPDIR/.jsonoutput.tmp
     fi
 
     # retrieve account name
-    ACCT_ALIAS="$(account_alias $PROFILE)"
+    ACCT_ALIAS=$(account_alias "$PROFILE")
 
     # load fields into respective arrays
     ARR_STATE=( $(jq -r '.Reservations[].Instances[].State.Name' $TMPDIR/.jsonoutput.tmp) )
