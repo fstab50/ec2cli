@@ -16,7 +16,7 @@
 * [**Installation**](#installation)
   * [Ubuntu, Linux Mint, Debian-based Distributions](#debian-distro-install)
   * [Redhat, CentOS, Fedora](#redhat-distro-install)
-  * [Amazon Linux 2, Fedora](#amzn2-distro-install)
+  * [Amazon Linux 2](#amzn2-distro-install)
 
 * [**Configuration**](#configuration)
 
