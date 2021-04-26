@@ -15,7 +15,7 @@
 
 * [**Installation**](#installation)
   * [Ubuntu, Linux Mint, Debian-based Distributions](#debian-distro-install)
-  * [Redhat, CentOS](#redhat-distro-install)
+  * [Redhat, CentOS, Fedora](#redhat-distro-install)
   * [Amazon Linux 2, Fedora](#amzn2-distro-install)
 
 * [**Configuration**](#configuration)
@@ -185,16 +185,76 @@ The easiest way to install **ec2cli** on debian-based Linux distributions is via
 * * *
 
 <a name="redhat-distro-install"></a>
-### Redhat, CentOS  (Python 3.6+)
+### Redhat, CentOS  (Python 3.6+), Fedora (Python 3.7+)
 
-Redhat Package Manager (RPM) format used by Redhat-based distros is under development.  Check [rpm.awscloud.center](http://s3.us-east-2.amazonaws.com/rpm.awscloud.center/index.html) page for updates.
+The easiest way to install **ec2cli** on redhat-based Linux distributions is via the developer-tools package repository:
+
+1. Open a command line terminal.
+
+    [![rpm-install0](./assets/rpm-install-0.png)](http://images.awspros.world/ec2cli/rpm-install-0.png)
+
+2. Install the official epel package repository
+
+    ```
+    $ sudo yum install epel-release
+    ```
+
+2. Download and install the repo definition file
+
+    ```
+    $ sudo yum install wget
+    ```
+
+    [![rpm-install1](./assets/rpm-install-1.png)](http://images.awspros.world/ec2cli/rpm-install-1.png)
+
+    ```
+    $ wget http://awscloud.center/rpm/developer-tools.repo
+    ```
+
+    [![rpm-install2](./assets/rpm-install-2.png)](http://images.awspros.world/ec2cli/rpm-install-2.png)
+
+    ```
+    $ sudo chown 0:0 developer-tools.repo && sudo mv developer-tools.repo /etc/yum.repos.d/
+    ```
+
+    [![rpm-install2b](./assets/rpm-install-2b.png)](http://images.awspros.world/ec2cli/rpm-install-2b.png)
+
+
+3. Delete the local repository cache, then Update the cache with new package references
+
+    ```
+    $ sudo rm -fr /var/cache/yum
+    $ sudo yum update -y
+    ```
+
+4. Install the **ec2cli** os package
+
+    ```
+    $ sudo yum install ec2cli
+    ```
+
+    [![rpm-install3](./assets/rpm-install-3.png)](http://images.awspros.world/ec2cli/rpm-install-3.png)
+
+
+    Answer "y":
+
+    [![rpm-install4](./assets/rpm-install-4.png)](http://images.awspros.world/ec2cli/rpm-install-4.png)
+
+
+5. Verify Installation
+
+    ```
+    $ yum info ec2cli
+    ```
+
+    [![rpm-install5](./assets/rpm-install-5.png)](http://images.awspros.world/ec2cli/rpm-install-5.png)
 
 
 [back to the top](#top)
 
 * * *
 <a name="amzn2-distro-install"></a>
-### Amazon Linux 2 / Fedora (Python 3.7+)
+### Amazon Linux 2
 
 Redhat Package Manager (RPM) format used by Amazon Linux under development.  Check [amzn2.awscloud.center](http://s3.us-east-2.amazonaws.com/amzn2.awscloud.center/index.html) page for updates.
 
