@@ -213,6 +213,20 @@ function _ec2cli_completions(){
                     COMPREPLY=( $(compgen -W "--region --profile" -- ${cur}) )
                     return 0
                     ;;
+
+                '--region' | "--re*")
+                    ##  complete AWS region codes
+                    python3=$(which python3)
+                    regions=$(cat "$config_dir/regions.list")
+                    if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
+
+                        _complete_region_subcommands "${regions}"
+                    else
+                        COMPREPLY=( $(compgen -W "${regions}" -- ${cur}) )
+                    fi
+                    return 0
+                    ;;
+
                 *)
                     return 0
                     ;;
@@ -312,7 +326,6 @@ function _ec2cli_completions(){
             ##  complete AWS region codes
             python3=$(which python3)
             regions=$(cat "$config_dir/regions.list")
-
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
 
                 _complete_region_subcommands "${regions}"
