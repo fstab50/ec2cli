@@ -15,7 +15,7 @@
 
 * [**Installation**](#installation)
   * [Ubuntu, Linux Mint, Debian-based Distributions](#debian-distro-install)
-  * [Redhat, CentOS](#redhat-distro-install)
+  * [Redhat, CentOS, Fedora](#redhat-distro-install)
   * [Amazon Linux 2, Fedora](#amzn2-distro-install)
 
 * [**Configuration**](#configuration)
@@ -185,7 +185,7 @@ The easiest way to install **ec2cli** on debian-based Linux distributions is via
 * * *
 
 <a name="redhat-distro-install"></a>
-### Redhat, CentOS  (Python 3.6+)
+### Redhat, CentOS  (Python 3.6+), Fedora (Python 3.7+)
 
 The easiest way to install **ec2cli** on redhat-based Linux distributions is via the developer-tools package repository:
 
@@ -254,7 +254,7 @@ The easiest way to install **ec2cli** on redhat-based Linux distributions is via
 
 * * *
 <a name="amzn2-distro-install"></a>
-### Amazon Linux 2 / Fedora (Python 3.7+)
+### Amazon Linux 2
 
 Redhat Package Manager (RPM) format used by Amazon Linux under development.  Check [amzn2.awscloud.center](http://s3.us-east-2.amazonaws.com/amzn2.awscloud.center/index.html) page for updates.
 
