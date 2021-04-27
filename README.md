@@ -29,7 +29,7 @@
 * [**Screenshots**](#screenshots)
   * [ec2cli list command](#screenshots0)
   * [ec2cli run command](#screenshots1)
-  * [--tags ](#screenshots2) Parameter
+  * [ --tags Resource Option](#screenshots2)
   * [EC2 Spot Price Utility](#screenshots3)
 
 * [**Author & Copyright**](#author--copyright)
