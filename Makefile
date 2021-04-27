@@ -99,6 +99,7 @@ docs: clean setup-venv    ## Generate sphinx documentation
 builddeb:  clean setup-venv  ## Build Debian distribution (.deb) os package
 	@echo "Building Debian package format of $(PROJECT)"; \
 	cp $(VERSION_FILE) $(SCRIPT_DIR)/ ; \
+	cp $(CUR_DIR)/bash/components.py $(LIB_DIR)/ ; \
 	if [ ! -d $(VENV_DIR) ]; then $(MAKE) setup-venv; fi; \
 	if [ $(VERSION) ]; then . $(VENV_DIR)/bin/activate && \
 	$(PYTHON3_PATH) $(SCRIPT_DIR)/builddeb.py --build --set-version $(VERSION); \
@@ -108,6 +109,7 @@ builddeb:  clean setup-venv  ## Build Debian distribution (.deb) os package
 .PHONY: buildrpm
 buildrpm:  setup-venv   ## Build Redhat distribution (.rpm) os package
 	@echo "Building RPM package format of $(PROJECT)"; \
+	cp $(CUR_DIR)/bash/components.py $(LIB_DIR)/ ; \
 	if [ $(VERSION) ]; then cd $(CUR_DIR) && . $(VENV_DIR)/bin/activate && \
 	$(PYTHON3_PATH) $(SCRIPT_DIR)/buildrpm.py --build --set-version $(VERSION); else \
 	cd $(CUR_DIR) && . $(VENV_DIR)/bin/activate && $(PYTHON3_PATH) $(SCRIPT_DIR)/buildrpm.py --build; fi
