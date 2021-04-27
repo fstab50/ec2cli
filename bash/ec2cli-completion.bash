@@ -183,7 +183,7 @@ function _ec2cli_completions(){
 
     # option strings
     options='--debug --help --profile --region --version'
-    resources='--images --instances --network --sgroups --spot --subnets --snapshots --tags --volumes --vpcs'
+    resources='--images --instances --network --secgroups --spot --subnets --snapshots --tags --volumes --vpcs'
     commands='attach create list run'
 
 
@@ -283,7 +283,7 @@ function _ec2cli_completions(){
             return 0
             ;;
 
-        '--instances' | '--images' | '--snapshots' | '--sgroups' | '--subnets' | '--volumes')
+        '--instances' | '--images' | '--snapshots' | '--secgroups' | '--subnets' | '--volumes')
             COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
             ;;
 

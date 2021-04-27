@@ -96,7 +96,7 @@ function ec2cli_help(){
 
                        -i | --instances
                        -b | --subnets
-                       -g | --sgroups
+                       -g | --secgroups
                        -s | --snapshots
                        -t | --tags
                        -v | --volumes
@@ -120,7 +120,7 @@ function ec2cli_help(){
     ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
           ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Images (AMI)
           ${resources}-b${bodytext},${resources} --subnets      ${bodytext}Virtual Private Cloud (VPC) Subnets
-          ${resources}-g${bodytext},${resources} --sgroups      ${bodytext}Security Group Details
+          ${resources}-g${bodytext},${resources} --secgroups    ${bodytext}Security Group Details
           ${resources}-i${bodytext},${resources} --instances    ${bodytext}EC2 Instance Details
           ${resources}-n${bodytext},${resources} --vpc          ${bodytext}Virtual Private Cloud (VPC) Networks
           ${resources}-N${bodytext},${resources} --network      ${bodytext}VPC, Subnet, & Security Groups
@@ -2521,7 +2521,7 @@ function parse_parameters(){
                         esac
                     fi
                 	;;
-                -g | --sgroups | --securitygroups)
+                -g | --secgroups | --securitygroups)
                     #
                     # display details of EC2 security groups for region
                     #
