@@ -64,7 +64,7 @@ function _complete_ec2cli_commands(){
 
 function _complete_code_subcommands(){
     local cmds="$1"
-    local split='3'       # times to split screen width
+    local split='5'       # times to split screen width
     local IFS=$' \t\n'
     local formatted_cmds=( $(compgen -W "${cmds}" -- "${cur}") )
 
@@ -170,6 +170,7 @@ function _ec2cli_completions(){
     local initcmd                   #  completion word at index position -2 in COMP_WORDS array
 
     config_dir="/usr/local/lib/ec2cli"
+    lib_path="/usr/local/lib/ec2cli"
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     initcmd="${COMP_WORDS[COMP_CWORD-2]}"
@@ -347,12 +348,12 @@ function _ec2cli_completions(){
             ;;
 
         '--tags')
+            components=$(python3 $lib_path/components.py)
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
                 # display full completion subcommands
-                _complete_code_subcommands "$(_code_subcommands)"
+                _complete_code_subcommands "$components"
             else
-                changed_files=$(_code_subcommands)
-                COMPREPLY=( $(compgen -W "${changed_files}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${components}" -- ${cur}) )
             fi
             return 0
             ;;
