@@ -27,9 +27,9 @@
 * [**Build Options**](#build-options)
 
 * [**Screenshots**](#screenshots)
-  * [ec2cli list command](#screenshots0)
-  * [ec2cli run command](#screenshots1)
-  * [ --tags Resource Option](#screenshots2)
+  * [`list` Command](#screenshots0)
+  * [`run` Command](#screenshots1)
+  * [ `--tags` Resource Option](#screenshots2)
   * [EC2 Spot Price Utility](#screenshots3)
 
 * [**Author & Copyright**](#author--copyright)
