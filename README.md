@@ -510,6 +510,10 @@ $ ec2cli --tags <tab><tab>
 
 [![tags3](./assets/tags-snapshot.png)](https://images.awspros.world/ec2cli/tags-snapshot.png)
 
+--
+
+[back to the top](#top)
+
 * * *
 
 <a name="screenshots3"></a>
