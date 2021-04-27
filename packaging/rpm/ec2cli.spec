@@ -60,6 +60,7 @@ install -m 0644 config.json $RPM_BUILD_ROOT/%{_libdir}/config.json
 install -m 0755 ec2cli $RPM_BUILD_ROOT/%{_bindir}/ec2cli
 install -m 0644 ec2cli-completion.bash $RPM_BUILD_ROOT/%{_compdir}/ec2cli-completion.bash
 install -m 0644 exitcodes.sh $RPM_BUILD_ROOT/%{_libdir}/exitcodes.sh
+install -m 0664 components.py $RPM_BUILD_ROOT/%{_libdir}/components.py
 install -m 0664 csv_generator.py $RPM_BUILD_ROOT/%{_libdir}/csv_generator.py
 install -m 0664 iam_identities.py $RPM_BUILD_ROOT/%{_libdir}/iam_identities.py
 install -m 0664 instancetypes.sh $RPM_BUILD_ROOT/%{_libdir}/instancetypes.sh
