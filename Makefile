@@ -112,7 +112,8 @@ buildrpm:  setup-venv   ## Build Redhat distribution (.rpm) os package
 	cp $(CUR_DIR)/bash/components.py $(LIB_DIR)/ ; \
 	if [ $(VERSION) ]; then cd $(CUR_DIR) && . $(VENV_DIR)/bin/activate && \
 	$(PYTHON3_PATH) $(SCRIPT_DIR)/buildrpm.py --build --set-version $(VERSION); else \
-	cd $(CUR_DIR) && . $(VENV_DIR)/bin/activate && $(PYTHON3_PATH) $(SCRIPT_DIR)/buildrpm.py --build; fi
+	cd $(CUR_DIR) && . $(VENV_DIR)/bin/activate && $(PYTHON3_PATH) $(SCRIPT_DIR)/buildrpm.py --build; fi; \
+	rm $(CUR_DIR)/bash/components.py;
 
 
 .PHONY: installdeb
