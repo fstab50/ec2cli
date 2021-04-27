@@ -265,6 +265,20 @@ function environment_info(){
     else
         std_logger "[$msg_header]: detected: $($prog --version | head -1)"
     fi
+}
+
+
+function environment_footnote(){
+    local _year=$(date +%G)
+    cat <<EOM
+    ______________________________________________________________________
+
+      Copyright 2017-$_year, Blake Huber.  This program distributed under
+      GPL v3.  This copyright notice must remain with derivative works.
+    ______________________________________________________________________
+
+EOM
+
     #
     #<-- end function environment_info -->
 }
@@ -2782,6 +2796,7 @@ function parse_parameters(){
                     environment_info "INFO" "jq"
                     echo -e "\n${bodytext}Operating System:${bodytext}" | indent04
                     environment_info "INFO" "os"
+                    environment_footnote
                     exit 0
                     ;;
                 *)
