@@ -74,12 +74,13 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 ## Dependencies
 
-[ec2cli](https://github.com/fstab50/ec2cli) requires the following:
+[ec2cli](https://github.com/fstab50/ec2cli) requires the following to function correctly:
 
+- A modern Linux distribution with bash (4.x+)
 - [Python version 3.6+](https://docs.python.org/3/)
-- Installation and configuration of [Amazon Web Services CLI tools](https://github.com/aws/aws-cli) (awscli).  After installation, follow this [configuration guide](#configuration) to set up the awscli.
+- Appropriate [Identity and Access Management (IAM) Permissions](#iam-permissions) to access your Amazon Web Services account.
+- Configuration of [Amazon Web Services CLI tools](https://github.com/aws/aws-cli) (awscli).  After installation, follow this [configuration guide](#configuration) to set up the awscli for Bash.
 - [jq](https://stedolan.github.io/jq), a json parser generally available from your distribution repo
-- bash (4.x)
 - Standard linux utilities:
     * grep
     * awk
