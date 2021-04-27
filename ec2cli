@@ -2026,7 +2026,7 @@ function ec2cli_list_tags(){
             echo -e "  ${BOLD}NOTE${UNBOLD}:   You must provide a regioncode if the resource is not" | indent04
             echo -e "    in your default region.\n" | indent10
         else
-            echo -e "\nTags for AWS ResourceId:  ${BOLD}$resource_id${UNBOLD} | $region\n" | indent04
+            echo -e "\nTags for AWS ResourceId:  ${title}$resource_id${reset} | ${blue_frame}$region${reset}\n" | indent15
             aws ec2 --profile $PROFILE describe-tags \
                 --filters="Name=resource-id,Values=$resource_id" \
                 --region $region \
