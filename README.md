@@ -29,7 +29,8 @@
 * [**Screenshots**](#screenshots)
   * [ec2cli list command](#screenshots0)
   * [ec2cli run command](#screenshots1)
-  * [EC2 Spot Price Utility](#screenshots2)
+  * [--tags ](#screenshots2) Parameter
+  * [EC2 Spot Price Utility](#screenshots3)
 
 * [**Author & Copyright**](#author--copyright)
 
@@ -414,24 +415,24 @@ List command displays AWS resource details for your AWS default region if no reg
 
 
 ```bash
-$ ec2cli -i    # list ec2 instances, AWS default region (us-west-2)
+$ ec2cli --instances    # list ec2 instances, AWS default region (us-west-2)
 ```
 [![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
 
 ```bash
-$ ec2cli -v    # list ebs volume details, AWS default region (us-west-2)
+$ ec2cli --volumes    # list ebs volume details, AWS default region (us-west-2)
 ```
 
 [![volumes](./assets/ec2cli-list-volumes.png)](https://images.awspros.world/ec2cli/ec2cli-list-volumes.png)
 
 
 ```bash
-$ ec2cli -s    # list snapshots, AWS default region (us-west-2)
+$ ec2cli --snapshots    # list snapshots, AWS default region (us-west-2)
 ```
 [![snapshots](./assets/ec2cli-list-snapshots.png)](https://images.awspros.world/ec2cli/ec2cli-list-snapshots.png)
 
 ```bash
-$ ec2cli -g    # list security group details, AWS default region (us-west-2)
+$ ec2cli --secgroups    # list security group details, AWS default region (us-west-2)
 ```
 [![securitygroups](./assets/ec2cli-list-securitygroups.png)](https://images.awspros.world/ec2cli/ec2cli-list-securitygroups.png)
 
@@ -446,7 +447,7 @@ $ ec2cli -g    # list security group details, AWS default region (us-west-2)
 *as well as starting a stopped instance. See step 2. (below)*
 
 ```bash
-$ ec2cli -i run    # run/ log on to EC2 instances in default region
+$ ec2cli --instances run    # run/ log on to EC2 instances in default region
 ```
 1.Select from list of instance choices:
 
@@ -482,6 +483,36 @@ $ ec2cli -i run    # run/ log on to EC2 instances in default region
 * * *
 
 <a name="screenshots2"></a>
+#### [Screenshots](#screenshots) / ec2cli --tags <resourceId>
+
+Display all tags attached to an EC2 resource by following the steps below:
+
+1. Enter the ```--tags``` parameter after the main executable:
+
+```
+$  ec2cli --tags
+```
+
+2.  Hit the <tab> key twice to display a list of available EC2 resource Ids:
+
+```
+$ ec2cli --tags <tab><tab>
+```
+[![tags1](./assets/tags-completion.png)](https://images.awspros.world/ec2cli/tags-completion.png)
+
+3. Choose a resource id by typing the first few characters.  Then hit the <tab> key.
+
+* Example 1:  Tags associated with a specific EC2 machine instance:
+
+[![tags2](./assets/tags-instance.png)](https://images.awspros.world/ec2cli/tags-instance.png)
+
+* Example 2:  Tags associated with an EC2 snapshot:
+
+[![tags3](./assets/tags-snapshot.png)](https://images.awspros.world/ec2cli/tags-snapshot.png)
+
+* * *
+
+<a name="screenshots3"></a>
 #### [Screenshots](#screenshots) / Spot Price Utility
 
 
