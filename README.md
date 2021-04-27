@@ -47,7 +47,7 @@
 ## About this repository
 
 * Purpose: 		CLI utilities for use with Amazon Web Services (AWS)
-* Version:	2.4.11
+* Version:	2.4.12
 * Repo: 		https://github.com/fstab50/ec2cli
 
 --
