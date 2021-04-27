@@ -182,7 +182,7 @@ function _ec2cli_completions(){
     numoptions=0
 
     # option strings
-    options='--debug --help --profile --region --version'
+    options='--help --profile --region --version'
     resources='--images --instances --network --secgroups --spot --subnets --snapshots --tags --volumes --vpcs'
     commands='attach create list run'
 
