@@ -81,7 +81,7 @@ build-sizes:	## Create ec2 sizes.txt if 10 days age. FORCE=true trigger refresh
 
 
 .PHONY: generate-regions
-generate-regions:  ## Regenerate list of AWS region codes
+generate-regions: clean setup-venv ## Regenerate list of AWS region codes
 	if [ -d $(VENV_DIR) ]; then . $(VENV_DIR)/bin/activate && \
 	$(PYTHON3_PATH) $(SCRIPT_DIR)/regions.py; else \
 	$(MAKE) setup-venv && . $(VENV_DIR)/bin/activate && \
