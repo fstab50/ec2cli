@@ -103,7 +103,8 @@ builddeb:  clean setup-venv  ## Build Debian distribution (.deb) os package
 	if [ ! -d $(VENV_DIR) ]; then $(MAKE) setup-venv; fi; \
 	if [ $(VERSION) ]; then . $(VENV_DIR)/bin/activate && \
 	$(PYTHON3_PATH) $(SCRIPT_DIR)/builddeb.py --build --set-version $(VERSION); \
-	else cd $(CUR_DIR) && . $(VENV_DIR)/bin/activate && $(PYTHON3_PATH) $(SCRIPT_DIR)/builddeb.py --build; fi
+	else cd $(CUR_DIR) && . $(VENV_DIR)/bin/activate && $(PYTHON3_PATH) $(SCRIPT_DIR)/builddeb.py --build; fi; \
+	rm $(LIB_DIR)/components.py;
 
 
 .PHONY: buildrpm
