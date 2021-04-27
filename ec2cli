@@ -446,9 +446,10 @@ function ec2cli_attach_volume(){
     local msg                 # msg string
     local VALID               # loop break
     local VOLID
+    local sp="${frame}|${bodytext}"       # separator
 
     ## choose volume ##---------------------------------------------------
-    echo -e "\n${BOLD}Volume choices: ${UNBOLD}$REGION\n" | indent18
+    echo -e "\n${BOLD}Volume choices: ${UNBOLD}${blue_frame}$REGION${reset}" | indent18
     ec2cli_list_volumes $REGION > $TMPDIR/.text-output0.tmp
     grep "vol-" $TMPDIR/.text-output0.tmp > $TMPDIR/.text-output1.tmp
 
@@ -466,12 +467,15 @@ function ec2cli_attach_volume(){
     done
 
     # header display choices from array
-    echo -e "\n     VolumeID      GB  State     Attached  InstanceId  VolType   Avail-Zone  Description"
-    echo -e "     ------------  --  --------  --------  ----------  --------  ----------  ----------------------------"
+    echo -e "${greenbold_frame}     ____________________________________________________________________${reset}"
+    echo -e "\n     $sp VolumeID              $sp GB $sp CreateDate  $sp  State  $sp  InstanceId $sp"
+    echo -e "${greenbold_frame}     ____________________________________________________________________${reset}\n"
+    #print_header "$sp VolumeID $sp GB $sp CreateDate $sp State $sp InstanceId $sp"
 
     # values
-    awk  '{ printf "%-4s %-13s %-3s %-9s %-9s %-11s %-9s %-11s %-2s %-2s %-2s %-2s \n", \
+    awk  '{ printf "%-4s %-20s %-3s %-3s %-2s %-11s %-9s %-16s %-2s %-2s %-11s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' $TMPDIR/.arrayoutput.tmp
+    echo -e "${greenbold_frame}     ____________________________________________________________________${reset}\n"
 
     # Enter control structure to get user selection and validate
     VALID=0 # set loop break
@@ -489,7 +493,6 @@ function ec2cli_attach_volume(){
                     VALID=1
             fi
     done
-
     # assign volume to choice
     if [ -z "$CHOICE" ]; then
             # CHOICE is blank, assign to default
