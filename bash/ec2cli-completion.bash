@@ -283,8 +283,20 @@ function _ec2cli_completions(){
             return 0
             ;;
 
-        '--instances' | '--images' | '--snapshots' | '--secgroups' | '--subnets' | '--volumes')
-            COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
+        '--instances' )
+            COMPREPLY=( $(compgen -W "list run" -- ${cur}) )
+            ;;
+
+        '--images' | '--snapshots')
+            COMPREPLY=( $(compgen -W "list create" -- ${cur}) )
+            ;;
+
+        '--secgroups' | '--subnets')
+            COMPREPLY=( $(compgen -W "list" -- ${cur}) )
+            ;;
+
+        '--volumes')
+            COMPREPLY=( $(compgen -W "attach list" -- ${cur}) )
             ;;
 
         '--network' | '-N')
