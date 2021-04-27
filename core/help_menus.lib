@@ -4,7 +4,7 @@
 
 # source color lib
 pkg_path=$(cd $(dirname $0); pwd -P)
-source $pkg_path/core/colors.sh
+source $pkg_path/colors.sh
 
 accent=$(echo -e ${bold}${white})
 frame=$greenbold_frame
