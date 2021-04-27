@@ -136,9 +136,12 @@ function ec2cli_help(){
           ${cyan}run                ${bodytext}Run/ start existing aws resource
 
     ${white}${BOLD}REGIONCODES${UNBOLD}${bodytext}:
+          ${regions}ap-east-1          ${bodytext}Asia Pacific (Hong Kong)
           ${regions}ap-northeast-1     ${bodytext}Asia Pacific (Tokyo, Japan)
           ${regions}ap-northeast-2     ${bodytext}Asia Pacific (Seoul, Korea)
+          ${regions}ap-northeast-3     ${bodytext}Asia Pacific (Osaka, Japan)
           ${regions}ap-south-1         ${bodytext}Asia Pacific (Mumbai, India)
+          ${regions}af-south-1         ${bodytext}Africa (Cape Town, South Africa)
           ${regions}ap-southeast-1     ${bodytext}Asia Pacific (Singapore)
           ${regions}ap-southeast-2     ${bodytext}Asia Pacific (Sydney, Austrailia)
           ${regions}ca-central-1       ${bodytext}Canada (Montreal, CA)
@@ -146,6 +149,9 @@ function ec2cli_help(){
           ${regions}eu-west-1          ${bodytext}Europe (Ireland)
           ${regions}eu-west-2          ${bodytext}Europe (London, UK)
           ${regions}eu-west-3          ${bodytext}Europe (Paris, France)
+          ${regions}eu-north-1         ${bodytext}Europe (Stockholm, Sweden)
+          ${regions}eu-south-1         ${bodytext}Europe (Milan, Italy)
+          ${regions}me-south-1         ${bodytext}Bahrain (Middle East)
           ${regions}sa-east-1          ${bodytext}South America (Sao Paulo, Brazil)
           ${regions}us-east-1          ${bodytext}United States (N. Virgina)
           ${regions}us-east-2          ${bodytext}United States (Ohio)
