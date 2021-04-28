@@ -64,7 +64,7 @@ function _complete_ec2cli_commands(){
 
 function _complete_code_subcommands(){
     local cmds="$1"
-    local split='3'       # times to split screen width
+    local split='5'       # times to split screen width
     local IFS=$' \t\n'
     local formatted_cmds=( $(compgen -W "${cmds}" -- "${cur}") )
 
@@ -170,6 +170,7 @@ function _ec2cli_completions(){
     local initcmd                   #  completion word at index position -2 in COMP_WORDS array
 
     config_dir="/usr/local/lib/ec2cli"
+    lib_path="/usr/local/lib/ec2cli"
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     initcmd="${COMP_WORDS[COMP_CWORD-2]}"
@@ -181,8 +182,8 @@ function _ec2cli_completions(){
     numoptions=0
 
     # option strings
-    options='--debug --help --profile --region --version'
-    resources='--images --instances --network --sgroups --spot --subnets --snapshots --tags --volumes --vpcs'
+    options='--help --profile --region --version'
+    resources='--images --instances --network --secgroups --spot --subnets --snapshots --tags --volumes --vpcs'
     commands='attach create list run'
 
 
@@ -213,6 +214,20 @@ function _ec2cli_completions(){
                     COMPREPLY=( $(compgen -W "--region --profile" -- ${cur}) )
                     return 0
                     ;;
+
+                '--region' | "--re*")
+                    ##  complete AWS region codes
+                    python3=$(which python3)
+                    regions=$(cat "$config_dir/regions.list")
+                    if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
+
+                        _complete_region_subcommands "${regions}"
+                    else
+                        COMPREPLY=( $(compgen -W "${regions}" -- ${cur}) )
+                    fi
+                    return 0
+                    ;;
+
                 *)
                     return 0
                     ;;
@@ -268,8 +283,20 @@ function _ec2cli_completions(){
             return 0
             ;;
 
-        '--instances' | '--images' | '--snapshots' | '--sgroups' | '--subnets' | '--volumes')
-            COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
+        '--instances' )
+            COMPREPLY=( $(compgen -W "list run" -- ${cur}) )
+            ;;
+
+        '--images' | '--snapshots')
+            COMPREPLY=( $(compgen -W "list create" -- ${cur}) )
+            ;;
+
+        '--secgroups' | '--subnets')
+            COMPREPLY=( $(compgen -W "list" -- ${cur}) )
+            ;;
+
+        '--volumes')
+            COMPREPLY=( $(compgen -W "attach list" -- ${cur}) )
             ;;
 
         '--network' | '-N')
@@ -312,7 +339,6 @@ function _ec2cli_completions(){
             ##  complete AWS region codes
             python3=$(which python3)
             regions=$(cat "$config_dir/regions.list")
-
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
 
                 _complete_region_subcommands "${regions}"
@@ -334,12 +360,12 @@ function _ec2cli_completions(){
             ;;
 
         '--tags')
+            components=$(python3 $lib_path/components.py)
             if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ]; then
                 # display full completion subcommands
-                _complete_code_subcommands "$(_code_subcommands)"
+                _complete_code_subcommands "$components"
             else
-                changed_files=$(_code_subcommands)
-                COMPREPLY=( $(compgen -W "${changed_files}" -- ${cur}) )
+                COMPREPLY=( $(compgen -W "${components}" -- ${cur}) )
             fi
             return 0
             ;;

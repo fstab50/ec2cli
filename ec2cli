@@ -96,7 +96,7 @@ function ec2cli_help(){
 
                        -i | --instances
                        -b | --subnets
-                       -g | --sgroups
+                       -g | --secgroups
                        -s | --snapshots
                        -t | --tags
                        -v | --volumes
@@ -120,7 +120,7 @@ function ec2cli_help(){
     ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
           ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Images (AMI)
           ${resources}-b${bodytext},${resources} --subnets      ${bodytext}Virtual Private Cloud (VPC) Subnets
-          ${resources}-g${bodytext},${resources} --sgroups      ${bodytext}Security Group Details
+          ${resources}-g${bodytext},${resources} --secgroups    ${bodytext}Security Group Details
           ${resources}-i${bodytext},${resources} --instances    ${bodytext}EC2 Instance Details
           ${resources}-n${bodytext},${resources} --vpc          ${bodytext}Virtual Private Cloud (VPC) Networks
           ${resources}-N${bodytext},${resources} --network      ${bodytext}VPC, Subnet, & Security Groups
@@ -136,9 +136,12 @@ function ec2cli_help(){
           ${cyan}run                ${bodytext}Run/ start existing aws resource
 
     ${white}${BOLD}REGIONCODES${UNBOLD}${bodytext}:
+          ${regions}ap-east-1          ${bodytext}Asia Pacific (Hong Kong)
           ${regions}ap-northeast-1     ${bodytext}Asia Pacific (Tokyo, Japan)
           ${regions}ap-northeast-2     ${bodytext}Asia Pacific (Seoul, Korea)
+          ${regions}ap-northeast-3     ${bodytext}Asia Pacific (Osaka, Japan)
           ${regions}ap-south-1         ${bodytext}Asia Pacific (Mumbai, India)
+          ${regions}af-south-1         ${bodytext}Africa (Cape Town, South Africa)
           ${regions}ap-southeast-1     ${bodytext}Asia Pacific (Singapore)
           ${regions}ap-southeast-2     ${bodytext}Asia Pacific (Sydney, Austrailia)
           ${regions}ca-central-1       ${bodytext}Canada (Montreal, CA)
@@ -146,6 +149,9 @@ function ec2cli_help(){
           ${regions}eu-west-1          ${bodytext}Europe (Ireland)
           ${regions}eu-west-2          ${bodytext}Europe (London, UK)
           ${regions}eu-west-3          ${bodytext}Europe (Paris, France)
+          ${regions}eu-north-1         ${bodytext}Europe (Stockholm, Sweden)
+          ${regions}eu-south-1         ${bodytext}Europe (Milan, Italy)
+          ${regions}me-south-1         ${bodytext}Bahrain (Middle East)
           ${regions}sa-east-1          ${bodytext}South America (Sao Paulo, Brazil)
           ${regions}us-east-1          ${bodytext}United States (N. Virgina)
           ${regions}us-east-2          ${bodytext}United States (Ohio)
@@ -259,6 +265,20 @@ function environment_info(){
     else
         std_logger "[$msg_header]: detected: $($prog --version | head -1)"
     fi
+}
+
+
+function environment_footnote(){
+    local _year=$(date +%G)
+    cat <<EOM
+    ______________________________________________________________________
+
+      Copyright 2017-$_year, Blake Huber.  This program distributed under
+      GPL v3.  This copyright notice must remain with derivative works.
+    ______________________________________________________________________
+
+EOM
+
     #
     #<-- end function environment_info -->
 }
@@ -440,9 +460,10 @@ function ec2cli_attach_volume(){
     local msg                 # msg string
     local VALID               # loop break
     local VOLID
+    local sp="${frame}|${bodytext}"       # separator
 
     ## choose volume ##---------------------------------------------------
-    echo -e "\n${BOLD}Volume choices: ${UNBOLD}$REGION\n" | indent18
+    echo -e "\n${BOLD}Volume choices: ${UNBOLD}${blue_frame}$REGION${reset}" | indent18
     ec2cli_list_volumes $REGION > $TMPDIR/.text-output0.tmp
     grep "vol-" $TMPDIR/.text-output0.tmp > $TMPDIR/.text-output1.tmp
 
@@ -460,12 +481,15 @@ function ec2cli_attach_volume(){
     done
 
     # header display choices from array
-    echo -e "\n     VolumeID      GB  State     Attached  InstanceId  VolType   Avail-Zone  Description"
-    echo -e "     ------------  --  --------  --------  ----------  --------  ----------  ----------------------------"
+    echo -e "${greenbold_frame}     ____________________________________________________________________${reset}"
+    echo -e "\n     $sp VolumeID              $sp GB $sp CreateDate  $sp  State  $sp  InstanceId $sp"
+    echo -e "${greenbold_frame}     ____________________________________________________________________${reset}\n"
+    #print_header "$sp VolumeID $sp GB $sp CreateDate $sp State $sp InstanceId $sp"
 
     # values
-    awk  '{ printf "%-4s %-13s %-3s %-9s %-9s %-11s %-9s %-11s %-2s %-2s %-2s %-2s \n", \
+    awk  '{ printf "%-4s %-20s %-3s %-3s %-2s %-11s %-9s %-16s %-2s %-2s %-11s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12}' $TMPDIR/.arrayoutput.tmp
+    echo -e "${greenbold_frame}     ____________________________________________________________________${reset}\n"
 
     # Enter control structure to get user selection and validate
     VALID=0 # set loop break
@@ -483,7 +507,6 @@ function ec2cli_attach_volume(){
                     VALID=1
             fi
     done
-
     # assign volume to choice
     if [ -z "$CHOICE" ]; then
             # CHOICE is blank, assign to default
@@ -2026,7 +2049,7 @@ function ec2cli_list_tags(){
             echo -e "  ${BOLD}NOTE${UNBOLD}:   You must provide a regioncode if the resource is not" | indent04
             echo -e "    in your default region.\n" | indent10
         else
-            echo -e "\nTags for AWS ResourceId:  ${BOLD}$resource_id${UNBOLD} | $region\n" | indent04
+            echo -e "\nTags for AWS ResourceId:  ${title}$resource_id${reset} | ${blue_frame}$region${reset}\n" | indent15
             aws ec2 --profile $PROFILE describe-tags \
                 --filters="Name=resource-id,Values=$resource_id" \
                 --region $region \
@@ -2521,7 +2544,7 @@ function parse_parameters(){
                         esac
                     fi
                 	;;
-                -g | --sgroups | --securitygroups)
+                -g | --secgroups | --securitygroups)
                     #
                     # display details of EC2 security groups for region
                     #
@@ -2773,6 +2796,7 @@ function parse_parameters(){
                     environment_info "INFO" "jq"
                     echo -e "\n${bodytext}Operating System:${bodytext}" | indent04
                     environment_info "INFO" "os"
+                    environment_footnote
                     exit 0
                     ;;
                 *)
