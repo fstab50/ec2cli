@@ -56,7 +56,8 @@ container.extend(sids)
 container.extend(amis)
 container.extend(enis)
 
-for id in container:
-    print(id)
+[print(x) for x in container]
+
+##
 
 sys.exit(0)
