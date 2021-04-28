@@ -37,22 +37,24 @@ container = []
 # Instance Ids
 ids = [instance.id for instance in ec2.instances.all()]
 
-
 # EBS Volume Ids
 vids = [x['VolumeId'] for x in client.describe_volumes()['Volumes']]
-
 
 # snapshot Ids
 sids = [x['SnapshotId'] for x in client.describe_snapshots(OwnerIds=['self'])['Snapshots']]
 
-
 # ami ids
 amis = [x['ImageId'] for x in client.describe_images(Owners=['self'])['Images']]
 
+# elastic network interfaces (eni)
+enis = [x['NetworkInterfaceId'] for x in client.describe_network_interfaces()['NetworkInterfaces']]
+
+# aggregate all ids into single list
 container.extend(ids)
 container.extend(vids)
 container.extend(sids)
 container.extend(amis)
+container.extend(enis)
 
 for id in container:
     print(id)
