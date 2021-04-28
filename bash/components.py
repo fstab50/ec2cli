@@ -34,6 +34,7 @@ ec2 = session.resource('ec2')
 
 container = []
 
+
 # Instance Ids
 ids = [instance.id for instance in ec2.instances.all()]
 
@@ -48,6 +49,7 @@ amis = [x['ImageId'] for x in client.describe_images(Owners=['self'])['Images']]
 
 # elastic network interfaces (eni)
 enis = [x['NetworkInterfaceId'] for x in client.describe_network_interfaces()['NetworkInterfaces']]
+
 
 # aggregate all ids into single list
 container.extend(ids)
