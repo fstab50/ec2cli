@@ -81,10 +81,12 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 - [Python version 3.6+](https://docs.python.org/3/)
 - Appropriate [Identity and Access Management (IAM) Permissions](#iam-permissions) to access your Amazon Web Services account.
 
+
 > **Important**:
     _For proper operation, at a minimum this program requires the default awscli user should have read-only
      IAM permissions to all EC2 describe functions._
 >
+
 
 - Configuration of [Amazon Web Services CLI tools](https://github.com/aws/aws-cli) (awscli).  After installation, follow this [configuration guide](#configuration) to set up the awscli for Bash.
 - [jq](https://stedolan.github.io/jq), a json parser generally available from your distribution repo
