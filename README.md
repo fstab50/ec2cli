@@ -83,7 +83,7 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 
 > **Important**:
-    _For proper operation, at a minimum this program requires the default awscli user should have read-only
+    _For proper operation, at a minimum this program requires the *default awscli user account* should have read-only
      IAM permissions to all EC2 describe functions._
 >
 
