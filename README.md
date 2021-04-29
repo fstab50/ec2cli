@@ -79,7 +79,11 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 
 - A modern Linux distribution with bash (4.x+)
 - [Python version 3.6+](https://docs.python.org/3/)
-- Appropriate [Identity and Access Management (IAM) Permissions](#iam-permissions) to access your Amazon Web Services account. **Important**:  _For proper operation, at a minimum this program requires the default awscli user should have read-only IAM permissions to all EC2 describe functions._
+- Appropriate [Identity and Access Management (IAM) Permissions](#iam-permissions) to access your Amazon Web Services account.
+
+> **Important**:  _For proper operation, at a minimum this program requires the default awscli user should have read-only IAM permissions to all EC2 describe functions._
+>
+
 - Configuration of [Amazon Web Services CLI tools](https://github.com/aws/aws-cli) (awscli).  After installation, follow this [configuration guide](#configuration) to set up the awscli for Bash.
 - [jq](https://stedolan.github.io/jq), a json parser generally available from your distribution repo
 - Standard linux utilities:
@@ -132,23 +136,23 @@ The easiest way to install **ec2cli** on debian-based Linux distributions is via
 
 2. Download and install the repository definition file
 
-    ```
+    ```bash
     $ sudo apt install wget
     ```
 
-    ```
+    ```bash
     $ wget http://awscloud.center/deb/debian-tools.list
     ```
 
     [![deb-install1](./assets/deb-install-1.png)](http://images.awspros.world/ec2cli/deb-install-1.png)
 
-    ```
+    ```bash
     $ sudo chown 0:0 debian-tools.list && sudo mv debian-tools.list /etc/apt/sources.list.d/
     ```
 
 3. Install the package repository public key on your local machine
 
-    ```
+    ```bash
     $ wget -qO - http://awscloud.center/keys/public.key | sudo apt-key add -
     ```
 
@@ -156,13 +160,13 @@ The easiest way to install **ec2cli** on debian-based Linux distributions is via
 
 4. Update the local package repository cache
 
-    ```
+    ```bash
     $ sudo apt update
     ```
 
 5. Install **ec2cli** os package
 
-    ```
+    ```bash
     $ sudo apt install ec2cli
     ```
 
@@ -175,7 +179,7 @@ The easiest way to install **ec2cli** on debian-based Linux distributions is via
 
 6. Verify Installation
 
-    ```
+    ```bash
     $ apt show ec2cli
     ```
 
@@ -197,25 +201,25 @@ The easiest way to install **ec2cli** on redhat-based Linux distributions is via
 
 2. Install the official epel package repository
 
-    ```
+    ```bash
     $ sudo yum install epel-release
     ```
 
 2. Download and install the repo definition file
 
-    ```
+    ```bash
     $ sudo yum install wget
     ```
 
     [![rpm-install1](./assets/rpm-install-1.png)](http://images.awspros.world/ec2cli/rpm-install-1.png)
 
-    ```
+    ```bash
     $ wget http://awscloud.center/rpm/developer-tools.repo
     ```
 
     [![rpm-install2](./assets/rpm-install-2.png)](http://images.awspros.world/ec2cli/rpm-install-2.png)
 
-    ```
+    ```bash
     $ sudo chown 0:0 developer-tools.repo && sudo mv developer-tools.repo /etc/yum.repos.d/
     ```
 
@@ -224,14 +228,14 @@ The easiest way to install **ec2cli** on redhat-based Linux distributions is via
 
 3. Delete the local repository cache, then Update the cache with new package references
 
-    ```
+    ```bash
     $ sudo rm -fr /var/cache/yum
     $ sudo yum update -y
     ```
 
 4. Install the **ec2cli** os package
 
-    ```
+    ```bash
     $ sudo yum install ec2cli
     ```
 
@@ -245,7 +249,7 @@ The easiest way to install **ec2cli** on redhat-based Linux distributions is via
 
 5. Verify Installation
 
-    ```
+    ```bash
     $ yum info ec2cli
     ```
 
@@ -318,7 +322,7 @@ $ aws --version
 
 Output:
 
-```
+```bash
 $  aws-cli/1.19.44 Python/3.8.5 Linux/5.6.0-1052-oem botocore/1.20.44
 ```
 
@@ -489,13 +493,13 @@ Display all tags attached to an EC2 resource by following the steps below:
 
 1. Enter the ```--tags``` parameter after the main executable:
 
-```
+```bash
 $  ec2cli --tags
 ```
 
 2.  Hit the <tab> key twice to display a list of available EC2 resource Ids:
 
-```
+```bash
 $ ec2cli --tags <tab><tab>
 ```
 [![tags1](./assets/tags-completion.png)](https://images.awspros.world/ec2cli/tags-completion.png)
@@ -540,7 +544,7 @@ All works contained herein copyrighted via below author unless work is explicitl
 
 * Software contained in this repo is licensed under the [license agreement](./LICENSE.md).  You may display the license and copyright information by issuing the following command:
 
-```
+```bash```
 $ ec2cli --version
 ```
 
