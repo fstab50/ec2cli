@@ -58,7 +58,8 @@ container.extend(sids)
 container.extend(amis)
 container.extend(enis)
 
-[print(x) for x in container]
+for x in container:
+    print(x)
 
 ##
 
