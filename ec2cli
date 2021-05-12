@@ -1830,7 +1830,11 @@ function ec2cli_list_snapshots(){
             total_width="142"
         fi
         # snapshots found, print region identifier
-        printf "\n${title}SNAPSHOTS${bodytext} : $REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n${title}SNAPSHOTS${bodytext} : ${regions}All AWS Regions\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        else
+            printf "\n${title}SNAPSHOTS${bodytext} : ${regions}$REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        fi
 
         if [ $FULL_CLI ]; then
             print_header "$sp  SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" $total_width  $TMPDIR/.ec2-qv-snapshots.tmp
@@ -1902,7 +1906,7 @@ function ec2cli_list_snapshots(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' $TMPDIR/.ec2-qv-snapshots.tmp | indent02
         fi
         # print footer
-        if [ $ALL_REGIONS ]; then
+        if [ "$ALL_REGIONS" ]; then
             print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots acorss ${title}$REGION_CT${bodytext} regions, total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
         else
             print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
