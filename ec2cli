@@ -1969,7 +1969,11 @@ function ec2cli_list_subnets(){
         ACCT_ALIAS="$(account_alias $PROFILE)"
 
         # subnets found, print region identifier
-        printf "\n${title}SUBNETS${bodytext} : $REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n${title}SUBNETS${bodytext} : ${regions}All AWS Regions\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        else
+            printf "\n${title}SUBNETS${bodytext} : ${regions}$REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        fi
 
         if [ $FULL_CLI ]; then
             print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp IPs $sp AvailZone $sp Default $sp TagKey:Value" $total_width  $TMPDIR/.ec2-qv.tmp
