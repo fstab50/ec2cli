@@ -1636,8 +1636,12 @@ function ec2cli_list_securitygroups(){
 
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
-        # print footer if no snapshots found
-        std_message "${title}0${bodytext} security groups in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
+        # print footer if no sec grps found
+        if [ "$ALL_REGIONS" ]; then
+             std_message "${title}0${bodytext} security groups in all regions, total ${title}0${bodytext} GB" "INFO"  | indent10
+        else
+             std_message "${title}0${bodytext} security groups in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
+        fi
     else
         # print and format output
         sp="${frame}|${bodytext}"       # separator
@@ -1653,9 +1657,12 @@ function ec2cli_list_securitygroups(){
         # retrieve account name
         ACCT_ALIAS="$(account_alias $PROFILE)"
 
-        # snapshots found, print region identifier
-        printf -- '\n%128s\t%18s%105s\n' "${title}SECURITY GROUPS${bodytext} :  ${regions}$REGION${bodytext}" "$sp" "${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}"
-
+        # secgroups found, print region identifier
+        if [ "$ALL_REGIONS" ]; then
+             printf -- '\n%128s\t%18s%105s\n' "${title}SECURITY GROUPS${bodytext} :  ${regions}All Regions${bodytext}" "$sp" "${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}"
+        else
+             printf -- '\n%128s\t%18s%105s\n' "${title}SECURITY GROUPS${bodytext} :  ${regions}$REGION${bodytext}" "$sp" "${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}"
+        fi
         if [ $FULL_CLI ]; then
             print_header "$sp  GroupName $sp GroupId $sp Ports $sp Ports $sp CidrIp $sp VpcId $sp Tag $sp Description $sp" $total_width  $TMPDIR/.ec2-qv-securitygroups.tmp
         else
@@ -1674,7 +1681,7 @@ function ec2cli_list_securitygroups(){
         ARR_DESC=( $(jq -r '.SecurityGroups[].Description' $TMPDIR/.jsonoutput.tmp) )
 
         # ip stats
-        MAXCT=${#ARR_ID[*]}    # count snapshots found
+        MAXCT=${#ARR_ID[*]}    # count secgroups found
         SUM_OPEN=0; SUM_P22=0; SUM_P80=0; SUM_32=0
         for record in ${ARR_CIDR[@]}; do
             if [ $(echo "$record" | grep "0.0.0.0") ]; then
@@ -1730,12 +1737,19 @@ function ec2cli_list_securitygroups(){
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' $TMPDIR/.ec2-qv-securitygroups.tmp | indent02
         fi
         # print footer
-        print_footer "${title}$SUM${bodytext} Security Groups in region [$REGION]
-        \n\n     Group Summary:\n\n\t\tOpen (0.0.0.0):\t\t ${title}$SUM_OPEN${bodytext}\n
-        \t\tPort 80:\t\t ${title}$SUM_P80${bodytext}${bodytext}\n
-        \t\tPort 22:\t\t ${title}$SUM_P22${bodytext}\n
-        \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
-
+        if [ "$ALL_REGIONS" ]; then
+            print_footer "${title}$SUM${bodytext} Security Groups in across all AWS Regions
+            \n\n     Group Summary:\n\n\t\tOpen (0.0.0.0):\t\t ${title}$SUM_OPEN${bodytext}\n
+            \t\tPort 80:\t\t ${title}$SUM_P80${bodytext}${bodytext}\n
+            \t\tPort 22:\t\t ${title}$SUM_P22${bodytext}\n
+            \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
+        else
+             print_footer "${title}$SUM${bodytext} Security Groups in region [$REGION]
+             \n\n     Group Summary:\n\n\t\tOpen (0.0.0.0):\t\t ${title}$SUM_OPEN${bodytext}\n
+             \t\tPort 80:\t\t ${title}$SUM_P80${bodytext}${bodytext}\n
+             \t\tPort 22:\t\t ${title}$SUM_P22${bodytext}\n
+             \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
+        fi
         # clean up
         rm $TMPDIR/.jsonoutput.tmp $TMPDIR/.body.tmp  $TMPDIR/.ec2-qv-securitygroups.tmp
     fi
