@@ -2292,7 +2292,11 @@ function ec2cli_list_vpcs(){
         i=$(( $i+1 ))
     done
     # print region identifier
-    printf "\n${title}Virtual Private Clouds (VPC)${bodytext} : $REGION\n" | indent18
+    if [ "$ALL_REGIONS" ]; then
+        printf "\n${title}Virtual Private Clouds (VPC)${bodytext} : All AWS Regions\n" | indent18
+    else
+        printf "\n${title}Virtual Private Clouds (VPC)${bodytext} : $REGION\n" | indent18
+    fi
     # print header
     print_header "VpcId State Tenancy CIDR-Block Default" $total_width .report.tmp
 
