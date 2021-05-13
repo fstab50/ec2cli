@@ -1222,12 +1222,20 @@ function ec2cli_list_images(){
 
     ## print and format output ##
     # header, region identifier
-    printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} $REGION  $sp  ACCOUNT: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+    if [ "$ALL_REGIONS" ]; then
+        printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} ${regions}All AWS Regions${reset}  $sp  ACCOUNT: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+    else
+        printf "\n${white}${BOLD}AMAZON MACHINE IMAGES (AMI) : ${UNBOLD}${reset} ${regions}$REGION${reset}  $sp  ACCOUNT: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+    fi
     # format output
     awk  '{ printf " %-3s %-21s  %-3s %-17s  %-3s %-10s  %-3s %-8s  %-3s %-23s %-2s %-35s %-2s \n", \
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.output.tmp | indent02
     # footer
-    print_footer "Total AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
+    if [ "$ALL_REGIONS" ]; then
+        print_footer "Total AMI Count: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
+    else
+        print_footer "Total AMI Count [$REGION]: ${white}${BOLD}$MAXCT${UNBOLD}${reset}" $total_width
+    fi
 
     # clean up
     rm $TMPDIR/.header.tmp $TMPDIR/.jsonimages.tmp $TMPDIR/.output.tmp $TMPDIR/.body.tmp
@@ -1636,8 +1644,12 @@ function ec2cli_list_securitygroups(){
 
     if [ "$SUM" = "null" ] || [ "$SUM" -eq 0 ]
     then
-        # print footer if no snapshots found
-        std_message "${title}0${bodytext} security groups in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
+        # print footer if no sec grps found
+        if [ "$ALL_REGIONS" ]; then
+             std_message "${title}0${bodytext} security groups in all regions, total ${title}0${bodytext} GB" "INFO"  | indent10
+        else
+             std_message "${title}0${bodytext} security groups in region [$REGION], total ${title}0${bodytext} GB" "INFO"  | indent10
+        fi
     else
         # print and format output
         sp="${frame}|${bodytext}"       # separator
@@ -1653,9 +1665,12 @@ function ec2cli_list_securitygroups(){
         # retrieve account name
         ACCT_ALIAS="$(account_alias $PROFILE)"
 
-        # snapshots found, print region identifier
-        printf -- '\n%128s\t%18s%105s\n' "${title}SECURITY GROUPS${bodytext} :  ${regions}$REGION${bodytext}" "$sp" "${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}"
-
+        # secgroups found, print region identifier
+        if [ "$ALL_REGIONS" ]; then
+             printf -- '\n%128s\t%18s%105s\n' "${title}SECURITY GROUPS${bodytext} :  ${regions}All Regions${bodytext}" "$sp" "${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}"
+        else
+             printf -- '\n%128s\t%18s%105s\n' "${title}SECURITY GROUPS${bodytext} :  ${regions}$REGION${bodytext}" "$sp" "${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}"
+        fi
         if [ $FULL_CLI ]; then
             print_header "$sp  GroupName $sp GroupId $sp Ports $sp Ports $sp CidrIp $sp VpcId $sp Tag $sp Description $sp" $total_width  $TMPDIR/.ec2-qv-securitygroups.tmp
         else
@@ -1674,7 +1689,7 @@ function ec2cli_list_securitygroups(){
         ARR_DESC=( $(jq -r '.SecurityGroups[].Description' $TMPDIR/.jsonoutput.tmp) )
 
         # ip stats
-        MAXCT=${#ARR_ID[*]}    # count snapshots found
+        MAXCT=${#ARR_ID[*]}    # count secgroups found
         SUM_OPEN=0; SUM_P22=0; SUM_P80=0; SUM_32=0
         for record in ${ARR_CIDR[@]}; do
             if [ $(echo "$record" | grep "0.0.0.0") ]; then
@@ -1730,12 +1745,19 @@ function ec2cli_list_securitygroups(){
                     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15}' $TMPDIR/.ec2-qv-securitygroups.tmp | indent02
         fi
         # print footer
-        print_footer "${title}$SUM${bodytext} Security Groups in region [$REGION]
-        \n\n     Group Summary:\n\n\t\tOpen (0.0.0.0):\t\t ${title}$SUM_OPEN${bodytext}\n
-        \t\tPort 80:\t\t ${title}$SUM_P80${bodytext}${bodytext}\n
-        \t\tPort 22:\t\t ${title}$SUM_P22${bodytext}\n
-        \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
-
+        if [ "$ALL_REGIONS" ]; then
+            print_footer "${title}$SUM${bodytext} Security Groups in across all AWS Regions
+            \n\n     Group Summary:\n\n\t\tOpen (0.0.0.0):\t\t ${title}$SUM_OPEN${bodytext}\n
+            \t\tPort 80:\t\t ${title}$SUM_P80${bodytext}${bodytext}\n
+            \t\tPort 22:\t\t ${title}$SUM_P22${bodytext}\n
+            \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
+        else
+             print_footer "${title}$SUM${bodytext} Security Groups in region [$REGION]
+             \n\n     Group Summary:\n\n\t\tOpen (0.0.0.0):\t\t ${title}$SUM_OPEN${bodytext}\n
+             \t\tPort 80:\t\t ${title}$SUM_P80${bodytext}${bodytext}\n
+             \t\tPort 22:\t\t ${title}$SUM_P22${bodytext}\n
+             \t\tRestricted (/32):\t ${title}$SUM_32${bodytext}\n" $total_width
+        fi
         # clean up
         rm $TMPDIR/.jsonoutput.tmp $TMPDIR/.body.tmp  $TMPDIR/.ec2-qv-securitygroups.tmp
     fi
@@ -1816,7 +1838,11 @@ function ec2cli_list_snapshots(){
             total_width="142"
         fi
         # snapshots found, print region identifier
-        printf "\n${title}SNAPSHOTS${bodytext} : $REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n${title}SNAPSHOTS${bodytext} : ${regions}All AWS Regions\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        else
+            printf "\n${title}SNAPSHOTS${bodytext} : ${regions}$REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        fi
 
         if [ $FULL_CLI ]; then
             print_header "$sp  SnapId $sp Size $sp CreateTime* $sp State $sp Prog $sp Encrypted $sp VolumeId $sp Tag $sp Description $sp" $total_width  $TMPDIR/.ec2-qv-snapshots.tmp
@@ -1888,7 +1914,7 @@ function ec2cli_list_snapshots(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}' $TMPDIR/.ec2-qv-snapshots.tmp | indent02
         fi
         # print footer
-        if [ $ALL_REGIONS ]; then
+        if [ "$ALL_REGIONS" ]; then
             print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots acorss ${title}$REGION_CT${bodytext} regions, total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
         else
             print_footer "${title}$MAXCT${UNBOLD}${bodytext} snapshots in region [$REGION], total ${title}$ASUM${UNBOLD}${bodytext} $UNIT | ${title}$ESUM${UNBOLD}${bodytext} $EUNIT on disk (est, $ast*${bodytext}sorted)" $total_width
@@ -1943,7 +1969,11 @@ function ec2cli_list_subnets(){
         ACCT_ALIAS="$(account_alias $PROFILE)"
 
         # subnets found, print region identifier
-        printf "\n${title}SUBNETS${bodytext} : $REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n${title}SUBNETS${bodytext} : ${regions}All AWS Regions\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        else
+            printf "\n${title}SUBNETS${bodytext} : ${regions}$REGION\t$sp\t${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n" | indent25
+        fi
 
         if [ $FULL_CLI ]; then
             print_header "$sp  Name $sp SubnetId $sp Public $sp CIDR-Block $sp IPs $sp AvailZone $sp Default $sp TagKey:Value" $total_width  $TMPDIR/.ec2-qv.tmp
@@ -2278,7 +2308,11 @@ function ec2cli_list_vpcs(){
         i=$(( $i+1 ))
     done
     # print region identifier
-    printf "\n${title}Virtual Private Clouds (VPC)${bodytext} : $REGION\n" | indent18
+    if [ "$ALL_REGIONS" ]; then
+        printf "\n${title}Virtual Private Clouds (VPC)${bodytext} : All AWS Regions\n" | indent18
+    else
+        printf "\n${title}Virtual Private Clouds (VPC)${bodytext} : $REGION\n" | indent18
+    fi
     # print header
     print_header "VpcId State Tenancy CIDR-Block Default" $total_width .report.tmp
 

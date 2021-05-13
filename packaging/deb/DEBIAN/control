@@ -6,7 +6,7 @@ Maintainer: Blake Huber <blakeca00@gmail.com>
 Bugs:
 Installed-Size: 124 kB
 Build-Depends: debhelper (>=9)
-Depends:  bash (>= 4.2), awscli, curl, coreutils, debianutils, hostname, util-linux, bash-completion, jq, sed, wget, python3
+Depends:  bash (>= 4.2), awscli, curl, coreutils, debianutils, hostname, python3-boto3, util-linux, bash-completion, jq, sed, wget, python3
 Download-Size: 40 kB
 Standards-Version: 3.9.6
 Architecture: amd64

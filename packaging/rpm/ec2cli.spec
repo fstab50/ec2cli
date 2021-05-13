@@ -98,7 +98,25 @@ chown root:root /var/log/ec2cli.log
 chmod 0666 /var/log/ec2cli.log
 
 
-##   ensure /usr/local/bin for python executables in PATH   ##
+##  ensure AWS python3 SDK installed (requires Internet access)  ##
+
+if [ ! $(pip3 list 2>/dev/null | grep boto3) ]; then
+
+    printf -- '\n\tInstalling AWS python3 SDK boto3...\n\n'
+    pip=$(command -v pip3)
+
+    if [ "$SUDO_USER" ]; then
+
+        # run command as user, not root to install for user
+        sudo -H -u "$SUDO_USER" bash -c "$pip install boto3 2>/dev/null"
+
+    else
+        $pip install boto3 2>/dev/null
+    fi
+fi
+
+
+##  ensure /usr/local/bin for python executables in PATH  ##
 
 if [ ! "$(echo $PATH | grep '\/usr\/local\/bin')" ]; then
 
