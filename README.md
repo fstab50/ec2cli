@@ -548,7 +548,7 @@ All works contained herein copyrighted via below author unless work is explicitl
 
 * Software contained in this repo is licensed under the [license agreement](./LICENSE.md).  You may display the license and copyright information by issuing the following command:
 
-```bash```
+```bash
 $ ec2cli --version
 ```
 
