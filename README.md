@@ -1,6 +1,6 @@
 <a name="top"></a>
 * * *
-# EC2cli - Amazon EC2 Utilities
+# EC2cli - Command-line Utility for Managing Amazon Web Services' EC2 Service
 * * *
 
 ## Contents
@@ -28,9 +28,10 @@
 
 * [**Screenshots**](#screenshots)
   * [`list` Command](#screenshots0)
-  * [`run` Command](#screenshots1)
-  * [ `--tags` Resource Option](#screenshots2)
-  * [EC2 Spot Price Utility](#screenshots3)
+  * [`list --all` Command](#screenshots1)
+  * [`run` Command](#screenshots2)
+  * [ `--tags` Resource Option](#screenshots3)
+  * [EC2 Spot Price Utility](#screenshots4)
 
 * [**Author & Copyright**](#author--copyright)
 
@@ -447,8 +448,26 @@ $ ec2cli --secgroups    # list security group details, AWS default region (us-we
 [back to the top](#top)
 
 * * *
-
 <a name="screenshots1"></a>
+#### [Screenshots](#screenshots) / ec2cli `list` + `--all` command
+
+List command displays AWS resource details for your AWS default region if no region specified. If the `--all` option is used in conjunction with the `list` command, ec2cli audits all the regions to which your AWS account has access, identifying the resources specified by the RESOURCES parameter.  Examples:
+
+
+```bash
+$ ec2cli --secgroups list --all    # list all security groups across all AWS regions
+```
+[![secgroups](./assets/secgroups-all.png)](https://images.awspros.world/ec2cli/secgroups-all.png)
+
+```bash
+$ ec2cli --vpcs list --all   # list all VPC's in all AWS regions
+```
+
+[![volumes](./assets/vpcs-all.png)](https://images.awspros.world/ec2cli/vpcs-all.png)
+
+* * *
+
+<a name="screenshots2"></a>
 #### [Screenshots](#screenshots) / ec2cli `run` command
 
 *Note: this utility may also be used to automate login to a running EC2 instance*
@@ -490,7 +509,7 @@ $ ec2cli --instances run    # run/ log on to EC2 instances in default region
 
 * * *
 
-<a name="screenshots2"></a>
+<a name="screenshots3"></a>
 #### [Screenshots](#screenshots) / ec2cli --tags <resourceId>
 
 Display all tags attached to an EC2 resource by following the steps below:
@@ -524,7 +543,7 @@ $ ec2cli --tags <tab><tab>
 
 * * *
 
-<a name="screenshots3"></a>
+<a name="screenshots4"></a>
 #### [Screenshots](#screenshots) / Spot Price Utility
 
 
