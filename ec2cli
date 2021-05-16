@@ -92,7 +92,7 @@ function ec2cli_help(){
 
     ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
 
-        $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
+        $ ec2cli  [${magenta}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
                        -i | --instances
                        -b | --subnets
@@ -109,13 +109,13 @@ function ec2cli_help(){
                       [-s | --sort  {size | id | date} ]
                       [-V | --version ]
     ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
-          ${options}-A${bodytext},${options} --all${bodytext}          Analyze resources in all AWS Regions
-          ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose logging & messaging
-          ${options}-h${bodytext},${options} --help${bodytext}         Display this help menu
-          ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role
-          ${options}-r${bodytext},${options} --region${bodytext}       AWS region code (ex: us-east-1)
-          ${options}-S${bodytext},${options} --sort${bodytext}         Sort by size, id, date
-          ${options}-V${bodytext},${options} --version${bodytext}      Print version info
+          ${magenta}-A${bodytext},${magenta} --all${bodytext}          Analyze resources in all AWS Regions
+          ${magenta}-d${bodytext},${magenta} --debug${bodytext}        Enable verbose logging & messaging
+          ${magenta}-h${bodytext},${magenta} --help${bodytext}         Display this help menu
+          ${magenta}-p${bodytext},${magenta} --profile${bodytext}      Profilename of an IAM user or role
+          ${magenta}-r${bodytext},${magenta} --region${bodytext}       AWS region code (ex: us-east-1)
+          ${magenta}-S${bodytext},${magenta} --sort${bodytext}         Sort by size, id, date
+          ${magenta}-V${bodytext},${magenta} --version${bodytext}      Print version info
 
     ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
           ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Images (AMI)
