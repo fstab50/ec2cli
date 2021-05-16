@@ -424,7 +424,7 @@ List command displays AWS resource details for your AWS default region if no reg
 
 
 ```bash
-$ ec2cli --instances    # list ec2 instances, AWS default region (us-west-2)
+$ ec2cli --instances  --region us-west-2    # list ec2 instances
 ```
 [![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
 
@@ -436,7 +436,7 @@ $ ec2cli --volumes    # list ebs volume details, AWS default region (us-west-2)
 
 
 ```bash
-$ ec2cli --snapshots    # list snapshots, AWS default region (us-west-2)
+$ ec2cli --snapshots  --region us-west-2     # list snapshots
 ```
 [![snapshots](./assets/ec2cli-list-snapshots.png)](https://images.awspros.world/ec2cli/ec2cli-list-snapshots.png)
 
@@ -463,7 +463,7 @@ $ ec2cli --secgroups list --all    # list all security groups across all AWS reg
 $ ec2cli --vpcs list --all   # list all VPC's in all AWS regions
 ```
 
-[![volumes](./assets/vpcs-all.png)](https://images.awspros.world/ec2cli/vpcs-all.png)
+[![vpcs](./assets/vpcs-all.png)](https://images.awspros.world/ec2cli/vpcs-all.png)
 
 * * *
 
