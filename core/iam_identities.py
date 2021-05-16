@@ -54,7 +54,7 @@ def awscli_profiles():
         sys.exit(1)
 
     for profile in config.sections():
-        if 'role_arn' in config[profile].keys() or 'aws_security_token' in config[profile].keys():
+        if 'role_arn' in config[profile].keys():
             config.pop(profile)
     return config
 
