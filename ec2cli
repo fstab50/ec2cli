@@ -1052,7 +1052,11 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # print title
-        printf "\n\t\t\t  ${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n"
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n\t\t\t  ${title}EC2 INSTANCES${bodytext} : ${regions}All AWS Regions${bodytext}  $sp  ${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n"
+        else
+            printf "\n\t\t\t  ${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n"
+        fi
 
         if [ $FULL_CLI ]; then
             #print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
@@ -1099,14 +1103,18 @@ function ec2cli_list_instances(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16}' $TMPDIR/.body.tmp | indent02
         fi
         # print footer
-        if [ $ALL_REGIONS ]; then
+        if [ "$ALL_REGIONS" ]; then
             print_footer "Total Instances across $REGION_CT regions: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped  ($ast*${bodytext}sorted)" $total_width
         else
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped   ($ast*${bodytext}sorted)" $total_width
         fi
     else
         ### -- no running instances -- ###
-        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}All AWS Regions${bodytext}  $sp  ${title}ACCOUNT${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+        else
+            printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+        fi
         print_header "$sp InstanceId* $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp Tag $sp" $total_width $TMPDIR/.body.tmp
         #
         # output table of json array
@@ -1123,7 +1131,11 @@ function ec2cli_list_instances(){
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-64.64s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.body.tmp | indent02
             # print footer
-            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
+            if [ "$ALL_REGIONS" ]; then
+                print_footer "Total Instances [All AWS Regions]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
+            else
+                print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
+            fi
         else
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} \
@@ -1135,7 +1147,11 @@ function ec2cli_list_instances(){
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-34.34s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.body.tmp | indent02
             # print footer
-            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
+            if [ "$ALL_REGIONS" ]; then
+                print_footer "Total Instances [All AWS Regions]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
+            else
+                print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
+            fi
         fi
     fi
 
