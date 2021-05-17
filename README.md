@@ -499,7 +499,7 @@ $ ec2cli --instances run    # run/ log on to EC2 instances in default region
   * Access check sources the security group and validates IPs listed in the group against your local IP.
   * _Note_: if the instance you chose is already running, the ec2cli moves immediately to authentication (Step 4).
 
-[![instances](./assets/start-instance_2.png)](https://images.awspros.world/ec2cli/start-instance_2.png)
+[![instances](./assets/start-instance_02.png)](https://images.awspros.world/ec2cli/start-instance_02.png)
 
 
 3.If network access check succeeds, the ec2 wait function is called to prevent login until the instance starts.
