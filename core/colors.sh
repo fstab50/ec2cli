@@ -25,6 +25,7 @@ VERSION="1.8"
 blue=$(tput setaf 4)
 cyan=$(tput setaf 6)
 green=$(tput setaf 2)
+magenta=$(tput setaf 13)
 purple=$(tput setaf 5)
 red=$(tput setaf 1)
 white=$(tput setaf 7)

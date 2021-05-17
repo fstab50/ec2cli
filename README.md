@@ -1,6 +1,6 @@
 <a name="top"></a>
 * * *
-# EC2cli - Amazon EC2 Utilities
+# EC2cli - Utility for Managing AWS' EC2 Service
 * * *
 
 ## Contents
@@ -28,9 +28,10 @@
 
 * [**Screenshots**](#screenshots)
   * [`list` Command](#screenshots0)
-  * [`run` Command](#screenshots1)
-  * [ `--tags` Resource Option](#screenshots2)
-  * [EC2 Spot Price Utility](#screenshots3)
+  * [`list --all` Command](#screenshots1)
+  * [`run` Command](#screenshots2)
+  * [ `--tags` Resource Option](#screenshots3)
+  * [EC2 Spot Price Utility](#screenshots4)
 
 * [**Author & Copyright**](#author--copyright)
 
@@ -47,7 +48,7 @@
 ## About this repository
 
 * Purpose: 		CLI utilities for use with Amazon Web Services (AWS)
-* Version:	2.4.14
+* Version:	2.4.15
 * Repo: 		https://github.com/fstab50/ec2cli
 
 --
@@ -57,7 +58,7 @@
 * * *
 ## Summary
 
-EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or listing which EC2 instances are running.
+EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or querying the state of EC2 instances to determine which are running.
 
 While it is clear that accomplishing the ec1cli's functionality with the AWS ruby or python SDK's may be cleaner, ec2cli was developed in bash to make it easy for system administrators and solution architects to modify ec2cli for each's respective use cases.
 
@@ -121,6 +122,8 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 * **REGIONCODE** is optional. If omitted, ec2cli defaults to the AWS default region defined in the `AWS_DEFAULT_REGION` environment variable (if present); or alternately, the awscli config file.
 
 * `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable additional resource types as additional types are added.
+
+--
 
 [back to the top](#top)
 
@@ -189,6 +192,7 @@ The easiest way to install **ec2cli** on debian-based Linux distributions is via
 
     [![apt-show](./assets/deb-install-4.png)](http://images.awspros.world/ec2cli/deb-install-4.png)
 
+--
 
 [back to the top](#top)
 
@@ -259,6 +263,7 @@ The easiest way to install **ec2cli** on redhat-based Linux distributions is via
 
     [![rpm-install5](./assets/rpm-install-5.png)](http://images.awspros.world/ec2cli/rpm-install-5.png)
 
+--
 
 [back to the top](#top)
 
@@ -332,6 +337,8 @@ $  aws-cli/1.19.44 Python/3.8.5 Linux/5.6.0-1052-oem botocore/1.20.44
 
 **Note**: Python and Kernel versions will depend upon your system parameters
 
+--
+
 [back to the top](#top)
 
 * * *
@@ -393,6 +400,8 @@ You'll need appropriate IAM permissions to execute ec2cli.
 
 You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
 
+--
+
 [back to the top](#top)
 
 * * *
@@ -423,7 +432,7 @@ List command displays AWS resource details for your AWS default region if no reg
 
 
 ```bash
-$ ec2cli --instances    # list ec2 instances, AWS default region (us-west-2)
+$ ec2cli --instances  --region us-west-2    # list ec2 instances
 ```
 [![instances](./assets/ec2cli-list-instances.png)](https://images.awspros.world/ec2cli/ec2cli-list-instances.png)
 
@@ -435,7 +444,7 @@ $ ec2cli --volumes    # list ebs volume details, AWS default region (us-west-2)
 
 
 ```bash
-$ ec2cli --snapshots    # list snapshots, AWS default region (us-west-2)
+$ ec2cli --snapshots  --region us-west-2     # list snapshots
 ```
 [![snapshots](./assets/ec2cli-list-snapshots.png)](https://images.awspros.world/ec2cli/ec2cli-list-snapshots.png)
 
@@ -444,11 +453,35 @@ $ ec2cli --secgroups    # list security group details, AWS default region (us-we
 ```
 [![securitygroups](./assets/ec2cli-list-securitygroups.png)](https://images.awspros.world/ec2cli/ec2cli-list-securitygroups.png)
 
+--
+
+[back to the top](#top)
+
+* * *
+<a name="screenshots1"></a>
+#### [Screenshots](#screenshots) / ec2cli `list` + `--all` command
+
+List command displays AWS resource details for your AWS default region if no region specified. If the `--all` option is used in conjunction with the `list` command, ec2cli audits all the regions to which your AWS account has access, identifying the resources specified by the RESOURCES parameter.  Examples:
+
+
+```bash
+$ ec2cli --secgroups list --all    # list all security groups across all AWS regions
+```
+[![secgroups](./assets/secgroups-all.png)](https://images.awspros.world/ec2cli/secgroups-all.png)
+
+```bash
+$ ec2cli --vpcs list --all   # list all VPC's in all AWS regions
+```
+
+[![vpcs](./assets/vpcs-all.png)](https://images.awspros.world/ec2cli/vpcs-all.png)
+
+--
+
 [back to the top](#top)
 
 * * *
 
-<a name="screenshots1"></a>
+<a name="screenshots2"></a>
 #### [Screenshots](#screenshots) / ec2cli `run` command
 
 *Note: this utility may also be used to automate login to a running EC2 instance*
@@ -466,7 +499,7 @@ $ ec2cli --instances run    # run/ log on to EC2 instances in default region
   * Access check sources the security group and validates IPs listed in the group against your local IP.
   * _Note_: if the instance you chose is already running, the ec2cli moves immediately to authentication (Step 4).
 
-[![instances](./assets/start-instance_2.png)](https://images.awspros.world/ec2cli/start-instance_2.png)
+[![instances](./assets/start-instance_02.png)](https://images.awspros.world/ec2cli/start-instance_02.png)
 
 
 3.If network access check succeeds, the ec2 wait function is called to prevent login until the instance starts.
@@ -490,7 +523,7 @@ $ ec2cli --instances run    # run/ log on to EC2 instances in default region
 
 * * *
 
-<a name="screenshots2"></a>
+<a name="screenshots3"></a>
 #### [Screenshots](#screenshots) / ec2cli --tags <resourceId>
 
 Display all tags attached to an EC2 resource by following the steps below:
@@ -524,11 +557,13 @@ $ ec2cli --tags <tab><tab>
 
 * * *
 
-<a name="screenshots3"></a>
+<a name="screenshots4"></a>
 #### [Screenshots](#screenshots) / Spot Price Utility
 
 
 [Screenshots (continued)](./README_spot.md)
+
+--
 
 [back to the top](#top)
 
@@ -539,6 +574,8 @@ $ ec2cli --tags <tab><tab>
 All works contained herein copyrighted via below author unless work is explicitly noted by an alternate author.
 
 * Copyright Blake Huber, All Rights Reserved.
+
+--
 
 [back to the top](#top)
 
@@ -554,6 +591,7 @@ $ ec2cli --version
 
 [![version](./assets/version-copyright.png)](https://images.awspros.world/ec2cli/version-copyright.png)
 
+--
 
 [back to the top](#top)
 
@@ -564,6 +602,8 @@ $ ec2cli --version
 *Code is provided "as is". No liability is assumed by either the code's originating author nor this repo's owner for their use at AWS or any other facility. Furthermore, running function code at AWS may incur monetary charges; in some cases, charges may be substantial. Charges are the sole responsibility of the account holder executing code obtained from this library.*
 
 Additional terms may be found in the complete [license agreement](./LICENSE.md).
+
+--
 
 [back to the top](#top)
 

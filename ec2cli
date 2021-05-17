@@ -88,11 +88,11 @@ backcolor=$(echo -e ${brightgreen})
 function ec2cli_help(){
   cat <<EOM
 
-                  ${title}ec2cli${bodytext} help contents
+                     ${title}ec2cli${bodytext} help contents
 
     ${white}${BOLD}SYNOPSIS${UNBOLD}${bodytext}:
 
-        $ ec2cli  [${options}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
+        $ ec2cli  [${magenta}OPTION${bodytext}]  ${resources}RESOURCE${bodytext}  [${cyan}COMMAND${bodytext}]  [${regions}REGIONCODE${bodytext}]
 
                        -i | --instances
                        -b | --subnets
@@ -109,13 +109,13 @@ function ec2cli_help(){
                       [-s | --sort  {size | id | date} ]
                       [-V | --version ]
     ${white}${BOLD}OPTIONS${UNBOLD}${bodytext}:
-          ${options}-A${bodytext},${options} --all${bodytext}          Analyze resources in all AWS Regions
-          ${options}-d${bodytext},${options} --debug${bodytext}        Enable verbose logging & messaging
-          ${options}-h${bodytext},${options} --help${bodytext}         Display this help menu
-          ${options}-p${bodytext},${options} --profile${bodytext}      Profilename of an IAM user or role
-          ${options}-r${bodytext},${options} --region${bodytext}       AWS region code (ex: us-east-1)
-          ${options}-S${bodytext},${options} --sort${bodytext}         Sort by size, id, date
-          ${options}-V${bodytext},${options} --version${bodytext}      Print version info
+          ${magenta}-A${bodytext},${magenta} --all${bodytext}          Analyze resources in all AWS Regions
+          ${magenta}-d${bodytext},${magenta} --debug${bodytext}        Enable verbose logging & messaging
+          ${magenta}-h${bodytext},${magenta} --help${bodytext}         Display this help menu
+          ${magenta}-p${bodytext},${magenta} --profile${bodytext}      Profilename of an IAM user or role
+          ${magenta}-r${bodytext},${magenta} --region${bodytext}       AWS region code (ex: us-east-1)
+          ${magenta}-S${bodytext},${magenta} --sort${bodytext}         Sort by size, id, date
+          ${magenta}-V${bodytext},${magenta} --version${bodytext}      Print version info
 
     ${white}${BOLD}RESOURCES${UNBOLD}${bodytext}:
           ${resources}-a${bodytext},${resources} --images       ${bodytext}Amazon Machine Images (AMI)
@@ -1052,7 +1052,11 @@ function ec2cli_list_instances(){
         r=${BOLD}$r${UNBOLD}
 
         # print title
-        printf "\n\t\t\t  ${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n"
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n\t\t\t  ${title}EC2 INSTANCES${bodytext} : ${regions}All AWS Regions${bodytext}  $sp  ${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n"
+        else
+            printf "\n\t\t\t  ${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext} : ${account}$ACCT_ALIAS${bodytext}\n"
+        fi
 
         if [ $FULL_CLI ]; then
             #print_header "InstanceId Type State SecurityGroup Root-Volume Public-IP RunTime* Tag" $total_width .body.tmp
@@ -1076,7 +1080,7 @@ function ec2cli_list_instances(){
                 i=$(( $i+1 ))
             done
         fi
-        if [ ! $sort_column ]; then
+        if [ ! "$sort_column" ]; then
             sort_column="runtime"
         fi
         case $sort_column in
@@ -1099,14 +1103,18 @@ function ec2cli_list_instances(){
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14, $15, $16}' $TMPDIR/.body.tmp | indent02
         fi
         # print footer
-        if [ $ALL_REGIONS ]; then
+        if [ "$ALL_REGIONS" ]; then
             print_footer "Total Instances across $REGION_CT regions: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped  ($ast*${bodytext}sorted)" $total_width
         else
             print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}  |  ${title}$r${bodytext} running, ${title}$s${bodytext} stopped   ($ast*${bodytext}sorted)" $total_width
         fi
     else
         ### -- no running instances -- ###
-        printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}All AWS Regions${bodytext}  $sp  ${title}ACCOUNT${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+        else
+            printf "\n${title}EC2 INSTANCES${bodytext} : ${regions}$REGION${bodytext}  $sp  ${title}ACCOUNT${bodytext}: ${account}$ACCT_ALIAS${bodytext}\n" | indent18
+        fi
         print_header "$sp InstanceId* $sp Type $sp State $sp SecurityGroup $sp Root-Volume $sp Tag $sp" $total_width $TMPDIR/.body.tmp
         #
         # output table of json array
@@ -1123,7 +1131,11 @@ function ec2cli_list_instances(){
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-64.64s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.body.tmp | indent02
             # print footer
-            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
+            if [ "$ALL_REGIONS" ]; then
+                print_footer "Total Instances [All AWS Regions]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
+            else
+                print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances" $total_width
+            fi
         else
             while (( i < $MAXCT )); do
                 echo "$sp ${ARR_ID[$i]} $sp ${ARR_TYPE[$i]} $sp ${ARR_STATE[$i]} $sp ${ARR_SG[$i]} \
@@ -1135,7 +1147,11 @@ function ec2cli_list_instances(){
             awk  '{ printf "%-2s %-21s %-2s %-12s %-2s %-9.9s %-2s %-21.21s %-2s %-23s %-2s %-34.34s %-2s \n", \
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13}' $TMPDIR/.body.tmp | indent02
             # print footer
-            print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
+            if [ "$ALL_REGIONS" ]; then
+                print_footer "Total Instances in $REGION_CT AWS Regions: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
+            else
+                print_footer "Total Instances [$REGION]: ${title}$MAXCT${bodytext}    *No running instances (1 or more columns trucated)" $total_width
+            fi
         fi
     fi
 
@@ -2115,7 +2131,7 @@ function ec2cli_list_volumes(){
     fi
     # sum total size of all volumes (display in footer)
     # pull json info, all instances in region
-    if [ $ALL_REGIONS ]; then
+    if [ "$ALL_REGIONS" ]; then
         # load array from local list of regions
         REGIONS=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE")
         REGION_CT=$(cat "$CONFIG_PATH/$REGION_CONFIGFILE" | wc -l)
@@ -2129,7 +2145,7 @@ function ec2cli_list_volumes(){
     fi
 
     # determine size of all volumes returned
-    if [ $ALL_REGIONS ]; then
+    if [ "$ALL_REGIONS" ]; then
         SUM=0
         ARR=$(jq -r '.Volumes[].Size' $TMPDIR/.jsonoutput.tmp);
         for vol in ${ARR[@]}; do
@@ -2146,7 +2162,11 @@ function ec2cli_list_volumes(){
         #
         # volumes found, print region identifier
         #
-        printf "\n${title}EBS VOLUMES${bodytext} : $REGION   |  *sorted\n" | indent18
+        if [ "$ALL_REGIONS" ]; then
+            printf "\n${title}EBS VOLUMES${bodytext} : ${regions}All AWS Regions${bodytext}   |  *sorted\n" | indent18
+        else
+            printf "\n${title}EBS VOLUMES${bodytext} : ${regions}$REGION${bodytext}   |  *sorted\n" | indent18
+        fi
 
         # parse json
         ARR_VID=( $(jq -r '.Volumes[].VolumeId' $TMPDIR/.jsonoutput.tmp) )
@@ -2256,8 +2276,13 @@ function ec2cli_list_volumes(){
         ASUM=$(echo $RETURN | awk '{print $1}')
         UNIT=$(echo $RETURN | awk '{print $2}')
         # print footer
-        print_footer "${title}$MAXCT${bodytext} volumes in region [$REGION], ${title}$UNATTACHED_CT${bodytext} unattached to instances (free). \
-        Total size on disk ${title}$ASUM${bodytext} $UNIT" $total_width
+        if [ "$ALL_REGIONS" ]; then
+            print_footer "${title}$MAXCT${bodytext} volumes found in $REGION_CT AWS Regions, ${title}$UNATTACHED_CT${bodytext}  unattached to instances (free). \
+            Total size on disk ${title}$ASUM${bodytext} $UNIT" $total_width
+        else
+            print_footer "${title}$MAXCT${bodytext} volumes in region [$REGION], ${title}$UNATTACHED_CT${bodytext}  unattached to instances (free). \
+            Total size on disk ${title}$ASUM${bodytext} $UNIT" $total_width
+        fi
 
         # clean up
         rm $TMPDIR/.ec2-qv-volumes.tmp $TMPDIR/.body.tmp $TMPDIR/.jsonoutput.tmp
