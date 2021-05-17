@@ -1,6 +1,6 @@
 <a name="top"></a>
 * * *
-# EC2cli - Utility for Managing AWS EC2 Service
+# EC2cli - Utility for Managing AWS' EC2 Service
 * * *
 
 ## Contents
@@ -58,7 +58,7 @@
 * * *
 ## Summary
 
-EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or listing which EC2 instances are running.
+EC2cli was developed to make life easier when working with AWS services in a cli environment.  EC2cli utilizes AWS' cli tools to enable you to send signed requests to Amazon's API to perform uses cases typically  accomplished using the console interface.  EC2cli will save time and effort to perform operations such as taking a snapshot or querying the state of EC2 instances to determine which are running.
 
 While it is clear that accomplishing the ec1cli's functionality with the AWS ruby or python SDK's may be cleaner, ec2cli was developed in bash to make it easy for system administrators and solution architects to modify ec2cli for each's respective use cases.
 
@@ -122,6 +122,8 @@ _Dependency Note_:  ec2cli was developed and tested under bash. Some functionali
 * **REGIONCODE** is optional. If omitted, ec2cli defaults to the AWS default region defined in the `AWS_DEFAULT_REGION` environment variable (if present); or alternately, the awscli config file.
 
 * `create` and `run` commands currently have support for limited resource types. Update your local repo frequently to enable additional resource types as additional types are added.
+
+--
 
 [back to the top](#top)
 
@@ -190,6 +192,7 @@ The easiest way to install **ec2cli** on debian-based Linux distributions is via
 
     [![apt-show](./assets/deb-install-4.png)](http://images.awspros.world/ec2cli/deb-install-4.png)
 
+--
 
 [back to the top](#top)
 
@@ -260,6 +263,7 @@ The easiest way to install **ec2cli** on redhat-based Linux distributions is via
 
     [![rpm-install5](./assets/rpm-install-5.png)](http://images.awspros.world/ec2cli/rpm-install-5.png)
 
+--
 
 [back to the top](#top)
 
@@ -333,6 +337,8 @@ $  aws-cli/1.19.44 Python/3.8.5 Linux/5.6.0-1052-oem botocore/1.20.44
 
 **Note**: Python and Kernel versions will depend upon your system parameters
 
+--
+
 [back to the top](#top)
 
 * * *
@@ -394,6 +400,8 @@ You'll need appropriate IAM permissions to execute ec2cli.
 
 You can grab a read-only version of the policy [here](./policies/iampolicy-EC2-quickview.json) or the full IAM policy which allows changes to resources [here](./policies/iampolicy-EC2-full.json).
 
+--
+
 [back to the top](#top)
 
 * * *
@@ -445,6 +453,8 @@ $ ec2cli --secgroups    # list security group details, AWS default region (us-we
 ```
 [![securitygroups](./assets/ec2cli-list-securitygroups.png)](https://images.awspros.world/ec2cli/ec2cli-list-securitygroups.png)
 
+--
+
 [back to the top](#top)
 
 * * *
@@ -465,6 +475,7 @@ $ ec2cli --vpcs list --all   # list all VPC's in all AWS regions
 
 [![vpcs](./assets/vpcs-all.png)](https://images.awspros.world/ec2cli/vpcs-all.png)
 
+--
 
 [back to the top](#top)
 
@@ -552,6 +563,8 @@ $ ec2cli --tags <tab><tab>
 
 [Screenshots (continued)](./README_spot.md)
 
+--
+
 [back to the top](#top)
 
 * * *
@@ -561,6 +574,8 @@ $ ec2cli --tags <tab><tab>
 All works contained herein copyrighted via below author unless work is explicitly noted by an alternate author.
 
 * Copyright Blake Huber, All Rights Reserved.
+
+--
 
 [back to the top](#top)
 
@@ -576,6 +591,7 @@ $ ec2cli --version
 
 [![version](./assets/version-copyright.png)](https://images.awspros.world/ec2cli/version-copyright.png)
 
+--
 
 [back to the top](#top)
 
@@ -586,6 +602,8 @@ $ ec2cli --version
 *Code is provided "as is". No liability is assumed by either the code's originating author nor this repo's owner for their use at AWS or any other facility. Furthermore, running function code at AWS may incur monetary charges; in some cases, charges may be substantial. Charges are the sole responsibility of the account holder executing code obtained from this library.*
 
 Additional terms may be found in the complete [license agreement](./LICENSE.md).
+
+--
 
 [back to the top](#top)
 
