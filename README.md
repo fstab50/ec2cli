@@ -1,6 +1,6 @@
 <a name="top"></a>
 * * *
-# EC2cli - Command-line Utility for Managing Amazon Web Services' EC2 Service
+# EC2cli - Utility for Managing AWS EC2 Service
 * * *
 
 ## Contents
