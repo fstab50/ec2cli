@@ -154,6 +154,7 @@ function _parse_compwords(){
         missing_words=( "${onlybone[@]}"  "${missing_words[@]}" )
     fi
     printf -- '%s\n' "${missing_words[@]}"
+    return 0
 }
 
 
@@ -189,13 +190,35 @@ function _ec2cli_completions(){
 
     case "${initcmd}" in
 
-        '--profile' | '--region')
+        '--region')
             ##
             ##  Return compreply with any of the 5 comp_words that
             ##  not already present on the command line
             ##
             declare -a horsemen singletons
-            horsemen=(  '--profile' '--region' '--sort' '--all')
+            horsemen=( '--profile' '--sort' )
+            singletons=( "${resources}" )
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
+            numargs=$(_numargs "$subcommands")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
+                _complete_4_horsemen_subcommands "${subcommands}"
+            else
+                COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            fi
+            return 0
+            ;;
+
+        '--profile')
+            ##
+            ##  Return compreply with any of the 5 comp_words that
+            ##  not already present on the command line
+            ##
+            declare -a horsemen singletons
+            if [ $(echo "${COMP_WORDS[@]}" | grep \-\-all) ] || \
+               [ $(echo "${COMP_WORDS[@]}" | grep \-\-region) ]; then
+                horsemen=( '--sort' )
+            fi
             singletons=( "${resources}" )
             subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
             numargs=$(_numargs "$subcommands")
@@ -235,9 +258,27 @@ function _ec2cli_completions(){
             ;;
 
         '--sort')
+            ##
+            ##  Return compreply with any of the 5 comp_words that
+            ##  not already present on the command line
+            ##
+            declare -a horsemen singletons
+            if
+            horsemen=( '--profile' '--region' '--all' )
+            singletons=( "${resources}" )
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
+            numargs=$(_numargs "$subcommands")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
+                _complete_4_horsemen_subcommands "${subcommands}"
+            else
+                COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            fi
             return 0
             ;;
     esac
+
+
     case "${cur}" in
 
         '--version' | '--help')
@@ -249,7 +290,28 @@ function _ec2cli_completions(){
             return 0
             ;;
     esac
+
+
     case "${prev}" in
+
+        '--all')
+            ##
+            ##  Return compreply with any of the 5 comp_words that
+            ##  not already present on the command line
+            ##
+            declare -a horsemen singletons
+            horsemen=( '--profile' '--sort' )
+            singletons=( "${resources}" )
+            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
+            numargs=$(_numargs "$subcommands")
+
+            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
+                _complete_4_horsemen_subcommands "${subcommands}"
+            else
+                COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            fi
+            return 0
+            ;;
 
         '--instances' )
             COMPREPLY=( $(compgen -W "list run" -- ${cur}) )
@@ -282,25 +344,6 @@ function _ec2cli_completions(){
                     return 0
                     ;;
             esac
-            ;;
-
-        '--all')
-            ##
-            ##  Return compreply with any of the 5 comp_words that
-            ##  not already present on the command line
-            ##
-            declare -a horsemen singletons
-            horsemen=(  '--profile' '--region' '--sort' '--all')
-            singletons=( "${resources}" )
-            subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
-            numargs=$(_numargs "$subcommands")
-
-            if [ "$cur" = "" ] || [ "$cur" = "-" ] || [ "$cur" = "--" ] && (( "$numargs" > 2 )); then
-                _complete_4_horsemen_subcommands "${subcommands}"
-            else
-                COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
-            fi
-            return 0
             ;;
 
         'attach' | 'create' | 'run')
