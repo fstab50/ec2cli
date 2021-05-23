@@ -1,6 +1,6 @@
 <a name="top"></a>
 * * *
-# EC2cli - Manage Amazon EC2 from the Command Line
+# EC2cli - Utility for Managing Amazon EC2
 * * *
 
 ## Contents
