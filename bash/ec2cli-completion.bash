@@ -215,11 +215,11 @@ function _ec2cli_completions(){
             ##  not already present on the command line
             ##
             declare -a horsemen singletons
-            if [[ "${COMP_WORDS[*]}" =~ "\-\-region" ]] || [[ "${COMP_WORDS[*]}" =~ "\-\-all" ]]; then
+
+            if [[ $(echo ${COMP_WORDS[*]} | grep "\-\-all") ]] || [[ $(echo ${COMP_WORDS[*]} | grep "\-\-region") ]]; then
                 horsemen=( '--sort' )
             else
                 horsemen=( '--all' '--sort' '--region' )
-
             fi
             singletons=( "${resources}" )
             subcommands=$(_parse_compwords COMP_WORDS[@] horsemen[@] singletons[@])
