@@ -136,7 +136,7 @@ function _parse_compwords(){
     local add_resources=true
     compwords=("${!1}")
     four=("${!2}")
-    onlybone=("${!3}")
+    onlyone=("${!3}")
 
     declare -a missing_words
 
@@ -145,13 +145,13 @@ function _parse_compwords(){
             missing_words=( "${missing_words[@]}" "$key" )
         fi
     done
-    for key in "${onlybone[@]}"; do
+    for key in "${onlyone[@]}"; do
         if [[ ! "$(echo "${missing_words[@]}" | grep ${key##*-})" ]]; then
             add_resources=false
         fi
     done
     if [[ "$add_resources" = "true" ]]; then
-        missing_words=( "${onlybone[@]}"  "${missing_words[@]}" )
+        missing_words=( "${onlyone[@]}"  "${missing_words[@]}" )
     fi
     printf -- '%s\n' "${missing_words[@]}"
     return 0
