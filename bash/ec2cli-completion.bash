@@ -216,7 +216,7 @@ function _ec2cli_completions(){
             ##
             declare -a horsemen singletons
 
-            if [[ $(echo ${COMP_WORDS[*]} | grep "\-\-all") ]] || [[ $(echo ${COMP_WORDS[*]} | grep "\-\-region") ]]; then
+            if [[ $(echo ${COMP_WORDS[*]} | grep \-\-all) ]] || [[ $(echo ${COMP_WORDS[*]} | grep \-\-region) ]]; then
                 horsemen=( '--sort' )
             else
                 horsemen=( '--all' '--sort' '--region' )
@@ -265,7 +265,7 @@ function _ec2cli_completions(){
             ##  not already present on the command line
             ##
             declare -a horsemen singletons
-            if [[ "${COMP_WORDS[*]}" =~ "\-\-region" ]] || [[ "${COMP_WORDS[*]}" =~ "\-\-all" ]]; then
+            if [[ "${COMP_WORDS[*]}" =~ \-\-region ]] || [[ "${COMP_WORDS[*]}" =~ \-\-all ]]; then
                 horsemen=( '--profile' )
             elif [[ "${COMP_WORDS[*]}" =~ ${profile} ]]; then
                 horsemen=( '--region' '--all' )
